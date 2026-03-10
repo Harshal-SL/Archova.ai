@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import input_router, extraction_router
+from app.routers import input_router, extraction_router, elicitation_router
 
 app = FastAPI(title="AI Architecture Engine")
 
@@ -13,6 +13,7 @@ app.add_middleware(
 
 app.include_router(input_router.router)
 app.include_router(extraction_router.router)
+app.include_router(elicitation_router.router)
 
 @app.get("/")
 def health():
