@@ -1,8 +1,16 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -12,15 +20,66 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #555;
+}
+
+/* React Flow dark mode */
+.dark .react-flow__background {
+  background-color: #111827 !important;
+}
+
+/* ── Animated Bubble Background ── */
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-52vh) translateX(calc(var(--bdrift, 40px) * 0.5)) scale(1.04);
+  }
+  88% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-108vh) translateX(var(--bdrift, 40px)) scale(0.92);
+    opacity: 0;
+  }
+}
+
+.bubble-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bubble-item {
+  position: absolute;
+  bottom: -80px;
+  animation: bubbleRise linear infinite;
+  user-select: none;
+  font-weight: 700;
+  line-height: 1;
 }
