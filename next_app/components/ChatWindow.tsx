@@ -3,7 +3,6 @@
 import { useRef, useEffect } from "react";
 import { Cpu } from "lucide-react";
 import { useAppStore, generateMsgId } from "@/lib/store";
-import { mockAIResponses } from "@/lib/mock-data";
 import ChatMessage from "./ChatMessage";
 import PromptInput from "./PromptInput";
 
@@ -25,7 +24,7 @@ export default function ChatWindow() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages.length]);
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     let sid = activeSessionId;
     if (!sid) {
       sid = createSession();
@@ -34,21 +33,49 @@ export default function ChatWindow() {
     // Add user message
     addMessage(sid, { id: generateMsgId(), role: "user", content: text });
 
-    // Simulate AI response
-    setTimeout(() => {
-      const currentSession = useAppStore.getState().sessions.find((s) => s.id === sid);
-      const idx = (currentSession?.messages.length ?? 0) % mockAIResponses.length;
-      addMessage(sid!, {
+    try {
+      const response = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          session_id: sid,
+          message: text,
+        }),
+      });
+
+      const data = (await response.json()) as { response?: string; error?: string };
+
+      if (!response.ok || !data.response) {
+        const errorMessage =
+          data.error ?? "Something went wrong while generating the AI response.";
+        addMessage(sid, {
+          id: generateMsgId(),
+          role: "ai",
+          content: `Error: ${errorMessage}`,
+        });
+        return;
+      }
+
+      addMessage(sid, {
         id: generateMsgId(),
         role: "ai",
-        content: mockAIResponses[idx],
+        content: data.response,
       });
 
       // Show architecture after first AI response
+      const currentSession = useAppStore.getState().sessions.find((s) => s.id === sid);
       if (!currentSession?.hasArchitecture) {
-        setArchitectureReady(sid!);
+        setArchitectureReady(sid);
       }
-    }, 800);
+    } catch {
+      addMessage(sid, {
+        id: generateMsgId(),
+        role: "ai",
+        content: "Error: Unable to reach the AI service. Please try again.",
+      });
+    }
   };
 
   // Empty state
