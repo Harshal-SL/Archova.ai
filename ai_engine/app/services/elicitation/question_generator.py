@@ -3,9 +3,12 @@ import re
 
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "mistral"
-MAX_RETRIES = 2
+from app.config import settings
+
+OLLAMA_URL = settings.ollama_generate_url
+MODEL = settings.llm_model
+MAX_RETRIES = settings.llm_max_retries
+TIMEOUT_SECONDS = settings.ollama_timeout_seconds
 
 _PROMPT_TEMPLATE = """\
 You are a software requirements analyst.
@@ -63,7 +66,7 @@ def generate_questions(missing_parameters: list[str], prompt: str) -> dict:
     last_error: Exception | None = None
     for attempt in range(MAX_RETRIES + 1):
         try:
-            response = requests.post(OLLAMA_URL, json=payload, timeout=120)
+            response = requests.post(OLLAMA_URL, json=payload, timeout=TIMEOUT_SECONDS)
             response.raise_for_status()
             raw = response.json().get("response", "")
             return _parse_json(raw)

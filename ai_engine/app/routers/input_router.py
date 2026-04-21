@@ -21,7 +21,7 @@ router = APIRouter()
                             "files": {
                                 "type": "array",
                                 "items": {"type": "string", "format": "binary"},
-                                "description": "Upload .pdf, .txt, .md, .png, .jpg files"
+                                "description": "Upload .pdf, .docx, .txt, .md, .png, .jpg, .jpeg files"
                             }
                         }
                     }

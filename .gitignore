@@ -39,3 +39,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python / ai_engine
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+ai_engine/venv/
+ai_engine/.chroma/
+ai_engine/pipeline_smoke_report.json
+ai_engine/random_design_test_output.json
