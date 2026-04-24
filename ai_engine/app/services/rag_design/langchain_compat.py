@@ -16,7 +16,6 @@ def get_document_class():
         ("langchain_core.documents", "Document"),
         ("langchain.schema", "Document"),
     ]
-
     for module_name, symbol in candidates:
         try:
             module = importlib.import_module(module_name)

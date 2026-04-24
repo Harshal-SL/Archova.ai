@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 from threading import Lock
 
@@ -7,7 +9,7 @@ from app.config import settings
 
 from .generator import build_design_prompt, generate_design_from_ollama
 from .indexer import ChromaDocumentIndex
-from .loaders import load_corpus_documents
+from .loaders import discover_corpus_files, load_corpus_documents
 from .retriever import (
     build_context_block,
     build_retrieval_query,
@@ -18,6 +20,67 @@ from .validator import normalize_design_output
 
 _INDEX_LOCK = Lock()
 _INDEX: ChromaDocumentIndex | None = None
+
+
+def _state_file_path() -> Path:
+    persist_dir = Path(settings.rag_persist_dir)
+    persist_dir.mkdir(parents=True, exist_ok=True)
+    return persist_dir / f"{settings.rag_collection_name}_corpus_state.json"
+
+
+def _compute_corpus_signature(data_root: Path) -> tuple[str, int]:
+    files = discover_corpus_files(data_root)
+    digest = hashlib.sha1()
+
+    for file_path in files:
+        try:
+            stat = file_path.stat()
+        except OSError:
+            continue
+
+        rel_path = file_path.relative_to(data_root).as_posix()
+        digest.update(rel_path.encode("utf-8"))
+        digest.update(b"|")
+        digest.update(str(stat.st_size).encode("ascii"))
+        digest.update(b"|")
+        digest.update(str(stat.st_mtime_ns).encode("ascii"))
+        digest.update(b"\n")
+
+    return digest.hexdigest(), len(files)
+
+
+def _build_expected_state() -> dict:
+    data_root = Path(settings.rag_data_root)
+    signature, file_count = _compute_corpus_signature(data_root)
+    return {
+        "data_root": str(data_root.resolve()),
+        "corpus_signature": signature,
+        "corpus_file_count": file_count,
+        "chunk_size": settings.rag_chunk_size,
+        "chunk_overlap": settings.rag_chunk_overlap,
+        "embedding_model": settings.rag_embedding_model,
+    }
+
+
+def _load_saved_state() -> dict | None:
+    path = _state_file_path()
+    if not path.exists():
+        return None
+
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+
+    if not isinstance(loaded, dict):
+        return None
+
+    return loaded
+
+
+def _save_state(state: dict) -> None:
+    path = _state_file_path()
+    path.write_text(json.dumps(state, indent=2), encoding="utf-8")
 
 
 def _parameter_value(parameters: dict, key: str):
@@ -352,21 +415,23 @@ def _build_index(index: ChromaDocumentIndex) -> dict:
 
     index.reset_collection()
     indexed_chunk_count = index.index_documents(chunks)
+    state = _build_expected_state()
+    _save_state(state)
 
     return {
         "document_count": len(documents),
         "chunk_count": len(chunks),
         "indexed_chunk_count": indexed_chunk_count,
         "collection_count": index.count(),
+        "corpus_file_count": state.get("corpus_file_count", 0),
     }
 
 
 def _ensure_index_ready(index: ChromaDocumentIndex) -> None:
-    if index.count() > 0:
-        return
-
     with _INDEX_LOCK:
-        if index.count() == 0:
+        expected_state = _build_expected_state()
+        saved_state = _load_saved_state()
+        if index.count() == 0 or saved_state != expected_state:
             _build_index(index)
 
 

@@ -1,0 +1,126 @@
+================================================================================
+AI ARCHITECTURE ENGINE - QUICK START
+================================================================================
+
+STEP 1: WARM UP (1 minute)
+---------------------------
+venv\Scripts\python warmup_ollama.py
+
+Expected: "✓ Ollama is warmed up and ready!"
+
+
+STEP 2: START DEMO
+---------------------------
+.\quick_start_demo.bat
+
+Opens browser to: http://localhost:7861
+
+
+STEP 3: ENTER PROMPT
+---------------------------
+Example: Create an e-commerce application for 10k users interacting everyday
+
+Click: "Run Pipeline"
+
+
+STEP 4: WAIT 3-5 MINUTES
+---------------------------
+Design generation in progress...
+
+
+STEP 5: VIEW RESULTS
+---------------------------
+- Extraction tab: See extracted parameters
+- Elicitation tab: See questions asked
+- Design tab: See complete architecture
+
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Ollama not responding?
+  Stop-Process -Name "ollama" -Force
+  ollama serve
+  venv\Scripts\python warmup_ollama.py
+
+Server not running?
+  venv\Scripts\activate
+  uvicorn app.main:app --reload
+
+Test if working?
+  venv\Scripts\python test_quick.py
+
+
+================================================================================
+EXAMPLE PROMPTS
+================================================================================
+
+Quick test (2-3 min):
+  Create a simple chat app
+
+E-commerce (3-4 min):
+  Create an e-commerce application for 10k users interacting everyday
+
+Social media (4-5 min):
+  Design a social media platform with photo sharing for 50k daily active users
+
+
+================================================================================
+KEY FILES
+================================================================================
+
+Documentation:
+  - READY_TO_PRESENT.md (read this!)
+  - SPEED_OPTIMIZATIONS.md (performance details)
+  - START_HERE.md (overview)
+
+Demos:
+  - demo_gui.py (web interface)
+  - demo_cli.py (terminal interface)
+
+Scripts:
+  - warmup_ollama.py (ALWAYS RUN FIRST!)
+  - test_quick.py (test pipeline)
+
+
+================================================================================
+PRESENTATION TIPS
+================================================================================
+
+1. Always warm up Ollama first
+2. Test with simple prompt before presenting
+3. Explain the 5-step pipeline while waiting
+4. Highlight RAG references in results
+5. Mention time savings (hours → minutes)
+
+
+================================================================================
+TIMELINE
+================================================================================
+
+With warm-up:
+  [0:00] Enter prompt
+  [0:05] Steps 1-4 complete
+  [0:10] Design generation starts
+  [3:10] Design complete ✓
+
+Without warm-up:
+  [0:00] Enter prompt
+  [0:05] Steps 1-4 complete
+  [0:10] Design generation starts
+  [5:10] Design complete ✓
+
+
+================================================================================
+READY TO PRESENT!
+================================================================================
+
+Run these two commands:
+  1. venv\Scripts\python warmup_ollama.py
+  2. .\quick_start_demo.bat
+
+Then open: http://localhost:7861
+
+Good luck! 🚀
+================================================================================

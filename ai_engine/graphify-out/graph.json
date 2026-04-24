@@ -1,0 +1,3602 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "config.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_config_py"
+    },
+    {
+      "label": "_int_env()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L10",
+      "id": "config_int_env"
+    },
+    {
+      "label": "_float_env()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L20",
+      "id": "config_float_env"
+    },
+    {
+      "label": "_default_rag_data_root()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L30",
+      "id": "config_default_rag_data_root"
+    },
+    {
+      "label": "Settings",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L38",
+      "id": "config_settings"
+    },
+    {
+      "label": "_build_settings()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L61",
+      "id": "config_build_settings"
+    },
+    {
+      "label": "main.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\main.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_main_py"
+    },
+    {
+      "label": "health()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\main.py",
+      "source_location": "L20",
+      "id": "main_health"
+    },
+    {
+      "label": "design_router.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_routers_design_router_py"
+    },
+    {
+      "label": "DesignRequest",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L9",
+      "id": "design_router_designrequest"
+    },
+    {
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "basemodel"
+    },
+    {
+      "label": "generate_system_design()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L15",
+      "id": "design_router_generate_system_design"
+    },
+    {
+      "label": "rebuild_design_index()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L26",
+      "id": "design_router_rebuild_design_index"
+    },
+    {
+      "label": "elicitation_router.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_routers_elicitation_router_py"
+    },
+    {
+      "label": "ElicitationRequest",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L15",
+      "id": "elicitation_router_elicitationrequest"
+    },
+    {
+      "label": "elicit_requirements()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L21",
+      "id": "elicitation_router_elicit_requirements"
+    },
+    {
+      "label": "AnswerItem",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L44",
+      "id": "elicitation_router_answeritem"
+    },
+    {
+      "label": "AnswerRequest",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L49",
+      "id": "elicitation_router_answerrequest"
+    },
+    {
+      "label": "submit_answers()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L55",
+      "id": "elicitation_router_submit_answers"
+    },
+    {
+      "label": "Step 3 \u2014 Detect missing parameters and generate clarification questions.",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L22",
+      "id": "elicitation_router_rationale_22"
+    },
+    {
+      "label": "Step 4 \u2014 Merge user answers into the parameter set.      Accepts the parameter",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L56",
+      "id": "elicitation_router_rationale_56"
+    },
+    {
+      "label": "extraction_router.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_routers_extraction_router_py"
+    },
+    {
+      "label": "ExtractionRequest",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L9",
+      "id": "extraction_router_extractionrequest"
+    },
+    {
+      "label": "extract_requirements()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L14",
+      "id": "extraction_router_extract_requirements"
+    },
+    {
+      "label": "input_router.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\input_router.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_routers_input_router_py"
+    },
+    {
+      "label": "process_input()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\input_router.py",
+      "source_location": "L34",
+      "id": "input_router_process_input"
+    },
+    {
+      "label": "file_parser.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\file_parser.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_file_parser_py"
+    },
+    {
+      "label": "parse_file()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\file_parser.py",
+      "source_location": "L19",
+      "id": "file_parser_parse_file"
+    },
+    {
+      "label": "prompt_builder.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\prompt_builder.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_prompt_builder_py"
+    },
+    {
+      "label": "build_prompt()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\prompt_builder.py",
+      "source_location": "L1",
+      "id": "prompt_builder_build_prompt"
+    },
+    {
+      "label": "answer_merger.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\answer_merger.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_elicitation_answer_merger_py"
+    },
+    {
+      "label": "merge_answers()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\answer_merger.py",
+      "source_location": "L13",
+      "id": "answer_merger_merge_answers"
+    },
+    {
+      "label": "Fill missing parameter values using user-provided answers.      Each answer it",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\answer_merger.py",
+      "source_location": "L14",
+      "id": "answer_merger_rationale_14"
+    },
+    {
+      "label": "detector.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\detector.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_elicitation_detector_py"
+    },
+    {
+      "label": "detect_missing_parameters()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\detector.py",
+      "source_location": "L1",
+      "id": "detector_detect_missing_parameters"
+    },
+    {
+      "label": "Return a list of parameter keys whose value is None.",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\detector.py",
+      "source_location": "L2",
+      "id": "detector_rationale_2"
+    },
+    {
+      "label": "pipeline.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py"
+    },
+    {
+      "label": "run_elicitation_pipeline()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L5",
+      "id": "pipeline_run_elicitation_pipeline"
+    },
+    {
+      "label": "question_generator.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\question_generator.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py"
+    },
+    {
+      "label": "_parse_json()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\question_generator.py",
+      "source_location": "L43",
+      "id": "question_generator_parse_json"
+    },
+    {
+      "label": "generate_questions()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\question_generator.py",
+      "source_location": "L55",
+      "id": "question_generator_generate_questions"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\__init__.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_elicitation_init_py"
+    },
+    {
+      "label": "generator.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_generator_py"
+    },
+    {
+      "label": "build_design_prompt()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L9",
+      "id": "generator_build_design_prompt"
+    },
+    {
+      "label": "_extract_json()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L102",
+      "id": "generator_extract_json"
+    },
+    {
+      "label": "generate_design_from_ollama()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L114",
+      "id": "generator_generate_design_from_ollama"
+    },
+    {
+      "label": "indexer.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py"
+    },
+    {
+      "label": "ChromaDocumentIndex",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L12",
+      "id": "indexer_chromadocumentindex"
+    },
+    {
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L13",
+      "id": "indexer_chromadocumentindex_init"
+    },
+    {
+      "label": ".count()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L35",
+      "id": "indexer_chromadocumentindex_count"
+    },
+    {
+      "label": ".reset_collection()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L38",
+      "id": "indexer_chromadocumentindex_reset_collection"
+    },
+    {
+      "label": ".index_documents()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L49",
+      "id": "indexer_chromadocumentindex_index_documents"
+    },
+    {
+      "label": "._upsert_batch()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L60",
+      "id": "indexer_chromadocumentindex_upsert_batch"
+    },
+    {
+      "label": ".query()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L91",
+      "id": "indexer_chromadocumentindex_query"
+    },
+    {
+      "label": "._embed_texts()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L121",
+      "id": "indexer_chromadocumentindex_embed_texts"
+    },
+    {
+      "label": "._try_embed_batch()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L131",
+      "id": "indexer_chromadocumentindex_try_embed_batch"
+    },
+    {
+      "label": "._embed_one_by_one()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L155",
+      "id": "indexer_chromadocumentindex_embed_one_by_one"
+    },
+    {
+      "label": "_normalize_metadata()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L174",
+      "id": "indexer_normalize_metadata"
+    },
+    {
+      "label": "langchain_compat.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py"
+    },
+    {
+      "label": "FallbackDocument",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L9",
+      "id": "langchain_compat_fallbackdocument"
+    },
+    {
+      "label": "get_document_class()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L14",
+      "id": "langchain_compat_get_document_class"
+    },
+    {
+      "label": "create_recursive_splitter()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L29",
+      "id": "langchain_compat_create_recursive_splitter"
+    },
+    {
+      "label": "loaders.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py"
+    },
+    {
+      "label": "_normalize_segment()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L14",
+      "id": "loaders_normalize_segment"
+    },
+    {
+      "label": "is_existing_design_document()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L18",
+      "id": "loaders_is_existing_design_document"
+    },
+    {
+      "label": "discover_corpus_files()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L30",
+      "id": "loaders_discover_corpus_files"
+    },
+    {
+      "label": "_read_markdown()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L42",
+      "id": "loaders_read_markdown"
+    },
+    {
+      "label": "_read_pdf()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L46",
+      "id": "loaders_read_pdf"
+    },
+    {
+      "label": "_read_docx()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L56",
+      "id": "loaders_read_docx"
+    },
+    {
+      "label": "load_file_text()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L70",
+      "id": "loaders_load_file_text"
+    },
+    {
+      "label": "load_corpus_documents()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L83",
+      "id": "loaders_load_corpus_documents"
+    },
+    {
+      "label": "pipeline.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py"
+    },
+    {
+      "label": "_state_file_path()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L25",
+      "id": "pipeline_state_file_path"
+    },
+    {
+      "label": "_compute_corpus_signature()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L31",
+      "id": "pipeline_compute_corpus_signature"
+    },
+    {
+      "label": "_build_expected_state()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L52",
+      "id": "pipeline_build_expected_state"
+    },
+    {
+      "label": "_load_saved_state()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L65",
+      "id": "pipeline_load_saved_state"
+    },
+    {
+      "label": "_save_state()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L81",
+      "id": "pipeline_save_state"
+    },
+    {
+      "label": "_parameter_value()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L86",
+      "id": "pipeline_parameter_value"
+    },
+    {
+      "label": "_as_list()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L93",
+      "id": "pipeline_as_list"
+    },
+    {
+      "label": "_fallback_design()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L101",
+      "id": "pipeline_fallback_design"
+    },
+    {
+      "label": "_get_index()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L382",
+      "id": "pipeline_get_index"
+    },
+    {
+      "label": "_build_index()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L400",
+      "id": "pipeline_build_index"
+    },
+    {
+      "label": "_ensure_index_ready()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L430",
+      "id": "pipeline_ensure_index_ready"
+    },
+    {
+      "label": "reindex_corpus()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L438",
+      "id": "pipeline_reindex_corpus"
+    },
+    {
+      "label": "run_design_pipeline()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L444",
+      "id": "pipeline_run_design_pipeline"
+    },
+    {
+      "label": "retriever.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py"
+    },
+    {
+      "label": "RetrievalHit",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L9",
+      "id": "retriever_retrievalhit"
+    },
+    {
+      "label": "_to_text()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L16",
+      "id": "retriever_to_text"
+    },
+    {
+      "label": "_parameter_value()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L24",
+      "id": "retriever_parameter_value"
+    },
+    {
+      "label": "split_documents_for_indexing()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L31",
+      "id": "retriever_split_documents_for_indexing"
+    },
+    {
+      "label": "_fallback_split()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L56",
+      "id": "retriever_fallback_split"
+    },
+    {
+      "label": "build_retrieval_query()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L78",
+      "id": "retriever_build_retrieval_query"
+    },
+    {
+      "label": "rank_retrieval_hits()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L106",
+      "id": "retriever_rank_retrieval_hits"
+    },
+    {
+      "label": "build_context_block()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L132",
+      "id": "retriever_build_context_block"
+    },
+    {
+      "label": "validator.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_validator_py"
+    },
+    {
+      "label": "_as_str()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L6",
+      "id": "validator_as_str"
+    },
+    {
+      "label": "_as_list()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L15",
+      "id": "validator_as_list"
+    },
+    {
+      "label": "_as_dict()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L23",
+      "id": "validator_as_dict"
+    },
+    {
+      "label": "_as_bool()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L29",
+      "id": "validator_as_bool"
+    },
+    {
+      "label": "_as_int()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L43",
+      "id": "validator_as_int"
+    },
+    {
+      "label": "_template_by_name()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L190",
+      "id": "validator_template_by_name"
+    },
+    {
+      "label": "_fill_template()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L194",
+      "id": "validator_fill_template"
+    },
+    {
+      "label": "_normalize_references()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L231",
+      "id": "validator_normalize_references"
+    },
+    {
+      "label": "_normalize_hld()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L265",
+      "id": "validator_normalize_hld"
+    },
+    {
+      "label": "_normalize_components_from_raw_lld()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L416",
+      "id": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "label": "_legacy_frontend_component()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L441",
+      "id": "validator_legacy_frontend_component"
+    },
+    {
+      "label": "_legacy_backend_component()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L465",
+      "id": "validator_legacy_backend_component"
+    },
+    {
+      "label": "_legacy_auth_component()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L478",
+      "id": "validator_legacy_auth_component"
+    },
+    {
+      "label": "_legacy_database_component()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L488",
+      "id": "validator_legacy_database_component"
+    },
+    {
+      "label": "_legacy_external_component()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L519",
+      "id": "validator_legacy_external_component"
+    },
+    {
+      "label": "_legacy_logging_component()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L533",
+      "id": "validator_legacy_logging_component"
+    },
+    {
+      "label": "_normalize_low_level_design()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L547",
+      "id": "validator_normalize_low_level_design"
+    },
+    {
+      "label": "normalize_design_output()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L603",
+      "id": "validator_normalize_design_output"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\__init__.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_rag_design_init_py"
+    },
+    {
+      "label": "chunker.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\chunker.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_requirement_extractor_chunker_py"
+    },
+    {
+      "label": "chunk_text()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\chunker.py",
+      "source_location": "L4",
+      "id": "chunker_chunk_text"
+    },
+    {
+      "label": "Split text into overlapping chunks.      chunk_size and overlap are in tokens.",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\chunker.py",
+      "source_location": "L9",
+      "id": "chunker_rationale_9"
+    },
+    {
+      "label": "extractor.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py"
+    },
+    {
+      "label": "_empty_result()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L60",
+      "id": "extractor_empty_result"
+    },
+    {
+      "label": "_parse_json()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L76",
+      "id": "extractor_parse_json"
+    },
+    {
+      "label": "extract_from_chunk()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L93",
+      "id": "extractor_extract_from_chunk"
+    },
+    {
+      "label": "Parse model output. Returns None if parsing fails (triggers retry).",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L77",
+      "id": "extractor_rationale_77"
+    },
+    {
+      "label": "Send one chunk to Mistral via HTTP and return a partial requirements dict.",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L94",
+      "id": "extractor_rationale_94"
+    },
+    {
+      "label": "merger.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py"
+    },
+    {
+      "label": "_union()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L18",
+      "id": "merger_union"
+    },
+    {
+      "label": "merge_results()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L33",
+      "id": "merger_merge_results"
+    },
+    {
+      "label": "Deduplicated union preserving insertion order.",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L19",
+      "id": "merger_rationale_19"
+    },
+    {
+      "label": "Merge partial extraction results from multiple chunks.      Each field is a di",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L34",
+      "id": "merger_rationale_34"
+    },
+    {
+      "label": "pipeline.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py"
+    },
+    {
+      "label": "run_extraction_pipeline()",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L7",
+      "id": "pipeline_run_extraction_pipeline"
+    },
+    {
+      "label": "Full pipeline:       1. Estimate token count       2. Send directly if small;",
+      "file_type": "rationale",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L8",
+      "id": "pipeline_rationale_8"
+    },
+    {
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\__init__.py",
+      "source_location": "L1",
+      "id": "e_major_major_code_ai_engine_app_services_requirement_extractor_init_py"
+    }
+  ],
+  "edges": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_config_py",
+      "_tgt": "config_int_env",
+      "source": "e_major_major_code_ai_engine_app_config_py",
+      "target": "config_int_env"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_config_py",
+      "_tgt": "config_float_env",
+      "source": "e_major_major_code_ai_engine_app_config_py",
+      "target": "config_float_env"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_config_py",
+      "_tgt": "config_default_rag_data_root",
+      "source": "e_major_major_code_ai_engine_app_config_py",
+      "target": "config_default_rag_data_root"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_config_py",
+      "_tgt": "config_settings",
+      "source": "e_major_major_code_ai_engine_app_config_py",
+      "target": "config_settings"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_config_py",
+      "_tgt": "config_build_settings",
+      "source": "e_major_major_code_ai_engine_app_config_py",
+      "target": "config_build_settings"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L69",
+      "weight": 1.0,
+      "_src": "config_build_settings",
+      "_tgt": "config_int_env",
+      "source": "config_int_env",
+      "target": "config_build_settings"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "_src": "config_build_settings",
+      "_tgt": "config_float_env",
+      "source": "config_float_env",
+      "target": "config_build_settings"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_src": "config_build_settings",
+      "_tgt": "config_default_rag_data_root",
+      "source": "config_default_rag_data_root",
+      "target": "config_build_settings"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\config.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_src": "config_build_settings",
+      "_tgt": "config_settings",
+      "source": "config_settings",
+      "target": "config_build_settings"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\main.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_main_py",
+      "_tgt": "main_health",
+      "source": "e_major_major_code_ai_engine_app_main_py",
+      "target": "main_health"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "_tgt": "design_router_designrequest",
+      "source": "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "target": "design_router_designrequest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "_tgt": "design_router_generate_system_design",
+      "source": "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "target": "design_router_generate_system_design"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "_tgt": "design_router_rebuild_design_index",
+      "source": "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "target": "design_router_rebuild_design_index"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "design_router_designrequest",
+      "_tgt": "basemodel",
+      "source": "design_router_designrequest",
+      "target": "basemodel"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "elicitation_router_elicitationrequest",
+      "_tgt": "basemodel",
+      "source": "basemodel",
+      "target": "elicitation_router_elicitationrequest"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_src": "elicitation_router_answeritem",
+      "_tgt": "basemodel",
+      "source": "basemodel",
+      "target": "elicitation_router_answeritem"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "elicitation_router_answerrequest",
+      "_tgt": "basemodel",
+      "source": "basemodel",
+      "target": "elicitation_router_answerrequest"
+    },
+    {
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "extraction_router_extractionrequest",
+      "_tgt": "basemodel",
+      "source": "basemodel",
+      "target": "extraction_router_extractionrequest"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_src": "design_router_generate_system_design",
+      "_tgt": "pipeline_run_design_pipeline",
+      "source": "design_router_generate_system_design",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_src": "design_router_rebuild_design_index",
+      "_tgt": "pipeline_reindex_corpus",
+      "source": "design_router_rebuild_design_index",
+      "target": "pipeline_reindex_corpus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "_tgt": "elicitation_router_elicitationrequest",
+      "source": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "target": "elicitation_router_elicitationrequest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "_tgt": "elicitation_router_elicit_requirements",
+      "source": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "target": "elicitation_router_elicit_requirements"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "_tgt": "elicitation_router_answeritem",
+      "source": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "target": "elicitation_router_answeritem"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "_tgt": "elicitation_router_answerrequest",
+      "source": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "target": "elicitation_router_answerrequest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "_tgt": "elicitation_router_submit_answers",
+      "source": "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "target": "elicitation_router_submit_answers"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_src": "elicitation_router_rationale_22",
+      "_tgt": "elicitation_router_elicit_requirements",
+      "source": "elicitation_router_elicit_requirements",
+      "target": "elicitation_router_rationale_22"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "elicitation_router_elicit_requirements",
+      "_tgt": "pipeline_run_elicitation_pipeline",
+      "source": "elicitation_router_elicit_requirements",
+      "target": "pipeline_run_elicitation_pipeline"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "elicitation_router_rationale_56",
+      "_tgt": "elicitation_router_submit_answers",
+      "source": "elicitation_router_submit_answers",
+      "target": "elicitation_router_rationale_56"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\elicitation_router.py",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_src": "elicitation_router_submit_answers",
+      "_tgt": "answer_merger_merge_answers",
+      "source": "elicitation_router_submit_answers",
+      "target": "answer_merger_merge_answers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_extraction_router_py",
+      "_tgt": "extraction_router_extractionrequest",
+      "source": "e_major_major_code_ai_engine_app_routers_extraction_router_py",
+      "target": "extraction_router_extractionrequest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_extraction_router_py",
+      "_tgt": "extraction_router_extract_requirements",
+      "source": "e_major_major_code_ai_engine_app_routers_extraction_router_py",
+      "target": "extraction_router_extract_requirements"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "extraction_router_extract_requirements",
+      "_tgt": "pipeline_run_extraction_pipeline",
+      "source": "extraction_router_extract_requirements",
+      "target": "pipeline_run_extraction_pipeline"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\input_router.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_routers_input_router_py",
+      "_tgt": "input_router_process_input",
+      "source": "e_major_major_code_ai_engine_app_routers_input_router_py",
+      "target": "input_router_process_input"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\input_router.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_src": "input_router_process_input",
+      "_tgt": "file_parser_parse_file",
+      "source": "input_router_process_input",
+      "target": "file_parser_parse_file"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\routers\\input_router.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_src": "input_router_process_input",
+      "_tgt": "prompt_builder_build_prompt",
+      "source": "input_router_process_input",
+      "target": "prompt_builder_build_prompt"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\file_parser.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_file_parser_py",
+      "_tgt": "file_parser_parse_file",
+      "source": "e_major_major_code_ai_engine_app_services_file_parser_py",
+      "target": "file_parser_parse_file"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\prompt_builder.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_prompt_builder_py",
+      "_tgt": "prompt_builder_build_prompt",
+      "source": "e_major_major_code_ai_engine_app_services_prompt_builder_py",
+      "target": "prompt_builder_build_prompt"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\answer_merger.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_answer_merger_py",
+      "_tgt": "answer_merger_merge_answers",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_answer_merger_py",
+      "target": "answer_merger_merge_answers"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\answer_merger.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "answer_merger_rationale_14",
+      "_tgt": "answer_merger_merge_answers",
+      "source": "answer_merger_merge_answers",
+      "target": "answer_merger_rationale_14"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\detector.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_detector_py",
+      "_tgt": "detector_detect_missing_parameters",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_detector_py",
+      "target": "detector_detect_missing_parameters"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_elicitation_detector_py",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_detector_py",
+      "target": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\detector.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_src": "detector_rationale_2",
+      "_tgt": "detector_detect_missing_parameters",
+      "source": "detector_detect_missing_parameters",
+      "target": "detector_rationale_2"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "pipeline_run_elicitation_pipeline",
+      "_tgt": "detector_detect_missing_parameters",
+      "source": "detector_detect_missing_parameters",
+      "target": "pipeline_run_elicitation_pipeline"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py",
+      "target": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py",
+      "_tgt": "pipeline_run_elicitation_pipeline",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py",
+      "target": "pipeline_run_elicitation_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\pipeline.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "pipeline_run_elicitation_pipeline",
+      "_tgt": "question_generator_generate_questions",
+      "source": "pipeline_run_elicitation_pipeline",
+      "target": "question_generator_generate_questions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\question_generator.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py",
+      "_tgt": "question_generator_parse_json",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py",
+      "target": "question_generator_parse_json"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\question_generator.py",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py",
+      "_tgt": "question_generator_generate_questions",
+      "source": "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py",
+      "target": "question_generator_generate_questions"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\elicitation\\question_generator.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_src": "question_generator_generate_questions",
+      "_tgt": "question_generator_parse_json",
+      "source": "question_generator_parse_json",
+      "target": "question_generator_generate_questions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "_tgt": "generator_build_design_prompt",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "target": "generator_build_design_prompt"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L102",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "_tgt": "generator_extract_json",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "target": "generator_extract_json"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "_tgt": "generator_generate_design_from_ollama",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "target": "generator_generate_design_from_ollama"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L464",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "generator_build_design_prompt",
+      "source": "generator_build_design_prompt",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py",
+      "source_location": "L140",
+      "weight": 1.0,
+      "_src": "generator_generate_design_from_ollama",
+      "_tgt": "generator_extract_json",
+      "source": "generator_extract_json",
+      "target": "generator_generate_design_from_ollama"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L471",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "generator_generate_design_from_ollama",
+      "source": "generator_generate_design_from_ollama",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "_tgt": "indexer_chromadocumentindex",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "target": "indexer_chromadocumentindex"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L174",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "_tgt": "indexer_normalize_metadata",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "target": "indexer_normalize_metadata"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_init",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_init"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_count",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_count"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_reset_collection",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_reset_collection"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_index_documents",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_index_documents"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_upsert_batch",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_upsert_batch"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L91",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_query",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_query"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L121",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_embed_texts",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_embed_texts"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L131",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_try_embed_batch",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_try_embed_batch"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L155",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex",
+      "_tgt": "indexer_chromadocumentindex_embed_one_by_one",
+      "source": "indexer_chromadocumentindex",
+      "target": "indexer_chromadocumentindex_embed_one_by_one"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L389",
+      "weight": 1.0,
+      "_src": "pipeline_get_index",
+      "_tgt": "indexer_chromadocumentindex",
+      "source": "indexer_chromadocumentindex",
+      "target": "pipeline_get_index"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_query",
+      "_tgt": "indexer_chromadocumentindex_count",
+      "source": "indexer_chromadocumentindex_count",
+      "target": "indexer_chromadocumentindex_query"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L425",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "indexer_chromadocumentindex_count",
+      "source": "indexer_chromadocumentindex_count",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L434",
+      "weight": 1.0,
+      "_src": "pipeline_ensure_index_ready",
+      "_tgt": "indexer_chromadocumentindex_count",
+      "source": "indexer_chromadocumentindex_count",
+      "target": "pipeline_ensure_index_ready"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L416",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "indexer_chromadocumentindex_reset_collection",
+      "source": "indexer_chromadocumentindex_reset_collection",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_index_documents",
+      "_tgt": "indexer_chromadocumentindex_upsert_batch",
+      "source": "indexer_chromadocumentindex_index_documents",
+      "target": "indexer_chromadocumentindex_upsert_batch"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L417",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "indexer_chromadocumentindex_index_documents",
+      "source": "indexer_chromadocumentindex_index_documents",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_upsert_batch",
+      "_tgt": "indexer_normalize_metadata",
+      "source": "indexer_chromadocumentindex_upsert_batch",
+      "target": "indexer_normalize_metadata"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L80",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_upsert_batch",
+      "_tgt": "indexer_chromadocumentindex_embed_texts",
+      "source": "indexer_chromadocumentindex_upsert_batch",
+      "target": "indexer_chromadocumentindex_embed_texts"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L95",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_query",
+      "_tgt": "indexer_chromadocumentindex_embed_texts",
+      "source": "indexer_chromadocumentindex_query",
+      "target": "indexer_chromadocumentindex_embed_texts"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L452",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "indexer_chromadocumentindex_query",
+      "source": "indexer_chromadocumentindex_query",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L125",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_embed_texts",
+      "_tgt": "indexer_chromadocumentindex_try_embed_batch",
+      "source": "indexer_chromadocumentindex_embed_texts",
+      "target": "indexer_chromadocumentindex_try_embed_batch"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\indexer.py",
+      "source_location": "L129",
+      "weight": 1.0,
+      "_src": "indexer_chromadocumentindex_embed_texts",
+      "_tgt": "indexer_chromadocumentindex_embed_one_by_one",
+      "source": "indexer_chromadocumentindex_embed_texts",
+      "target": "indexer_chromadocumentindex_embed_one_by_one"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "_tgt": "langchain_compat_fallbackdocument",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "target": "langchain_compat_fallbackdocument"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "_tgt": "langchain_compat_get_document_class",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "target": "langchain_compat_get_document_class"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\langchain_compat.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "_tgt": "langchain_compat_create_recursive_splitter",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "target": "langchain_compat_create_recursive_splitter"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_src": "retriever_split_documents_for_indexing",
+      "_tgt": "langchain_compat_create_recursive_splitter",
+      "source": "langchain_compat_create_recursive_splitter",
+      "target": "retriever_split_documents_for_indexing"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_normalize_segment",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_normalize_segment"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_is_existing_design_document",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_is_existing_design_document"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_discover_corpus_files",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_discover_corpus_files"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_read_markdown",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_read_markdown"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_read_pdf",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_read_pdf"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_read_docx",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_read_docx"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_load_file_text",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_load_file_text"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "_tgt": "loaders_load_corpus_documents",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "loaders_load_corpus_documents"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "loaders_is_existing_design_document",
+      "_tgt": "loaders_normalize_segment",
+      "source": "loaders_normalize_segment",
+      "target": "loaders_is_existing_design_document"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L101",
+      "weight": 1.0,
+      "_src": "loaders_load_corpus_documents",
+      "_tgt": "loaders_is_existing_design_document",
+      "source": "loaders_is_existing_design_document",
+      "target": "loaders_load_corpus_documents"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_src": "loaders_load_corpus_documents",
+      "_tgt": "loaders_discover_corpus_files",
+      "source": "loaders_discover_corpus_files",
+      "target": "loaders_load_corpus_documents"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_src": "pipeline_compute_corpus_signature",
+      "_tgt": "loaders_discover_corpus_files",
+      "source": "loaders_discover_corpus_files",
+      "target": "pipeline_compute_corpus_signature"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_src": "loaders_load_file_text",
+      "_tgt": "loaders_read_markdown",
+      "source": "loaders_read_markdown",
+      "target": "loaders_load_file_text"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_src": "loaders_load_file_text",
+      "_tgt": "loaders_read_pdf",
+      "source": "loaders_read_pdf",
+      "target": "loaders_load_file_text"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_src": "loaders_load_file_text",
+      "_tgt": "loaders_read_docx",
+      "source": "loaders_read_docx",
+      "target": "loaders_load_file_text"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\loaders.py",
+      "source_location": "L87",
+      "weight": 1.0,
+      "_src": "loaders_load_corpus_documents",
+      "_tgt": "loaders_load_file_text",
+      "source": "loaders_load_file_text",
+      "target": "loaders_load_corpus_documents"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L402",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "loaders_load_corpus_documents",
+      "source": "loaders_load_corpus_documents",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_validator_py"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_state_file_path",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_state_file_path"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_compute_corpus_signature",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_compute_corpus_signature"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_build_expected_state",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_build_expected_state"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_load_saved_state",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_load_saved_state"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_save_state",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_save_state"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_parameter_value",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_parameter_value"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_as_list",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_as_list"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L101",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_fallback_design",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_fallback_design"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L382",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_get_index",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_get_index"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L400",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_build_index",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L430",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_ensure_index_ready",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_ensure_index_ready"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L438",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_reindex_corpus",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_reindex_corpus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L444",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "_tgt": "pipeline_run_design_pipeline",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\__init__.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_init_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "target": "e_major_major_code_ai_engine_app_services_rag_design_init_py"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_src": "pipeline_load_saved_state",
+      "_tgt": "pipeline_state_file_path",
+      "source": "pipeline_state_file_path",
+      "target": "pipeline_load_saved_state"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_src": "pipeline_save_state",
+      "_tgt": "pipeline_state_file_path",
+      "source": "pipeline_state_file_path",
+      "target": "pipeline_save_state"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_src": "pipeline_build_expected_state",
+      "_tgt": "pipeline_compute_corpus_signature",
+      "source": "pipeline_compute_corpus_signature",
+      "target": "pipeline_build_expected_state"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L418",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "pipeline_build_expected_state",
+      "source": "pipeline_build_expected_state",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L432",
+      "weight": 1.0,
+      "_src": "pipeline_ensure_index_ready",
+      "_tgt": "pipeline_build_expected_state",
+      "source": "pipeline_build_expected_state",
+      "target": "pipeline_ensure_index_ready"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L433",
+      "weight": 1.0,
+      "_src": "pipeline_ensure_index_ready",
+      "_tgt": "pipeline_load_saved_state",
+      "source": "pipeline_load_saved_state",
+      "target": "pipeline_ensure_index_ready"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L419",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "pipeline_save_state",
+      "source": "pipeline_save_state",
+      "target": "pipeline_build_index"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L102",
+      "weight": 1.0,
+      "_src": "pipeline_fallback_design",
+      "_tgt": "pipeline_parameter_value",
+      "source": "pipeline_parameter_value",
+      "target": "pipeline_fallback_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L104",
+      "weight": 1.0,
+      "_src": "pipeline_fallback_design",
+      "_tgt": "pipeline_as_list",
+      "source": "pipeline_as_list",
+      "target": "pipeline_fallback_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L479",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "pipeline_fallback_design",
+      "source": "pipeline_fallback_design",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L439",
+      "weight": 1.0,
+      "_src": "pipeline_reindex_corpus",
+      "_tgt": "pipeline_get_index",
+      "source": "pipeline_get_index",
+      "target": "pipeline_reindex_corpus"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L448",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "pipeline_get_index",
+      "source": "pipeline_get_index",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L435",
+      "weight": 1.0,
+      "_src": "pipeline_ensure_index_ready",
+      "_tgt": "pipeline_build_index",
+      "source": "pipeline_build_index",
+      "target": "pipeline_ensure_index_ready"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L441",
+      "weight": 1.0,
+      "_src": "pipeline_reindex_corpus",
+      "_tgt": "pipeline_build_index",
+      "source": "pipeline_build_index",
+      "target": "pipeline_reindex_corpus"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L408",
+      "weight": 1.0,
+      "_src": "pipeline_build_index",
+      "_tgt": "retriever_split_documents_for_indexing",
+      "source": "pipeline_build_index",
+      "target": "retriever_split_documents_for_indexing"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L449",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "pipeline_ensure_index_ready",
+      "source": "pipeline_ensure_index_ready",
+      "target": "pipeline_run_design_pipeline"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L451",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "retriever_build_retrieval_query",
+      "source": "pipeline_run_design_pipeline",
+      "target": "retriever_build_retrieval_query"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L453",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "retriever_rank_retrieval_hits",
+      "source": "pipeline_run_design_pipeline",
+      "target": "retriever_rank_retrieval_hits"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L459",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "retriever_build_context_block",
+      "source": "pipeline_run_design_pipeline",
+      "target": "retriever_build_context_block"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+      "source_location": "L481",
+      "weight": 1.0,
+      "_src": "pipeline_run_design_pipeline",
+      "_tgt": "validator_normalize_design_output",
+      "source": "pipeline_run_design_pipeline",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_retrievalhit",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_retrievalhit"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_to_text",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_to_text"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_parameter_value",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_parameter_value"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_split_documents_for_indexing",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_split_documents_for_indexing"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_fallback_split",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_fallback_split"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_build_retrieval_query",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_build_retrieval_query"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_rank_retrieval_hits",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_rank_retrieval_hits"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L132",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "_tgt": "retriever_build_context_block",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "target": "retriever_build_context_block"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L120",
+      "weight": 1.0,
+      "_src": "retriever_rank_retrieval_hits",
+      "_tgt": "retriever_retrievalhit",
+      "source": "retriever_retrievalhit",
+      "target": "retriever_rank_retrieval_hits"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L96",
+      "weight": 1.0,
+      "_src": "retriever_build_retrieval_query",
+      "_tgt": "retriever_to_text",
+      "source": "retriever_to_text",
+      "target": "retriever_build_retrieval_query"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L95",
+      "weight": 1.0,
+      "_src": "retriever_build_retrieval_query",
+      "_tgt": "retriever_parameter_value",
+      "source": "retriever_parameter_value",
+      "target": "retriever_build_retrieval_query"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "retriever_split_documents_for_indexing",
+      "_tgt": "retriever_fallback_split",
+      "source": "retriever_split_documents_for_indexing",
+      "target": "retriever_fallback_split"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_as_str",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_as_str"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_as_list",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_as_list"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_as_dict",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_as_dict"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_as_bool",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_as_bool"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_as_int",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_as_int"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L190",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_template_by_name",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_template_by_name"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L194",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_fill_template",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_fill_template"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L231",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_normalize_references",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_normalize_references"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L265",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_normalize_hld",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_normalize_hld"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L416",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_normalize_components_from_raw_lld",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L441",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_legacy_frontend_component",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_legacy_frontend_component"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L465",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_legacy_backend_component",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_legacy_backend_component"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L478",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_legacy_auth_component",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_legacy_auth_component"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L488",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_legacy_database_component",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_legacy_database_component"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L519",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_legacy_external_component",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_legacy_external_component"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L533",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_legacy_logging_component",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_legacy_logging_component"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L547",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_normalize_low_level_design",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L603",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "_tgt": "validator_normalize_design_output",
+      "source": "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L204",
+      "weight": 1.0,
+      "_src": "validator_fill_template",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_fill_template"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L237",
+      "weight": 1.0,
+      "_src": "validator_normalize_references",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_normalize_references"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L268",
+      "weight": 1.0,
+      "_src": "validator_normalize_hld",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_normalize_hld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L423",
+      "weight": 1.0,
+      "_src": "validator_normalize_components_from_raw_lld",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L442",
+      "weight": 1.0,
+      "_src": "validator_legacy_frontend_component",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_legacy_frontend_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L466",
+      "weight": 1.0,
+      "_src": "validator_legacy_backend_component",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_legacy_backend_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L479",
+      "weight": 1.0,
+      "_src": "validator_legacy_auth_component",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_legacy_auth_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L489",
+      "weight": 1.0,
+      "_src": "validator_legacy_database_component",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_legacy_database_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L520",
+      "weight": 1.0,
+      "_src": "validator_legacy_external_component",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_legacy_external_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L534",
+      "weight": 1.0,
+      "_src": "validator_legacy_logging_component",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_legacy_logging_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L591",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L613",
+      "weight": 1.0,
+      "_src": "validator_normalize_design_output",
+      "_tgt": "validator_as_str",
+      "source": "validator_as_str",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L235",
+      "weight": 1.0,
+      "_src": "validator_normalize_references",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_normalize_references"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L274",
+      "weight": 1.0,
+      "_src": "validator_normalize_hld",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_normalize_hld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L421",
+      "weight": 1.0,
+      "_src": "validator_normalize_components_from_raw_lld",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L442",
+      "weight": 1.0,
+      "_src": "validator_legacy_frontend_component",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_legacy_frontend_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L466",
+      "weight": 1.0,
+      "_src": "validator_legacy_backend_component",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_legacy_backend_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L489",
+      "weight": 1.0,
+      "_src": "validator_legacy_database_component",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_legacy_database_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L520",
+      "weight": 1.0,
+      "_src": "validator_legacy_external_component",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_legacy_external_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L534",
+      "weight": 1.0,
+      "_src": "validator_legacy_logging_component",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_legacy_logging_component"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L549",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L614",
+      "weight": 1.0,
+      "_src": "validator_normalize_design_output",
+      "_tgt": "validator_as_list",
+      "source": "validator_as_list",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L196",
+      "weight": 1.0,
+      "_src": "validator_fill_template",
+      "_tgt": "validator_as_dict",
+      "source": "validator_as_dict",
+      "target": "validator_fill_template"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L266",
+      "weight": 1.0,
+      "_src": "validator_normalize_hld",
+      "_tgt": "validator_as_dict",
+      "source": "validator_as_dict",
+      "target": "validator_normalize_hld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L422",
+      "weight": 1.0,
+      "_src": "validator_normalize_components_from_raw_lld",
+      "_tgt": "validator_as_dict",
+      "source": "validator_as_dict",
+      "target": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L548",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_as_dict",
+      "source": "validator_as_dict",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L604",
+      "weight": 1.0,
+      "_src": "validator_normalize_design_output",
+      "_tgt": "validator_as_dict",
+      "source": "validator_as_dict",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L212",
+      "weight": 1.0,
+      "_src": "validator_fill_template",
+      "_tgt": "validator_as_bool",
+      "source": "validator_as_bool",
+      "target": "validator_fill_template"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L400",
+      "weight": 1.0,
+      "_src": "validator_normalize_hld",
+      "_tgt": "validator_as_bool",
+      "source": "validator_as_bool",
+      "target": "validator_normalize_hld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L216",
+      "weight": 1.0,
+      "_src": "validator_fill_template",
+      "_tgt": "validator_as_int",
+      "source": "validator_as_int",
+      "target": "validator_fill_template"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L417",
+      "weight": 1.0,
+      "_src": "validator_normalize_components_from_raw_lld",
+      "_tgt": "validator_template_by_name",
+      "source": "validator_template_by_name",
+      "target": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L588",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_template_by_name",
+      "source": "validator_template_by_name",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L429",
+      "weight": 1.0,
+      "_src": "validator_normalize_components_from_raw_lld",
+      "_tgt": "validator_fill_template",
+      "source": "validator_fill_template",
+      "target": "validator_normalize_components_from_raw_lld"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L594",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_fill_template",
+      "source": "validator_fill_template",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L610",
+      "weight": 1.0,
+      "_src": "validator_normalize_design_output",
+      "_tgt": "validator_normalize_references",
+      "source": "validator_normalize_references",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L607",
+      "weight": 1.0,
+      "_src": "validator_normalize_design_output",
+      "_tgt": "validator_normalize_hld",
+      "source": "validator_normalize_hld",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L550",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_normalize_components_from_raw_lld",
+      "source": "validator_normalize_components_from_raw_lld",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L563",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_legacy_frontend_component",
+      "source": "validator_legacy_frontend_component",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L570",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_legacy_backend_component",
+      "source": "validator_legacy_backend_component",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L571",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_legacy_auth_component",
+      "source": "validator_legacy_auth_component",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L572",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_legacy_database_component",
+      "source": "validator_legacy_database_component",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L579",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_legacy_external_component",
+      "source": "validator_legacy_external_component",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L585",
+      "weight": 1.0,
+      "_src": "validator_normalize_low_level_design",
+      "_tgt": "validator_legacy_logging_component",
+      "source": "validator_legacy_logging_component",
+      "target": "validator_normalize_low_level_design"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\validator.py",
+      "source_location": "L608",
+      "weight": 1.0,
+      "_src": "validator_normalize_design_output",
+      "_tgt": "validator_normalize_low_level_design",
+      "source": "validator_normalize_low_level_design",
+      "target": "validator_normalize_design_output"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\chunker.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_chunker_py",
+      "_tgt": "chunker_chunk_text",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_chunker_py",
+      "target": "chunker_chunk_text"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_requirement_extractor_chunker_py",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_chunker_py",
+      "target": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\chunker.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_src": "chunker_rationale_9",
+      "_tgt": "chunker_chunk_text",
+      "source": "chunker_chunk_text",
+      "target": "chunker_rationale_9"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "pipeline_run_extraction_pipeline",
+      "_tgt": "chunker_chunk_text",
+      "source": "chunker_chunk_text",
+      "target": "pipeline_run_extraction_pipeline"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "_tgt": "extractor_empty_result",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "target": "extractor_empty_result"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "_tgt": "extractor_parse_json",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "target": "extractor_parse_json"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "_tgt": "extractor_extract_from_chunk",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "target": "extractor_extract_from_chunk"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "target": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "target": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L111",
+      "weight": 1.0,
+      "_src": "extractor_extract_from_chunk",
+      "_tgt": "extractor_empty_result",
+      "source": "extractor_empty_result",
+      "target": "extractor_extract_from_chunk"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_src": "merger_merge_results",
+      "_tgt": "extractor_empty_result",
+      "source": "extractor_empty_result",
+      "target": "merger_merge_results"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_src": "extractor_extract_from_chunk",
+      "_tgt": "extractor_parse_json",
+      "source": "extractor_parse_json",
+      "target": "extractor_extract_from_chunk"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_src": "extractor_rationale_77",
+      "_tgt": "extractor_parse_json",
+      "source": "extractor_parse_json",
+      "target": "extractor_rationale_77"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\extractor.py",
+      "source_location": "L94",
+      "weight": 1.0,
+      "_src": "extractor_rationale_94",
+      "_tgt": "extractor_extract_from_chunk",
+      "source": "extractor_extract_from_chunk",
+      "target": "extractor_rationale_94"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "pipeline_run_extraction_pipeline",
+      "_tgt": "extractor_extract_from_chunk",
+      "source": "extractor_extract_from_chunk",
+      "target": "pipeline_run_extraction_pipeline"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "_tgt": "merger_union",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "target": "merger_union"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "_tgt": "merger_merge_results",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "target": "merger_merge_results"
+    },
+    {
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py",
+      "_tgt": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "target": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py"
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_src": "merger_merge_results",
+      "_tgt": "merger_union",
+      "source": "merger_union",
+      "target": "merger_merge_results"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_src": "merger_rationale_19",
+      "_tgt": "merger_union",
+      "source": "merger_union",
+      "target": "merger_rationale_19"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\merger.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_src": "merger_rationale_34",
+      "_tgt": "merger_merge_results",
+      "source": "merger_merge_results",
+      "target": "merger_rationale_34"
+    },
+    {
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_src": "pipeline_run_extraction_pipeline",
+      "_tgt": "merger_merge_results",
+      "source": "merger_merge_results",
+      "target": "pipeline_run_extraction_pipeline"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_src": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py",
+      "_tgt": "pipeline_run_extraction_pipeline",
+      "source": "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py",
+      "target": "pipeline_run_extraction_pipeline"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_src": "pipeline_rationale_8",
+      "_tgt": "pipeline_run_extraction_pipeline",
+      "source": "pipeline_run_extraction_pipeline",
+      "target": "pipeline_rationale_8"
+    }
+  ]
+}

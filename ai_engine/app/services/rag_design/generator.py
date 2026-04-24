@@ -71,32 +71,24 @@ def build_design_prompt(parameters: dict, retrieval_query: str, context_block: s
         }
     }
 
-    return f"""You are a principal system architect.
+    return f"""System architect. Generate minimal system design JSON.
 
-Task:
-Generate both high-level design (HLD) and detailed low-level design (LLD) for the requested system.
-Use retrieved corpus evidence first. If evidence is incomplete, use explicit assumptions.
-Keep output concise: each list should have at most 5 items and each text field should stay under 40 words.
+RULES:
+- ONLY JSON output, no text
+- Max 10 words per field
+- Max 2 items per array
+- Under 1800 chars total
 
-Hard requirements:
-1) Output MUST be valid JSON only. No markdown, no prose outside JSON.
-2) Keep the exact schema keys shown below.
-3) `high_level_design` must provide architecture and cross-cutting strategy.
-4) `low_level_design` MUST be component-oriented under key `components` and follow the provided LLD template fields.
-5) Include references with source file paths when possible.
-
-Output schema:
+Schema:
 {json.dumps(output_schema, indent=2)}
 
-User parameters JSON:
+Requirements:
 {json.dumps(parameters, indent=2)}
 
-Retrieval query summary:
-{retrieval_query}
+Context (use if relevant):
+{context_block[:800]}
 
-Retrieved context:
-{context_block}
-"""
+Output JSON now:"""
 
 
 def _extract_json(raw: str) -> dict | None:
@@ -122,17 +114,25 @@ def generate_design_from_ollama(
         "model": model,
         "prompt": prompt,
         "stream": False,
-        "options": {"temperature": 0.2, "num_predict": 1000},
+        "format": "json",
+        "options": {
+            "temperature": 0.1,  # Lower temperature for faster, more focused output
+            "num_predict": 1800,  # Reduced from 2500 for speed
+            "num_ctx": 2048,  # Reduced context window
+            "top_k": 20,  # More focused
+            "top_p": 0.8,
+        },
     }
 
     parse_error = None
     last_request_error: Exception | None = None
 
-    for _attempt in range(max_retries + 1):
+    for attempt in range(max_retries + 1):
         try:
             response = requests.post(ollama_generate_url, json=payload, timeout=timeout_seconds)
             response.raise_for_status()
-            raw = response.json().get("response", "")
+            response_json = response.json()
+            raw = response_json.get("response", "")
         except requests.RequestException as exc:
             last_request_error = exc
             continue
@@ -141,11 +141,9 @@ def generate_design_from_ollama(
         if parsed is not None:
             return parsed
 
-        parse_error = raw
-        payload["prompt"] = (
-            prompt
-            + "\n\nIMPORTANT: Return ONLY strict JSON matching the schema. No markdown or commentary."
-        )
+        # If parsing failed, just return error (no retry for speed)
+        parse_error = raw[:200]
+        break
 
     if last_request_error is not None:
         raise RuntimeError(f"Ollama generation request failed: {last_request_error}")
