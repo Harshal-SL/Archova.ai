@@ -1,8 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { CSSProperties } from "react";
-
 const symbols = [
   "∑", "∫", "π", "√", "∞", "Δ", "θ", "λ", "μ", "σ",
   "φ", "ω", "α", "β", "γ", "∂", "∇", "±", "≈", "≠",
@@ -46,39 +43,12 @@ const bubbles = [
 ];
 
 export default function BubbleBg() {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    const update = () =>
-      setIsDark(document.documentElement.classList.contains("dark"));
-    update();
-    const observer = new MutationObserver(update);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div className="bubble-layer">
       {bubbles.map((b) => (
         <span
           key={b.id}
-          className="bubble-item"
-          style={{
-            left: `${b.left}%`,
-            fontSize: `${b.size}px`,
-            animationDuration: `${b.duration}s`,
-            animationDelay: `${b.delay}s`,
-            "--bdrift": `${b.drift}px`,
-            color: isDark
-              ? `rgba(255,255,255,${0.12 + (b.id % 5) * 0.07})`
-              : `rgba(0,0,0,${0.10 + (b.id % 5) * 0.06})`,
-            textShadow: isDark
-              ? "0 0 8px rgba(180,180,255,0.3)"
-              : "0 0 6px rgba(80,80,120,0.15)",
-          } as CSSProperties}
+          className={`bubble-item bubble-${b.id} bubble-g${b.id % 5}`}
         >
           {symbols[b.sym]}
         </span>
