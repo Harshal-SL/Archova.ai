@@ -1,4 +1,4 @@
-import { MarkerType, type Node, type Edge } from "@xyflow/react";
+import type { Node, Edge } from "@xyflow/react";
 
 // ── HLD ──
 export const hldNodes: Node[] = [
@@ -89,46 +89,11 @@ export const hldNodes: Node[] = [
 ];
 
 export const hldEdges: Edge[] = [
-  {
-    id: "e-fe-be",
-    source: "frontend",
-    target: "backend",
-    type: "straight",
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#6366f1", strokeWidth: 2 },
-  },
-  {
-    id: "e-be-db",
-    source: "backend",
-    target: "database",
-    type: "straight",
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#3b82f6", strokeWidth: 2 },
-  },
-  {
-    id: "e-be-vec",
-    source: "backend",
-    target: "vectordb",
-    type: "straight",
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#f59e0b", strokeWidth: 2 },
-  },
-  {
-    id: "e-be-ai",
-    source: "backend",
-    target: "ai-engine",
-    type: "straight",
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#ec4899", strokeWidth: 2 },
-  },
-  {
-    id: "e-be-auth",
-    source: "backend",
-    target: "auth",
-    type: "straight",
-    markerEnd: { type: MarkerType.ArrowClosed },
-    style: { stroke: "#8b5cf6", strokeWidth: 2 },
-  },
+  { id: "e-fe-be", source: "frontend", target: "backend", animated: true, style: { stroke: "#6366f1" } },
+  { id: "e-be-db", source: "backend", target: "database", animated: true, style: { stroke: "#3b82f6" } },
+  { id: "e-be-vec", source: "backend", target: "vectordb", animated: true, style: { stroke: "#f59e0b" } },
+  { id: "e-be-ai", source: "backend", target: "ai-engine", animated: true, style: { stroke: "#ec4899" } },
+  { id: "e-be-auth", source: "backend", target: "auth", animated: true, style: { stroke: "#8b5cf6" } },
 ];
 
 // ── LLD per HLD node ──

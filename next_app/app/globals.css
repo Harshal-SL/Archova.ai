@@ -5,12 +5,12 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #000000;
+  --foreground: #171717;
 }
 
 .dark {
-  --background: #000000;
-  --foreground: #f5f5f5;
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
@@ -21,85 +21,9 @@
 }
 
 body {
-  background-color: var(--background);
-  background-image: none;
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-}
-
-.dark body {
-  background-color: var(--background);
-  background-image: none;
-}
-
-/* Clear edge contrast for all button controls */
-button,
-input[type="button"],
-input[type="submit"],
-input[type="reset"],
-a[role="button"] {
-  border: 1.5px solid #22d3ee;
-  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.2);
-}
-
-button:hover,
-input[type="button"]:hover,
-input[type="submit"]:hover,
-input[type="reset"]:hover,
-a[role="button"]:hover {
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.28);
-}
-
-/* Chat space: different edge color in light mode for clearer separation */
-.chat-space button,
-.chat-space input[type="button"],
-.chat-space input[type="submit"],
-.chat-space input[type="reset"],
-.chat-space a[role="button"] {
-  border: 1px solid transparent;
-  box-shadow: none;
-}
-
-.chat-space button:hover,
-.chat-space input[type="button"]:hover,
-.chat-space input[type="submit"]:hover,
-.chat-space input[type="reset"]:hover,
-.chat-space a[role="button"]:hover {
-  border-color: transparent;
-  box-shadow: none;
-}
-
-/* Keep dark mode using the global button edge colors */
-.dark .chat-space button,
-.dark .chat-space input[type="button"],
-.dark .chat-space input[type="submit"],
-.dark .chat-space input[type="reset"],
-.dark .chat-space a[role="button"] {
-  border: 1px solid transparent;
-  box-shadow: none;
-}
-
-.dark .chat-space button:hover,
-.dark .chat-space input[type="button"]:hover,
-.dark .chat-space input[type="submit"]:hover,
-.dark .chat-space input[type="reset"]:hover,
-.dark .chat-space a[role="button"]:hover {
-  border-color: transparent;
-  box-shadow: none;
-}
-
-.chat-space {
-  font-family: var(--font-sans), "Segoe UI", sans-serif;
-}
-
-.chat-surface {
-  background-color: var(--background);
-}
-
-.dark .chat-surface {
-  background-color: var(--background);
 }
 
 /* Scrollbar styling */
@@ -117,9 +41,9 @@ a[role="button"]:hover {
   background: #555;
 }
 
-/* React Flow themed background */
-.react-flow__background {
-  background-color: var(--background) !important;
+/* React Flow dark mode */
+.dark .react-flow__background {
+  background-color: #111827 !important;
 }
 
 /* ── Animated Bubble Background ── */
@@ -144,182 +68,18 @@ a[role="button"]:hover {
 }
 
 .bubble-layer {
-  display: none;
-}
-
-.signin-space .bubble-layer {
-  display: block;
-  position: absolute;
+  position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
-
-.signin-space .bubble-item {
-  text-shadow: 0 0 10px rgba(70, 70, 110, 0.2);
-}
-
-.signin-space .bubble-g0 { color: rgba(30, 41, 59, 0.16); }
-.signin-space .bubble-g1 { color: rgba(30, 41, 59, 0.24); }
-.signin-space .bubble-g2 { color: rgba(30, 41, 59, 0.32); }
-.signin-space .bubble-g3 { color: rgba(30, 41, 59, 0.4); }
-.signin-space .bubble-g4 { color: rgba(30, 41, 59, 0.48); }
-
-.dark .signin-space .bubble-g0 { color: rgba(255, 255, 255, 0.14); }
-.dark .signin-space .bubble-g1 { color: rgba(255, 255, 255, 0.22); }
-.dark .signin-space .bubble-g2 { color: rgba(255, 255, 255, 0.3); }
-.dark .signin-space .bubble-g3 { color: rgba(255, 255, 255, 0.36); }
-.dark .signin-space .bubble-g4 { color: rgba(255, 255, 255, 0.44); }
 
 .bubble-item {
   position: absolute;
   bottom: -80px;
   animation: bubbleRise linear infinite;
-  -webkit-user-select: none;
   user-select: none;
   font-weight: 700;
   line-height: 1;
-  text-shadow: 0 0 6px rgba(80, 80, 120, 0.15);
-}
-
-.dark .bubble-item {
-  text-shadow: 0 0 8px rgba(180, 180, 255, 0.3);
-}
-
-.bubble-g0 { color: rgba(0, 0, 0, 0.10); }
-.bubble-g1 { color: rgba(0, 0, 0, 0.16); }
-.bubble-g2 { color: rgba(0, 0, 0, 0.22); }
-.bubble-g3 { color: rgba(0, 0, 0, 0.28); }
-.bubble-g4 { color: rgba(0, 0, 0, 0.34); }
-
-.dark .bubble-g0 { color: rgba(255, 255, 255, 0.12); }
-.dark .bubble-g1 { color: rgba(255, 255, 255, 0.19); }
-.dark .bubble-g2 { color: rgba(255, 255, 255, 0.26); }
-.dark .bubble-g3 { color: rgba(255, 255, 255, 0.33); }
-.dark .bubble-g4 { color: rgba(255, 255, 255, 0.40); }
-
-.bubble-1 { left: 4%; font-size: 13px; animation-duration: 11s; animation-delay: 0s; --bdrift: 20px; }
-.bubble-2 { left: 9%; font-size: 18px; animation-duration: 14s; animation-delay: 2s; --bdrift: -18px; }
-.bubble-3 { left: 15%; font-size: 11px; animation-duration: 9s; animation-delay: 5s; --bdrift: 15px; }
-.bubble-4 { left: 21%; font-size: 20px; animation-duration: 16s; animation-delay: 1s; --bdrift: -14px; }
-.bubble-5 { left: 27%; font-size: 14px; animation-duration: 12s; animation-delay: 7s; --bdrift: 22px; }
-.bubble-6 { left: 33%; font-size: 16px; animation-duration: 15s; animation-delay: 4s; --bdrift: -12px; }
-.bubble-7 { left: 39%; font-size: 12px; animation-duration: 10s; animation-delay: 9s; --bdrift: 18px; }
-.bubble-8 { left: 45%; font-size: 22px; animation-duration: 18s; animation-delay: 2s; --bdrift: -20px; }
-.bubble-9 { left: 51%; font-size: 15px; animation-duration: 13s; animation-delay: 6s; --bdrift: 14px; }
-.bubble-10 { left: 57%; font-size: 19px; animation-duration: 16s; animation-delay: 11s; --bdrift: -16px; }
-.bubble-11 { left: 63%; font-size: 11px; animation-duration: 8s; animation-delay: 4s; --bdrift: 20px; }
-.bubble-12 { left: 69%; font-size: 20px; animation-duration: 17s; animation-delay: 8s; --bdrift: -18px; }
-.bubble-13 { left: 75%; font-size: 13px; animation-duration: 11s; animation-delay: 0s; --bdrift: 12px; }
-.bubble-14 { left: 81%; font-size: 17px; animation-duration: 14s; animation-delay: 5s; --bdrift: -14px; }
-.bubble-15 { left: 87%; font-size: 12px; animation-duration: 9s; animation-delay: 13s; --bdrift: 16px; }
-.bubble-16 { left: 93%; font-size: 18px; animation-duration: 15s; animation-delay: 3s; --bdrift: -10px; }
-.bubble-17 { left: 12%; font-size: 14px; animation-duration: 12s; animation-delay: 15s; --bdrift: 18px; }
-.bubble-18 { left: 24%; font-size: 20px; animation-duration: 17s; animation-delay: 10s; --bdrift: -22px; }
-.bubble-19 { left: 36%; font-size: 11px; animation-duration: 10s; animation-delay: 7s; --bdrift: 14px; }
-.bubble-20 { left: 48%; font-size: 15px; animation-duration: 13s; animation-delay: 14s; --bdrift: -12px; }
-.bubble-21 { left: 60%; font-size: 19px; animation-duration: 15s; animation-delay: 16s; --bdrift: 20px; }
-.bubble-22 { left: 72%; font-size: 13px; animation-duration: 11s; animation-delay: 8s; --bdrift: -16px; }
-.bubble-23 { left: 84%; font-size: 17px; animation-duration: 14s; animation-delay: 12s; --bdrift: 14px; }
-.bubble-24 { left: 96%; font-size: 12px; animation-duration: 9s; animation-delay: 4s; --bdrift: -18px; }
-.bubble-25 { left: 6%; font-size: 22px; animation-duration: 18s; animation-delay: 18s; --bdrift: 16px; }
-.bubble-26 { left: 18%; font-size: 14px; animation-duration: 12s; animation-delay: 6s; --bdrift: -14px; }
-.bubble-27 { left: 30%; font-size: 18px; animation-duration: 16s; animation-delay: 17s; --bdrift: 20px; }
-.bubble-28 { left: 42%; font-size: 11px; animation-duration: 8s; animation-delay: 3s; --bdrift: -10px; }
-.bubble-29 { left: 54%; font-size: 15px; animation-duration: 13s; animation-delay: 13s; --bdrift: 18px; }
-.bubble-30 { left: 66%; font-size: 20px; animation-duration: 17s; animation-delay: 9s; --bdrift: -20px; }
-.bubble-31 { left: 78%; font-size: 12px; animation-duration: 10s; animation-delay: 2s; --bdrift: 12px; }
-.bubble-32 { left: 90%; font-size: 17px; animation-duration: 14s; animation-delay: 16s; --bdrift: -16px; }
-
-/* Chat experience polish */
-@keyframes archPanelSlideInRight {
-  0% {
-    opacity: 0;
-    transform: translateX(72px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* Output panel enters from the right after response generation */
-.arch-panel-enter {
-  animation: archPanelSlideInRight 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes chatMessageRise {
-  0% {
-    opacity: 0;
-    transform: translateY(16px) scale(0.98);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes typingCursorBlink {
-  0%,
-  45% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-  }
-}
-
-.chat-message-enter {
-  animation: chatMessageRise 0.34s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.typing-cursor {
-  animation: typingCursorBlink 1s steps(1, end) infinite;
-}
-
-.typing-dots {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 20px;
-}
-
-.typing-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: currentColor;
-  opacity: 0.35;
-  animation: typingDotPulse 1.15s infinite ease-in-out;
-}
-
-.typing-dot:nth-child(2) {
-  animation-delay: 0.14s;
-}
-
-.typing-dot:nth-child(3) {
-  animation-delay: 0.28s;
-}
-
-@keyframes typingDotPulse {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.35;
-  }
-  50% {
-    transform: translateY(-3px);
-    opacity: 0.95;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .arch-panel-enter,
-  .chat-message-enter,
-  .typing-cursor,
-  .typing-dot {
-    animation: none !important;
-  }
 }

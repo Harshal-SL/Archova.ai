@@ -26,13 +26,12 @@ export default function HLDGraph() {
   );
 
   return (
-    <div className="h-full w-full bg-background dark:bg-background">
+    <div className="h-full w-full">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        style={{ backgroundColor: "var(--background)" }}
         onNodeClick={onNodeClick}
         fitView
         fitViewOptions={{ padding: 0.3 }}
