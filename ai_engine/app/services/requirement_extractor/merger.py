@@ -22,11 +22,11 @@ def _union(existing: list | None, incoming) -> list:
     if not isinstance(incoming, list):
         return list(existing or [])
     base = list(existing or [])
-    seen = set(base)
     for item in incoming:
-        if item not in seen:
+        # Keep this check list-based so unhashable items (e.g. dicts)
+        # from model output don't crash the merge.
+        if item not in base:
             base.append(item)
-            seen.add(item)
     return base
 
 

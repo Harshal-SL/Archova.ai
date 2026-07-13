@@ -5,6 +5,11 @@ import io
 import os
 from fastapi import HTTPException
 
+try:
+    from docx import Document as DocxDocument
+except ImportError:
+    DocxDocument = None
+
 # Point pytesseract to the default Tesseract install location on Windows.
 # Download installer: https://github.com/UB-Mannheim/tesseract/wiki
 _TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -29,6 +34,18 @@ async def parse_file(file) -> str:
             if extracted:
                 pages.append(extracted)
         return "\n".join(pages)
+
+    # DOCX
+    if filename.endswith(".docx"):
+        if DocxDocument is None:
+            raise HTTPException(
+                status_code=503,
+                detail="python-docx is not installed. Install dependency: python-docx",
+            )
+        content = await file.read()
+        document = DocxDocument(io.BytesIO(content))
+        lines = [paragraph.text.strip() for paragraph in document.paragraphs if paragraph.text.strip()]
+        return "\n".join(lines)
 
     # IMAGE
     if filename.endswith((".png", ".jpg", ".jpeg")):

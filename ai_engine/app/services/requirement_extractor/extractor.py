@@ -2,9 +2,12 @@ import json
 import re
 import requests
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "mistral"
-MAX_RETRIES = 2
+from app.config import settings
+
+OLLAMA_URL = settings.ollama_generate_url
+MODEL = settings.llm_model
+MAX_RETRIES = settings.llm_max_retries
+TIMEOUT_SECONDS = settings.ollama_timeout_seconds
 
 # All fields that must appear in the output
 FIELDS = [
@@ -94,7 +97,7 @@ def extract_from_chunk(chunk: str) -> dict:
 
     for attempt in range(MAX_RETRIES + 1):
         try:
-            resp = requests.post(OLLAMA_URL, json=payload, timeout=120)
+            resp = requests.post(OLLAMA_URL, json=payload, timeout=TIMEOUT_SECONDS)
             resp.raise_for_status()
             raw = resp.json().get("response", "")
             result = _parse_json(raw)

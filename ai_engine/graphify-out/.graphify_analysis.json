@@ -1,0 +1,272 @@
+{
+  "communities": {
+    "0": [
+      "e_major_major_code_ai_engine_app_services_rag_design_generator_py",
+      "e_major_major_code_ai_engine_app_services_rag_design_init_py",
+      "e_major_major_code_ai_engine_app_services_rag_design_pipeline_py",
+      "generator_build_design_prompt",
+      "generator_extract_json",
+      "generator_generate_design_from_ollama",
+      "indexer_chromadocumentindex_count",
+      "pipeline_as_list",
+      "pipeline_build_expected_state",
+      "pipeline_build_index",
+      "pipeline_compute_corpus_signature",
+      "pipeline_ensure_index_ready",
+      "pipeline_fallback_design",
+      "pipeline_get_index",
+      "pipeline_load_saved_state",
+      "pipeline_parameter_value",
+      "pipeline_reindex_corpus",
+      "pipeline_run_design_pipeline",
+      "pipeline_save_state",
+      "pipeline_state_file_path"
+    ],
+    "1": [
+      "e_major_major_code_ai_engine_app_services_rag_design_validator_py",
+      "validator_as_bool",
+      "validator_as_dict",
+      "validator_as_int",
+      "validator_as_list",
+      "validator_as_str",
+      "validator_fill_template",
+      "validator_legacy_auth_component",
+      "validator_legacy_backend_component",
+      "validator_legacy_database_component",
+      "validator_legacy_external_component",
+      "validator_legacy_frontend_component",
+      "validator_legacy_logging_component",
+      "validator_normalize_components_from_raw_lld",
+      "validator_normalize_design_output",
+      "validator_normalize_hld",
+      "validator_normalize_low_level_design",
+      "validator_normalize_references",
+      "validator_template_by_name"
+    ],
+    "2": [
+      "answer_merger_merge_answers",
+      "answer_merger_rationale_14",
+      "basemodel",
+      "design_router_designrequest",
+      "design_router_generate_system_design",
+      "design_router_rebuild_design_index",
+      "e_major_major_code_ai_engine_app_routers_design_router_py",
+      "e_major_major_code_ai_engine_app_routers_elicitation_router_py",
+      "e_major_major_code_ai_engine_app_routers_extraction_router_py",
+      "e_major_major_code_ai_engine_app_services_elicitation_answer_merger_py",
+      "elicitation_router_answeritem",
+      "elicitation_router_answerrequest",
+      "elicitation_router_elicitationrequest",
+      "elicitation_router_rationale_56",
+      "elicitation_router_submit_answers",
+      "extraction_router_extract_requirements",
+      "extraction_router_extractionrequest"
+    ],
+    "3": [
+      "chunker_chunk_text",
+      "chunker_rationale_9",
+      "e_major_major_code_ai_engine_app_services_requirement_extractor_chunker_py",
+      "e_major_major_code_ai_engine_app_services_requirement_extractor_extractor_py",
+      "e_major_major_code_ai_engine_app_services_requirement_extractor_merger_py",
+      "e_major_major_code_ai_engine_app_services_requirement_extractor_pipeline_py",
+      "extractor_empty_result",
+      "extractor_extract_from_chunk",
+      "extractor_parse_json",
+      "extractor_rationale_77",
+      "extractor_rationale_94",
+      "merger_merge_results",
+      "merger_rationale_19",
+      "merger_rationale_34",
+      "merger_union",
+      "pipeline_rationale_8",
+      "pipeline_run_extraction_pipeline"
+    ],
+    "4": [
+      "e_major_major_code_ai_engine_app_services_rag_design_indexer_py",
+      "e_major_major_code_ai_engine_app_services_rag_design_langchain_compat_py",
+      "e_major_major_code_ai_engine_app_services_rag_design_retriever_py",
+      "langchain_compat_create_recursive_splitter",
+      "langchain_compat_fallbackdocument",
+      "langchain_compat_get_document_class",
+      "retriever_build_context_block",
+      "retriever_build_retrieval_query",
+      "retriever_fallback_split",
+      "retriever_parameter_value",
+      "retriever_rank_retrieval_hits",
+      "retriever_retrievalhit",
+      "retriever_split_documents_for_indexing",
+      "retriever_to_text"
+    ],
+    "5": [
+      "detector_detect_missing_parameters",
+      "detector_rationale_2",
+      "e_major_major_code_ai_engine_app_services_elicitation_detector_py",
+      "e_major_major_code_ai_engine_app_services_elicitation_pipeline_py",
+      "e_major_major_code_ai_engine_app_services_elicitation_question_generator_py",
+      "elicitation_router_elicit_requirements",
+      "elicitation_router_rationale_22",
+      "pipeline_run_elicitation_pipeline",
+      "question_generator_generate_questions",
+      "question_generator_parse_json"
+    ],
+    "6": [
+      "indexer_chromadocumentindex",
+      "indexer_chromadocumentindex_embed_one_by_one",
+      "indexer_chromadocumentindex_embed_texts",
+      "indexer_chromadocumentindex_index_documents",
+      "indexer_chromadocumentindex_init",
+      "indexer_chromadocumentindex_query",
+      "indexer_chromadocumentindex_reset_collection",
+      "indexer_chromadocumentindex_try_embed_batch",
+      "indexer_chromadocumentindex_upsert_batch",
+      "indexer_normalize_metadata"
+    ],
+    "7": [
+      "e_major_major_code_ai_engine_app_services_rag_design_loaders_py",
+      "loaders_discover_corpus_files",
+      "loaders_is_existing_design_document",
+      "loaders_load_corpus_documents",
+      "loaders_load_file_text",
+      "loaders_normalize_segment",
+      "loaders_read_docx",
+      "loaders_read_markdown",
+      "loaders_read_pdf"
+    ],
+    "8": [
+      "config_build_settings",
+      "config_default_rag_data_root",
+      "config_float_env",
+      "config_int_env",
+      "config_settings",
+      "e_major_major_code_ai_engine_app_config_py"
+    ],
+    "9": [
+      "e_major_major_code_ai_engine_app_routers_input_router_py",
+      "e_major_major_code_ai_engine_app_services_file_parser_py",
+      "e_major_major_code_ai_engine_app_services_prompt_builder_py",
+      "file_parser_parse_file",
+      "input_router_process_input",
+      "prompt_builder_build_prompt"
+    ],
+    "10": [
+      "e_major_major_code_ai_engine_app_main_py",
+      "main_health"
+    ],
+    "11": [
+      "e_major_major_code_ai_engine_app_services_elicitation_init_py"
+    ],
+    "12": [
+      "e_major_major_code_ai_engine_app_services_requirement_extractor_init_py"
+    ]
+  },
+  "cohesion": {},
+  "god_nodes": [
+    {
+      "id": "validator_normalize_low_level_design",
+      "label": "_normalize_low_level_design()",
+      "degree": 14
+    },
+    {
+      "id": "validator_as_str",
+      "label": "_as_str()",
+      "degree": 13
+    },
+    {
+      "id": "pipeline_run_design_pipeline",
+      "label": "run_design_pipeline()",
+      "degree": 12
+    },
+    {
+      "id": "indexer_chromadocumentindex",
+      "label": "ChromaDocumentIndex",
+      "degree": 11
+    },
+    {
+      "id": "validator_as_list",
+      "label": "_as_list()",
+      "degree": 11
+    },
+    {
+      "id": "pipeline_build_index",
+      "label": "_build_index()",
+      "degree": 10
+    },
+    {
+      "id": "validator_normalize_design_output",
+      "label": "normalize_design_output()",
+      "degree": 8
+    },
+    {
+      "id": "validator_fill_template",
+      "label": "_fill_template()",
+      "degree": 7
+    },
+    {
+      "id": "validator_normalize_components_from_raw_lld",
+      "label": "_normalize_components_from_raw_lld()",
+      "degree": 7
+    },
+    {
+      "id": "pipeline_ensure_index_ready",
+      "label": "_ensure_index_ready()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "generate_system_design()",
+      "target": "run_design_pipeline()",
+      "source_files": [
+        "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `generate_system_design()` unexpectedly reaches hub `run_design_pipeline()`"
+    },
+    {
+      "source": "extract_requirements()",
+      "target": "run_extraction_pipeline()",
+      "source_files": [
+        "E:\\Major\\Major_code\\ai_engine\\app\\routers\\extraction_router.py",
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\requirement_extractor\\pipeline.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `extract_requirements()` unexpectedly reaches hub `run_extraction_pipeline()`"
+    },
+    {
+      "source": "run_design_pipeline()",
+      "target": "build_context_block()",
+      "source_files": [
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\retriever.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `build_context_block()` unexpectedly reaches hub `run_design_pipeline()`"
+    },
+    {
+      "source": "rebuild_design_index()",
+      "target": "reindex_corpus()",
+      "source_files": [
+        "E:\\Major\\Major_code\\ai_engine\\app\\routers\\design_router.py",
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "run_design_pipeline()",
+      "target": "build_design_prompt()",
+      "source_files": [
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\pipeline.py",
+        "E:\\Major\\Major_code\\ai_engine\\app\\services\\rag_design\\generator.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "calls",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; peripheral node `build_design_prompt()` unexpectedly reaches hub `run_design_pipeline()`"
+    }
+  ]
+}
