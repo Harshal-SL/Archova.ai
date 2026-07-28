@@ -1,12 +1,16 @@
+from app.ree.agents.text_normalizer import split_semantic_boundaries, clean_conversational_prefix
+
 # Parameters whose value is a list (vs a plain string or bool)
 _LIST_PARAMS = {
     "core_objectives",
+    "business_objectives",
     "actors",
     "functional_requirements",
     "inputs",
     "outputs",
     "external_services",
     "non_functional_requirements",
+    "constraints",
 }
 
 
@@ -16,42 +20,46 @@ def merge_answers(parameters: dict, answers: list[dict]) -> dict:
 
     Each answer item: {"parameter": "<key>", "answer": "<user answer>"}
 
-    - List-type parameters: the answer string is split on commas into a list.
-    - String-type parameters: the answer is stored as-is.
-    - free_constraint: the answer is interpreted as a boolean string ("true"/"false")
-      or left as a string if unrecognised.
+    - List-type parameters: split on semantic boundaries (newlines/semicolons), NEVER on commas alone.
+    - String-type parameters: conversational prefixes stripped, stored cleanly.
+    - free_constraint: boolean interpretation.
     """
-    # Deep-copy the top-level dicts so we don't mutate the original
-    result = {k: dict(v) if isinstance(v, dict) else v for k, v in parameters.items()}
+    result = {k: dict(v) if isinstance(v, dict) else v for k, v in (parameters or {}).items()}
 
     for item in answers:
         param = item.get("parameter")
         answer = item.get("answer")
 
-        if not param or answer is None or param not in result:
+        if not param or answer is None:
             continue
 
-        if param in _LIST_PARAMS:
-            if isinstance(answer, list):
-                value = [str(a).strip() for a in answer if str(a).strip()]
-            else:
-                value = [a.strip() for a in str(answer).split(",") if a.strip()]
+        param_str = str(param).strip()
+        if not param_str:
+            continue
 
-        elif param == "free_constraint":
+        if param_str in _LIST_PARAMS:
+            if isinstance(answer, list):
+                value = [clean_conversational_prefix(str(a)) for a in answer if str(a).strip()]
+            elif isinstance(answer, str):
+                value = split_semantic_boundaries(answer)
+            else:
+                value = [clean_conversational_prefix(str(answer))]
+
+        elif param_str == "free_constraint":
             lower = str(answer).lower().strip()
             if lower in ("true", "yes", "1"):
                 value = True
             elif lower in ("false", "no", "0"):
                 value = False
             else:
-                value = answer
+                value = clean_conversational_prefix(str(answer))
 
         else:
-            value = answer
+            value = clean_conversational_prefix(str(answer)) if isinstance(answer, str) else answer
 
-        if isinstance(result[param], dict):
-            result[param]["value"] = value
+        if param_str in result and isinstance(result[param_str], dict):
+            result[param_str]["value"] = value
         else:
-            result[param] = {"value": value}
+            result[param_str] = {"value": value, "ai_suggestion": None}
 
     return result
