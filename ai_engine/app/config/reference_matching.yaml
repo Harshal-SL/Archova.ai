@@ -1,0 +1,20 @@
+# Reference Architecture Matcher Configuration
+
+weights:
+  business_domain: 0.35
+  functional_requirements: 0.25
+  architectural_patterns: 0.20
+  non_functional_requirements: 0.10
+  technology_stack: 0.10
+
+thresholds:
+  min_similarity_score: 60
+  top_matches_count: 3
+
+domain_profiles:
+  healthcare:
+    business_domain_weight: 0.40
+    security_weight: 0.20
+  banking:
+    business_domain_weight: 0.40
+    financial_accuracy_weight: 0.20

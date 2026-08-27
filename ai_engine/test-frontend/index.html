@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Architecture Engine — Test Harness</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header class="header">
+      <div class="header-title-group">
+        <h1>AI Architecture Engine Test Harness</h1>
+        <p class="subtitle">Manual Verification & Testing Interface for REE + SAE API Layer</p>
+      </div>
+      <div class="header-meta">
+        <div class="badge-group">
+          <span class="badge" id="api-status-badge">API: Checking...</span>
+          <span class="badge badge-secondary" id="session-badge">No Active Session</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Global Error / Alert Banner -->
+    <div id="error-banner" class="alert alert-error hidden" role="alert">
+      <div class="alert-content">
+        <span class="alert-icon">⚠️</span>
+        <span id="error-message">Error message text</span>
+      </div>
+      <button class="alert-close" onclick="dismissError()">&times;</button>
+    </div>
+
+    <!-- Global Success / Info Banner -->
+    <div id="info-banner" class="alert alert-info hidden" role="status">
+      <div class="alert-content">
+        <span class="alert-icon">ℹ️</span>
+        <span id="info-message">Information message text</span>
+      </div>
+      <button class="alert-close" onclick="dismissInfo()">&times;</button>
+    </div>
+
+    <main class="main-content">
+
+      <!-- STEP 1: Problem Statement Input -->
+      <section class="card" id="step1-card">
+        <div class="card-header">
+          <span class="step-num">Step 1</span>
+          <h2>Enter Problem Statement</h2>
+        </div>
+        <div class="card-body">
+          <label for="prompt-input" class="label">Project Requirements / Problem Statement:</label>
+          <textarea 
+            id="prompt-input" 
+            class="textarea" 
+            rows="5" 
+            placeholder="e.g. Build an online event management system for university hackathons. Users can browse events, register, submit project artifacts, and receive live notifications. Organizers manage schedules, judge scoring, and track real-time attendance."
+          ></textarea>
+
+          <div class="sample-prompts">
+            <span class="sample-label">Quick Samples:</span>
+            <button type="button" class="btn-chip" onclick="fillSample(1)">Event Management</button>
+            <button type="button" class="btn-chip" onclick="fillSample(2)">College Library</button>
+            <button type="button" class="btn-chip" onclick="fillSample(3)">Smart Parking</button>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="btn-start" class="btn btn-primary" onclick="startGeneration()">
+              <span id="btn-start-spinner" class="spinner hidden"></span>
+              Start Generation
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- STEP 2: Interactive Interview Questions -->
+      <section class="card hidden" id="step2-card">
+        <div class="card-header">
+          <span class="step-num">Step 2</span>
+          <h2>Stakeholder Interview Questions</h2>
+        </div>
+        <div class="card-body">
+          
+          <!-- In-Progress Question Container -->
+          <div id="question-container">
+            <div class="question-meta">
+              <span class="badge badge-primary" id="question-id-badge">Q1</span>
+              <span class="question-priority" id="question-priority-badge">High Priority</span>
+            </div>
+
+            <h3 class="question-text" id="question-text">Loading question...</h3>
+            <p class="question-rationale" id="question-rationale"></p>
+
+            <!-- Clickable Preset Options -->
+            <div id="options-group" class="options-group hidden">
+              <label class="label">Suggested Options (click to select):</label>
+              <div id="options-list" class="options-list"></div>
+            </div>
+
+            <!-- Custom Answer Input -->
+            <div class="input-group">
+              <label for="answer-input" class="label">Your Answer:</label>
+              <input 
+                type="text" 
+                id="answer-input" 
+                class="input" 
+                placeholder="Select an option above or type your custom answer..."
+              />
+            </div>
+
+            <div class="actions">
+              <button type="button" id="btn-submit-answer" class="btn btn-primary" onclick="submitAnswer()">
+                <span id="btn-answer-spinner" class="spinner hidden"></span>
+                Submit Answer [Enter ↵]
+              </button>
+            </div>
+          </div>
+
+          <!-- Interview Completed State -->
+          <div id="interview-completed-container" class="hidden completed-box">
+            <div class="completed-icon">✓</div>
+            <h3>Interview Completed!</h3>
+            <p>All clarifying questions have been answered. You are ready to generate the system architecture specification.</p>
+            <div class="actions">
+              <button type="button" id="btn-generate-arch" class="btn btn-success" onclick="generateArchitecture()">
+                <span id="btn-arch-spinner" class="spinner hidden"></span>
+                Generate Architecture (ARSRS + HLD)
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STEP 3: ARSRS & HLD Outputs -->
+      <section class="card hidden" id="step3-card">
+        <div class="card-header">
+          <span class="step-num">Step 3</span>
+          <h2>Architecture Specification (ARSRS + HLD)</h2>
+        </div>
+        <div class="card-body">
+          
+          <!-- Tab Navigation -->
+          <div class="tab-header">
+            <button type="button" class="tab-btn active" id="tab-arsrs-btn" onclick="switchSpecTab('arsrs')">ARSRS Specification</button>
+            <button type="button" class="tab-btn" id="tab-hld-btn" onclick="switchSpecTab('hld')">High Level Design (HLD)</button>
+          </div>
+
+          <!-- ARSRS Tab Pane -->
+          <div id="tab-arsrs-pane" class="tab-pane active">
+            <div class="pane-actions">
+              <span class="pane-title">Architecture-Ready Structured Requirements (ARSRS)</span>
+              <button type="button" class="btn-copy" onclick="copyJson('arsrs-json')">Copy JSON</button>
+            </div>
+            <pre class="json-viewer" id="arsrs-json"><code>Loading ARSRS...</code></pre>
+          </div>
+
+          <!-- HLD Tab Pane -->
+          <div id="tab-hld-pane" class="tab-pane hidden">
+            <div class="pane-actions">
+              <span class="pane-title">High Level Design (HLD) Document</span>
+              <button type="button" class="btn-copy" onclick="copyJson('hld-json')">Copy JSON</button>
+            </div>
+            <pre class="json-viewer" id="hld-json"><code>Loading HLD...</code></pre>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- STEP 4 & 5: LLD Generation Status & Specific LLD Viewer -->
+      <section class="card hidden" id="step4-card">
+        <div class="card-header">
+          <span class="step-num">Step 4 & 5</span>
+          <h2>Low Level Design (LLD) Dashboard</h2>
+        </div>
+        <div class="card-body">
+          
+          <!-- Active Server Process Banner -->
+          <div id="active-process-banner" class="active-process-banner hidden">
+            <span class="process-pulse-icon">⚡</span>
+            <span class="process-title" id="active-process-title">Process:</span>
+            <span class="process-desc" id="active-process-desc">Initializing...</span>
+            <span class="status-pill pill-generating" id="active-process-pill">IN PROGRESS</span>
+          </div>
+
+          <!-- LLD Status Summary Bar -->
+          <div class="status-summary-bar">
+            <div class="status-summary-header">
+              <span class="status-title">Background Concurrency Status</span>
+              <span class="polling-indicator" id="polling-indicator">
+                <span class="pulse-dot"></span> Live Server Stream
+              </span>
+            </div>
+            
+            <div class="status-grid">
+              <div class="status-item" id="status-card-backend">
+                <span class="status-name">Backend</span>
+                <span class="status-pill pill-not-started" id="pill-backend">NOT_STARTED</span>
+              </div>
+              <div class="status-item" id="status-card-frontend">
+                <span class="status-name">Frontend</span>
+                <span class="status-pill pill-not-started" id="pill-frontend">NOT_STARTED</span>
+              </div>
+              <div class="status-item" id="status-card-database">
+                <span class="status-name">Database</span>
+                <span class="status-pill pill-not-started" id="pill-database">NOT_STARTED</span>
+              </div>
+              <div class="status-item" id="status-card-security">
+                <span class="status-name">Security</span>
+                <span class="status-pill pill-not-started" id="pill-security">NOT_STARTED</span>
+              </div>
+              <div class="status-item" id="status-card-cloud">
+                <span class="status-name">Cloud</span>
+                <span class="status-pill pill-not-started" id="pill-cloud">NOT_STARTED</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- LLD Selection Buttons -->
+          <div class="lld-selector-group">
+            <label class="label">Select LLD Artifact to Inspect:</label>
+            <div class="lld-buttons">
+              <button type="button" class="btn-tab active" id="btn-lld-backend" onclick="selectLLD('backend')">Backend LLD</button>
+              <button type="button" class="btn-tab" id="btn-lld-frontend" onclick="selectLLD('frontend')">Frontend LLD</button>
+              <button type="button" class="btn-tab" id="btn-lld-database" onclick="selectLLD('database')">Database LLD</button>
+              <button type="button" class="btn-tab" id="btn-lld-security" onclick="selectLLD('security')">Security LLD</button>
+              <button type="button" class="btn-tab" id="btn-lld-cloud" onclick="selectLLD('cloud')">Cloud LLD</button>
+            </div>
+          </div>
+
+          <!-- Selected LLD Output Container -->
+          <div class="lld-viewer-container">
+            <div class="pane-actions">
+              <div class="viewer-title-group">
+                <span class="pane-title" id="selected-lld-title">Backend Low Level Design</span>
+                <span class="status-pill pill-not-started" id="selected-lld-status-pill">NOT_STARTED</span>
+              </div>
+              <button type="button" class="btn-copy" onclick="copyJson('selected-lld-json')">Copy JSON</button>
+            </div>
+
+            <div id="lld-message-box" class="lld-status-box hidden">
+              <div class="lld-message-content">
+                <span id="lld-message-icon" class="status-icon">⏳</span>
+                <span id="lld-message-text">LLD is still generating...</span>
+              </div>
+            </div>
+
+            <pre class="json-viewer" id="selected-lld-json"><code>Select an LLD above to view details.</code></pre>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- LIVE TERMINAL LOG CONSOLE -->
+      <section class="card" id="terminal-card">
+        <div class="card-header terminal-header">
+          <div class="terminal-title-group">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <h2>⚡ Real-Time Pipeline Terminal Logs</h2>
+          </div>
+          <div class="terminal-controls">
+            <span class="badge badge-primary" id="log-count-badge">0 Logs</span>
+            <button type="button" class="btn-terminal-action" onclick="clearTerminalLogs()">Clear</button>
+            <button type="button" class="btn-terminal-action" id="toggle-autoscroll" onclick="toggleAutoScroll()">Auto-Scroll: ON</button>
+          </div>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+          <div class="terminal-welcome">
+            <span class="terminal-prompt">$</span> AI Engine Terminal Ready. Real-time pipeline events, agent completions, and stage transitions will stream here.
+          </div>
+        </div>
+      </section>
+
+      <!-- Global Controls (New Run / Refresh) -->
+      <div class="footer-actions">
+        <button type="button" class="btn btn-outline" onclick="resetSession()">🔄 Start New Session</button>
+        <button type="button" class="btn btn-outline" onclick="manualStatusCheck()">⚡ Refresh Status Now</button>
+      </div>
+
+    </main>
+
+    <footer class="footer">
+      <p>AI Architecture Engine Test Interface • Connected to <a href="http://localhost:8000/docs" target="_blank">http://localhost:8000/docs</a></p>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

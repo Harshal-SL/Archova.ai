@@ -1,0 +1,61 @@
+{
+  "system_name": "College Library Management System",
+  "system_type": "Web Application",
+  "domain": "Education & Library Management",
+
+  "objective": "Build a system for managing library books, students, borrowing, and returns.",
+
+  "actors": [
+    {
+      "id": "ACT-001",
+      "name": "Student",
+      "description": "Searches, borrows, and returns books."
+    },
+    {
+      "id": "ACT-002",
+      "name": "Librarian",
+      "description": "Manages books, users, borrowing, and reports."
+    }
+  ],
+
+  "functional_requirements": [
+    {
+      "id": "FR-001",
+      "description": "Users can register and log in."
+    },
+    {
+      "id": "FR-002",
+      "description": "Students can search and view available books."
+    },
+    {
+      "id": "FR-003",
+      "description": "Students can borrow and return books."
+    },
+    {
+      "id": "FR-004",
+      "description": "Librarians can add, update, and remove books."
+    }
+  ],
+
+  "non_functional_requirements": [
+    {
+      "id": "NFR-001",
+      "category": "Performance",
+      "description": "95% of requests should complete within 2 seconds."
+    },
+    {
+      "id": "NFR-002",
+      "category": "Security",
+      "description": "Sensitive data must be encrypted."
+    }
+  ],
+
+  "constraints": [
+    "Use a relational database.",
+    "The system should support role-based access control."
+  ],
+
+  "assumptions": [
+    "The initial deployment is for a single college campus."
+  ]
+}
