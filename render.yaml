@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: archova-ai-engine
+    runtime: python
+    rootDir: ai_engine
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: ALLOW_PAID_MODELS
+        value: "false"
+      - key: LLM_MODEL
+        value: "google/gemini-2.5-flash-lite:free"
+      - key: CORS_ORIGINS
+        value: "*"
