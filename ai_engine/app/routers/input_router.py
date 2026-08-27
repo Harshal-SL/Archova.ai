@@ -3,7 +3,7 @@ from starlette.datastructures import UploadFile
 from app.services.file_parser import parse_file
 from app.services.prompt_builder import build_prompt
 
-router = APIRouter()
+router = APIRouter(tags=["Input Processing"])
 
 @router.post(
     "/api/input",

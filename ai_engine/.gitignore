@@ -47,5 +47,8 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
-# ── Data archives (keep extracted folder, not zip) ───────────────────────────
+# ── Output Directories & Archives ─────────────────────────────────────────────
+output/
+outputs/
+*.zip
 data/*.zip

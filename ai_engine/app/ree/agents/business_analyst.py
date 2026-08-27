@@ -74,7 +74,9 @@ RULES:
 - CRITICAL: Return ONLY a raw, valid JSON object starting with '{{' and ending with '}}'.
 - Do NOT wrap the JSON in Markdown code fences (NO ```json).
 - Do NOT include any preamble, intro, explanation, or postscript.
-- If information cannot be inferred, return {{"value": [], "ai_suggestion": []}} for that key. Never fabricate information.
+- Extract business context, objectives, rules, and constraints ONLY for the system described in the CURRENT Problem Statement.
+- Do NOT introduce business capabilities, rules, or constraints from other domains, previous runs, or generic industry templates.
+- If information cannot be inferred from the current project description, return {{"value": [], "ai_suggestion": []}} for that key. Never fabricate information.
 - Do NOT include any extra keys outside the schema.
 
 OUTPUT SCHEMA:
@@ -160,16 +162,16 @@ class BusinessAnalystAgent(BaseAIAgent):
             existing_context=existing_summary,
         )
 
-        result = self._call_llm(prompt, max_tokens=1500)
+        result = self._call_llm(prompt, max_tokens=1000, temperature=0.1)
 
         if result is None:
             self._add_note(
                 src,
-                "LLM call failed or returned unparseable output. "
-                "Business context not enriched by this agent."
+                "LLM API rate-limited or unavailable. "
+                "Utilizing deterministic rule-based business context fallback."
             )
-            logger.warning("%s: LLM call failed — using empty output", _AGENT_NAME)
-            result = _EMPTY_OUTPUT
+            logger.warning("%s: LLM call failed — using rule-based fallback", _AGENT_NAME)
+            result = self._generate_rule_based_fallback(project_text)
 
         result = self._normalise_output(result)
 
@@ -236,6 +238,16 @@ class BusinessAnalystAgent(BaseAIAgent):
             _union_into(params, "actors", stakeholders_node)
 
         src.sync_requirements()
+
+    def _generate_rule_based_fallback(self, project_text: str) -> Dict[str, Any]:
+        """Generate rule-based business context fallback when LLM API returns None."""
+        return {
+            "business_goals": ["Automate core processes and improve operational efficiency"],
+            "business_rules": ["Validate authorization for sensitive actions"],
+            "constraints": ["Regulatory compliance and data privacy standards"],
+            "stakeholders": ["Business Owners", "System Administrators", "End Users"],
+            "kpis": ["System Availability", "Response Latency", "User Throughput"],
+        }
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -417,7 +429,7 @@ def _categorize_string(text: str) -> str:
     lower = text.lower()
     if any(k in lower for k in ["rule", "policy", "constraint", "must be", "shall not"]):
         return "business_rules"
-    if any(k in lower for k in ["stakeholder", "user", "role", "actor", "owner", "investor", "librarian", "student", "admin"]):
+    if any(k in lower for k in ["stakeholder", "user", "role", "actor", "owner", "investor", "persona", "staff", "admin", "administrator", "manager", "operator", "member", "participant"]):
         return "stakeholders"
     if any(k in lower for k in ["kpi", "metric", "measure", "churn", "conversion", "revenue", "roi"]):
         return "kpis"

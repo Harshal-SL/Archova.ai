@@ -39,9 +39,9 @@ from backend.rag.config import (
     SIMILARITY_THRESHOLD,
     TOP_K,
 )
-from backend.rag.qdrant_manager import QdrantManager
-from backend.rag.query_builder import QueryBuilder
-from backend.rag.retriever import RAGRetriever, RetrievalHit
+from app.rag.qdrant_manager import QdrantManager
+from app.rag.query_builder import QueryBuilder
+from app.rag.retriever import RAGRetriever, RetrievalHit
 
 # ── ANSI colour helpers ────────────────────────────────────────────────────────
 

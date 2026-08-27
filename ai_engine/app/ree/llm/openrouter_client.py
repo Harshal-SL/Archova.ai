@@ -24,6 +24,7 @@ import json
 import logging
 import os
 import time
+import threading
 from typing import List, Optional
 
 
@@ -47,10 +48,6 @@ _RATE_LIMIT_BACKOFF_SECONDS = [2, 5, 10]   # wait times between retries on 429
 
 
 class OpenRouterClient:
-    """
-    Thin HTTP client for the OpenRouter Chat Completions API.
-    """
-
     def __init__(
         self,
         api_key: Optional[str] = None,
@@ -60,19 +57,39 @@ class OpenRouterClient:
         """
         Initialise the client.
         """
-        self._api_key = (api_key or os.getenv("OPENROUTER_API_KEY", "") or settings.openrouter_api_key).strip()
-        self._timeout = timeout
-        self._max_retries = max_retries
+        # Load all configured API keys for parallel distribution & rotation
+        self._keys: List[str] = []
+        for i in range(1, 10):
+            k = os.getenv(f"OPENROUTER_API_KEY_{i}", "").strip()
+            if k:
+                self._keys.append(k)
+        if not self._keys:
+            single = (api_key or os.getenv("OPENROUTER_API_KEY", "") or getattr(settings, "openrouter_api_key", "")).strip()
+            if single:
+                self._keys.append(single)
 
-        key_exists = bool(self._api_key)
-        masked_key = f"{self._api_key[:12]}..." if len(self._api_key) > 12 else ("Set (short)" if key_exists else "NOT SET")
-        logger.info("OpenRouterClient initialized | API Key Exists: %s | Prefix: %s", key_exists, masked_key)
+        self._api_key = self._keys[0] if self._keys else ""
+        self._timeout = timeout
+        self._max_retries = max(max_retries, 3)
+        self._key_lock = threading.Lock()
+        self._key_counter = 0
+
+        key_exists = bool(self._keys)
+        masked_keys = [f"Key #{idx + 1}: {k[:12]}..." for idx, k in enumerate(self._keys)]
+        logger.info("OpenRouterClient initialized | %d active API key(s): %s", len(self._keys), ", ".join(masked_keys) if masked_keys else "NONE")
 
         if not key_exists:
             logger.warning(
                 "OpenRouterClient: OPENROUTER_API_KEY is not set. "
                 "All requests will fail with 401 Unauthorized."
             )
+
+    def _get_key(self, base_offset: int, attempt: int) -> str:
+        """Retrieve key for a given base offset and retry attempt."""
+        if not self._keys:
+            return self._api_key
+        idx = (base_offset + attempt) % len(self._keys)
+        return self._keys[idx]
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
@@ -102,12 +119,21 @@ class OpenRouterClient:
         Validate that every model ID in configured_models exists on OpenRouter.
         Fails immediately with RuntimeError if any model is invalid.
         """
+        if not self._api_key or not self._api_key.strip():
+            logger.warning("OPENROUTER_API_KEY is not configured — skipping remote OpenRouter model validation.")
+            return
+
         models_to_check = [m for m in configured_models if m and m.strip()]
         if not models_to_check:
             return
 
         logger.info("Validating configured models against OpenRouter API: %s", models_to_check)
-        available = set(self.get_available_models())
+        try:
+            available = set(self.get_available_models())
+        except Exception as exc:
+            logger.warning("Could not fetch OpenRouter models for validation: %s — continuing execution", exc)
+            return
+
         invalid_models = [m for m in models_to_check if m not in available]
 
         if invalid_models:
@@ -253,12 +279,24 @@ class OpenRouterClient:
 
         last_error: Optional[Exception] = None
 
+        with self._key_lock:
+            key_offset = self._key_counter
+            self._key_counter = (self._key_counter + 1) % max(1, len(self._keys))
+
+        active_first_key = self._get_key(key_offset, 0)
+        key_num = (self._keys.index(active_first_key) + 1) if active_first_key in self._keys else (key_offset + 1)
+        logger.info("OpenRouterClient: Dispatching model %s using API Key #%d (%s...)", model, key_num, active_first_key[:12] if active_first_key else "NONE")
+
         for attempt in range(self._max_retries + 1):
+            active_key = self._get_key(key_offset, attempt)
+            current_headers = dict(headers)
+            current_headers["Authorization"] = f"Bearer {active_key}"
+
             try:
                 response = requests.post(
                     OPENROUTER_COMPLETIONS_URL,
                     json=payload,
-                    headers=headers,
+                    headers=current_headers,
                     timeout=self._timeout,
                 )
 
@@ -268,7 +306,7 @@ class OpenRouterClient:
                     response = requests.post(
                         OPENROUTER_COMPLETIONS_URL,
                         json=payload,
-                        headers=headers,
+                        headers=current_headers,
                         timeout=self._timeout,
                     )
 
@@ -276,9 +314,11 @@ class OpenRouterClient:
                     wait = _RATE_LIMIT_BACKOFF_SECONDS[
                         min(attempt, len(_RATE_LIMIT_BACKOFF_SECONDS) - 1)
                     ]
+                    next_key = self._get_key(key_offset, attempt + 1)
+                    key_num = (self._keys.index(next_key) + 1) if next_key in self._keys else 1
                     logger.warning(
-                        "OpenRouterClient: 429 rate limit on attempt %d for model %s — waiting %ds before retry",
-                        attempt + 1, model, wait,
+                        "OpenRouterClient: 429 rate limit on attempt %d for model %s — switching to Key #%d and waiting %ds before retry",
+                        attempt + 1, model, key_num, wait,
                     )
                     time.sleep(wait)
                     continue

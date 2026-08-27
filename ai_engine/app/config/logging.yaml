@@ -1,0 +1,9 @@
+# Enterprise Logging Configuration
+
+logging:
+  level: INFO
+  save_prompts: true
+  save_llm_responses: true
+  structured_logs: true
+  console_output: true
+  max_log_files: 50

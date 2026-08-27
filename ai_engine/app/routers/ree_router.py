@@ -30,7 +30,7 @@ from app.ree.orchestrator import REEOrchestrator
 from app.ree.models import REERequest, REEStatus
 
 logger = logging.getLogger(__name__)
-router = APIRouter()
+router = APIRouter(tags=["Requirements Engineering Engine (REE)"])
 
 # Shared orchestrator instance — stateless, safe to reuse across requests
 _orchestrator = REEOrchestrator()
@@ -247,9 +247,19 @@ def ree_design(body: REEDesignRequest):
     if not body.arsrs:
         raise HTTPException(status_code=400, detail="arsrs is empty.")
 
-    from app.services.design_service import run_design_pipeline_from_arsrs
+    from app.sae.services.sae_service import SAEGenerationService
+    from app.sae.context.design_generation_context import DesignGenerationContext
+
     try:
-        return run_design_pipeline_from_arsrs(body.arsrs)
-    except RuntimeError as exc:
+        sae_service = SAEGenerationService()
+        ctx = DesignGenerationContext(arsrs=body.arsrs)
+        res_ctx = sae_service.process_architecture(ctx)
+        return {
+            "status": res_ctx.status,
+            "request_id": res_ctx.request_id,
+            "output_directory": res_ctx.output_directory,
+            "execution_metrics": res_ctx.execution_metrics,
+        }
+    except Exception as exc:
         logger.error("REE design failed: %s", exc, exc_info=True)
         raise HTTPException(status_code=502, detail=f"Architecture generation error: {exc}") from exc

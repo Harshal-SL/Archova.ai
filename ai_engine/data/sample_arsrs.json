@@ -1,0 +1,24 @@
+{
+  "system_name": "E-Commerce Multi-Tenant Retail Engine",
+  "domain": "E-Commerce / Enterprise SaaS Retail Platform",
+  "requirements": [
+    {
+      "id": "FR-101",
+      "title": "Product Catalog Browsing",
+      "description": "High throughput product search and catalog filtering with sub-100ms latency.",
+      "priority": "HIGH"
+    },
+    {
+      "id": "FR-102",
+      "title": "Order Checkout State Machine",
+      "description": "Transactional checkout pipeline enforcing idempotency keys and Saga distributed transaction orchestration.",
+      "priority": "CRITICAL"
+    },
+    {
+      "id": "NFR-101",
+      "title": "High Availability SLA",
+      "description": "Multi-region active-active deployment delivering 99.99% availability SLA.",
+      "priority": "CRITICAL"
+    }
+  ]
+}

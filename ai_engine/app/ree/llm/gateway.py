@@ -99,9 +99,11 @@ class LLMGateway:
             return None
 
         model_id = entry.model_id
-        fallback_model = os.getenv("FALLBACK_MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+        from app.config.model_config import MODEL_CONFIG
+        fallback_model = MODEL_CONFIG.default_model
 
         ree_logger.debug(f"[LLM Call Dispatch] Agent: {agent_name:<26} | Capability: {capability:<20} | Model: {model_id}")
+
 
         if not self._client.is_configured():
             ree_logger.debug("LLMGateway: OpenRouter API key not configured.")
@@ -376,6 +378,14 @@ def _parse_json(raw: str, agent_name: str = "UnknownAgent", model_id: str = "Unk
 
     raw_clean = raw.strip()
 
+    # 0. Strip reasoning tags and thinking monologues
+    raw_clean = re.sub(r"<(?:think|thought)>[\s\S]*?</(?:think|thought)>", "", raw_clean, flags=re.IGNORECASE).strip()
+    raw_clean = re.sub(r"```thinking[\s\S]*?```", "", raw_clean, flags=re.IGNORECASE).strip()
+    if "Here's a thinking process:" in raw_clean or "Thinking Process:" in raw_clean:
+        b_pos = raw_clean.find("{")
+        if b_pos != -1:
+            raw_clean = raw_clean[b_pos:].strip()
+
     # Pass 1: Direct loads
     try:
         parsed = json.loads(raw_clean)
@@ -481,8 +491,7 @@ def _repair_truncated_json(text: str) -> Optional[Any]:
     sub = text[start_idx:].rstrip()
     in_str = False
     esc = False
-    open_braces = 0
-    open_brackets = 0
+    stack: List[str] = []
 
     for c in sub:
         if c == '"' and not esc:
@@ -491,29 +500,61 @@ def _repair_truncated_json(text: str) -> Optional[Any]:
             esc = not esc
             continue
         elif not in_str:
-            if c == '{':
-                open_braces += 1
-            elif c == '}':
-                open_braces = max(0, open_braces - 1)
-            elif c == '[':
-                open_brackets += 1
-            elif c == ']':
-                open_brackets = max(0, open_brackets - 1)
+            if c in ('{', '['):
+                stack.append(c)
+            elif c in ('}', ']'):
+                if stack:
+                    top = stack[-1]
+                    if (c == '}' and top == '{') or (c == ']' and top == '['):
+                        stack.pop()
         esc = False
 
     repair_cand = sub
     if in_str:
         repair_cand += '"'
 
-    repair_cand = re.sub(r',\s*"[^"]*$', '', repair_cand)
-    repair_cand = re.sub(r',\s*$', '', repair_cand)
-    repair_cand += ']' * open_brackets
-    repair_cand += '}' * open_braces
+    # Strip incomplete keys/values at the end of the truncated string
+    repair_cand = re.sub(r'(?:,\s*"[^"]*"|\s*,\s*"[^"]*|\s*,\s*|\s*:\s*|\s*:\s*"[^"]*)$', '', repair_cand)
+
+    # Close open containers in LIFO order
+    for container in reversed(stack):
+        if container == '{':
+            repair_cand += '}'
+        elif container == '[':
+            repair_cand += ']'
 
     try:
         return json.loads(_clean_json_str(repair_cand))
     except Exception:
-        return None
+        # Secondary fallback: strip trailing incomplete key-value tokens aggressively
+        try:
+            repair_cand2 = re.sub(r'[,:{\[\s]+$', '', sub)
+            if in_str:
+                repair_cand2 += '"'
+            stack2: List[str] = []
+            in_str2 = False
+            esc2 = False
+            for c in repair_cand2:
+                if c == '"' and not esc2:
+                    in_str2 = not in_str2
+                elif c == '\\' and in_str2:
+                    esc2 = not esc2
+                    continue
+                elif not in_str2:
+                    if c in ('{', '['):
+                        stack2.append(c)
+                    elif c in ('}', ']'):
+                        if stack2 and ((c == '}' and stack2[-1] == '{') or (c == ']' and stack2[-1] == '[')):
+                            stack2.pop()
+                esc2 = False
+            for container in reversed(stack2):
+                if container == '{':
+                    repair_cand2 += '}'
+                elif container == '[':
+                    repair_cand2 += ']'
+            return json.loads(_clean_json_str(repair_cand2))
+        except Exception:
+            return None
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

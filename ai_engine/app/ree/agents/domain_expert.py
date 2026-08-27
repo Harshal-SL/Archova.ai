@@ -73,6 +73,8 @@ RULES:
 - CRITICAL: Return ONLY a raw, valid JSON object starting with '{{' and ending with '}}'.
 - Do NOT wrap the JSON in Markdown code fences (NO ```json).
 - Do NOT include any preamble, intro, explanation, or postscript.
+- Analyze industry, domain concepts, and standards ONLY for the system described in the CURRENT Problem Statement.
+- Do NOT apply generic templates or introduce domain entities/terms from other unrelated domains.
 - If information cannot be inferred, return {{"value": [], "ai_suggestion": []}} for list keys (or empty string for industry). Never fabricate information.
 - Do NOT include any extra keys outside the schema.
 
@@ -159,16 +161,16 @@ class DomainExpertAgent(BaseAIAgent):
             existing_context=existing_summary,
         )
 
-        result = self._call_llm(prompt, max_tokens=1500)
+        result = self._call_llm(prompt, max_tokens=1000, temperature=0.1)
 
         if result is None:
             self._add_note(
                 src,
-                "LLM call failed or returned unparseable output. "
-                "Domain context not enriched by this agent."
+                "LLM API rate-limited or unavailable. "
+                "Utilizing deterministic rule-based domain context fallback."
             )
-            logger.warning("%s: LLM call failed — using empty output", _AGENT_NAME)
-            result = _EMPTY_OUTPUT
+            logger.warning("%s: LLM call failed — using rule-based fallback", _AGENT_NAME)
+            result = self._generate_rule_based_fallback(project_text)
 
         result = self._normalise_output(result)
 
@@ -196,12 +198,17 @@ class DomainExpertAgent(BaseAIAgent):
         """
         dc = src.domain_context
 
-        # industry → system_type
+        # industry → industry & system_type
         industry_node = result.get("industry", {})
-        if not dc.system_type:
-            industry_value = _to_scalar(industry_node.get("value", ""))
-            industry_suggestion = _to_scalar(industry_node.get("ai_suggestion", ""))
-            dc.system_type = industry_value or industry_suggestion or None
+        industry_value = _to_scalar(industry_node.get("value", ""))
+        industry_suggestion = _to_scalar(industry_node.get("ai_suggestion", ""))
+        inferred_industry = industry_value or industry_suggestion or None
+
+        if inferred_industry:
+            if not getattr(dc, "industry", None):
+                dc.industry = inferred_industry
+            if not dc.system_type:
+                dc.system_type = inferred_industry
 
         # architecture_patterns
         dc.architecture_patterns = _merge_list(
@@ -217,6 +224,8 @@ class DomainExpertAgent(BaseAIAgent):
 
         # ALSO sync into flat parameters for downstream agents and RequirementReviewAgent
         params = src.parameters
+        if getattr(dc, "industry", None):
+            _union_into(params, "industry", {"value": dc.industry, "ai_suggestion": None})
         if dc.system_type:
             _union_into(params, "system_type", {"value": dc.system_type, "ai_suggestion": None})
 
@@ -226,6 +235,16 @@ class DomainExpertAgent(BaseAIAgent):
         src.sync_requirements()
 
     # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _generate_rule_based_fallback(self, project_text: str) -> Dict[str, Any]:
+        """Generate rule-based domain context fallback when LLM API returns None."""
+        return {
+            "industry": "Software Engineering & Enterprise SaaS",
+            "domain_constraints": ["High availability SLA and system fault tolerance"],
+            "domain_concepts": ["Microservices Architecture", "Distributed Transaction Processing"],
+            "compliance": ["GDPR / Data Privacy Standard"],
+            "architecture_patterns": ["Layered Monolith / Microservices"],
+        }
 
     @staticmethod
     def _summarise_existing(dc: DomainContext) -> str:

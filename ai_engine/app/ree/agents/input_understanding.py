@@ -41,7 +41,7 @@ from app.ree.models import (
     SharedRequirementContext,
 )
 from app.ree.agents.text_normalizer import TextNormalizer
-from app.services.requirement_extractor.tokenizer import (
+from app.ree.agents.tokenizer import (
     estimate_tokens,
     is_within_limit,
     MAX_DIRECT_TOKENS,

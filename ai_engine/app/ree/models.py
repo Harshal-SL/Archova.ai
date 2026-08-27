@@ -518,6 +518,29 @@ class DiscussionNotes:
         return {"notes": self.notes}
 
 
+# ── SRC Flags (Dirty-state tracking) ──────────────────────────────────────────
+
+
+@dataclass
+class SRCFlags:
+    """
+    Dirty-state tracking flags for the REE pipeline.
+    Tracks whether extraction inputs or interview answers changed.
+    """
+    raw_input_changed: bool = False
+    project_context_changed: bool = False
+    interview_answers_changed: bool = False
+    engineering_completed: bool = False
+
+    def to_dict(self) -> Dict[str, bool]:
+        return {
+            "raw_input_changed": self.raw_input_changed,
+            "project_context_changed": self.project_context_changed,
+            "interview_answers_changed": self.interview_answers_changed,
+            "engineering_completed": self.engineering_completed,
+        }
+
+
 # ── Shared Requirement Context (SRC) ─────────────────────────────────────────
 
 
@@ -556,6 +579,9 @@ class SharedRequirementContext:
 
     interview_session: Optional[Any] = None
     """Populated by InterviewModerator. Holds full interview round history."""
+
+    # ── Dirty-state tracking ──────────────────────────────────────────────────
+    flags: SRCFlags = field(default_factory=SRCFlags)
 
     # ── Flat fields (backward-compat with Orchestrator / existing agents) ─────
     raw_input: str = ""
@@ -769,6 +795,7 @@ class SharedRequirementContext:
             "agent_outputs": self.agent_outputs,
             "status": self.status.value,
             "errors": self.errors,
+            "flags": self.flags.to_dict(),
             "session_id": self.session_id,
             "created_at": self.created_at,
         }
@@ -866,6 +893,9 @@ class InterviewQuestion:
     options: List[str] = field(default_factory=list)
     """Suggested answer options (empty = free-form answer expected)."""
 
+    default_option: Optional[str] = None
+    """Recommended/default option for the question."""
+
     priority: str = "medium"
     """'high' | 'medium' | 'low' — drives ordering."""
 
@@ -877,6 +907,7 @@ class InterviewQuestion:
             "target_section": self.target_section,
             "target_field": self.target_field,
             "options": self.options,
+            "default_option": self.default_option,
             "priority": self.priority,
         }
 
@@ -1049,6 +1080,7 @@ class ARSRSProjectProfile:
     created_at: str = ""
     interview_rounds_conducted: int = 0
     completeness_level: str = ""
+    success_criteria: List[str] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -1060,6 +1092,7 @@ class ARSRSProjectProfile:
             "created_at": self.created_at,
             "interview_rounds_conducted": self.interview_rounds_conducted,
             "completeness_level": self.completeness_level,
+            "success_criteria": self.success_criteria,
         }
 
 
@@ -1170,6 +1203,8 @@ class ArchitectureReadyStructuredRequirementSpec:
     # ── Architecture & Modular Extensions ─────────────────────────────────────
     modules: List[str] = field(default_factory=list)
     api_contracts: List[str] = field(default_factory=list)
+    workflows: List[Dict[str, Any]] = field(default_factory=list)
+    success_criteria: List[str] = field(default_factory=list)
 
     # ── Structured requirements (with traceability) ───────────────────────────
     functional_requirements: List[StructuredRequirement] = field(default_factory=list)
@@ -1222,6 +1257,8 @@ class ArchitectureReadyStructuredRequirementSpec:
             # Architecture extensions
             "modules": self.modules,
             "api_contracts": self.api_contracts,
+            "workflows": self.workflows,
+            "success_criteria": self.success_criteria,
             # Structured requirements
             "functional_requirements": [r.to_dict() for r in self.functional_requirements],
             "non_functional_requirements": [r.to_dict() for r in self.non_functional_requirements],

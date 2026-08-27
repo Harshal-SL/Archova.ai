@@ -368,8 +368,8 @@ def split_semantic_boundaries(text: str) -> List[str]:
         if not line:
             continue
 
-        # Strip bullet/numbering prefix
-        line = re.sub(r"^(?:[\-\*\•\>]|\d+[\.\)])\s*", "", line).strip()
+        # Strip bullet/numbering prefix (require space after number prefix so 99.9% isn't stripped)
+        line = re.sub(r"^(?:[\-\*\•\>]\s*|\d+[\.\)]\s+)", "", line).strip()
         if not line:
             continue
 
@@ -377,7 +377,7 @@ def split_semantic_boundaries(text: str) -> List[str]:
         if ";" in line:
             sub_parts = [p.strip() for p in line.split(";") if p.strip()]
             for p in sub_parts:
-                p = re.sub(r"^(?:[\-\*\•\>]|\d+[\.\)])\s*", "", p).strip()
+                p = re.sub(r"^(?:[\-\*\•\>]\s*|\d+[\.\)]\s+)", "", p).strip()
                 if p:
                     items.append(p)
         else:
@@ -493,13 +493,11 @@ def split_coarse_requirements(items: List[str]) -> List[str]:
                 for sf in sub_features:
                     sf_clean = sf.strip().strip(".")
                     if sf_clean:
-                        # Convert to title capability format if short, else format cleanly
                         feat_title = sf_clean.title()
                         atomic_items.append(f"System shall support {feat_title}")
             else:
                 atomic_items.append(part.strip())
 
-    # Deduplicate while preserving order
     result: List[str] = []
     for a in atomic_items:
         if a and a not in result:
@@ -508,98 +506,404 @@ def split_coarse_requirements(items: List[str]) -> List[str]:
     return result
 
 
+def merge_fragmented_requirements(fr_list: List[str]) -> List[str]:
+    """
+    Merge related requirement fragments and remove broken sentences.
+    Example:
+      ❌ Book Management (Adding
+      ❌ Removing Books)
+      ✅ Librarian shall manage books (Add, Update, Remove).
+    """
+    if not fr_list:
+        return []
+
+    cleaned_items: List[str] = []
+    buffer_fragment: str = ""
+
+    for item in fr_list:
+        if not item or not isinstance(item, str):
+            continue
+        text = clean_conversational_prefix(item).strip()
+        if not text:
+            continue
+
+        # If previous line was incomplete (open paren or dangling verb/preposition)
+        if buffer_fragment:
+            text = f"{buffer_fragment} {text}"
+            buffer_fragment = ""
+
+        # Check if text ends abruptly with open paren or comma or dangling conjunction
+        if re.search(r"\([^)]*$", text) or text.endswith((",", " (", " and", " or", " with")):
+            buffer_fragment = text
+            continue
+
+        # Ensure paren count is balanced
+        if text.count("(") > text.count(")"):
+            text += ")"
+
+        # Transform raw feature fragments into clean requirement statements
+        text = re.sub(r"\s+", " ", text).strip()
+        if len(text) < 4:
+            continue
+
+        cleaned_items.append(text)
+
+    if buffer_fragment:
+        text = buffer_fragment.strip()
+        if text.count("(") > text.count(")"):
+            text += ")"
+        cleaned_items.append(text)
+
+    # Merge related requirements sharing similar resources
+    merged_map: Dict[str, List[str]] = {}
+    standalone: List[str] = []
+
+    for item in cleaned_items:
+        lower = item.lower()
+        # Detect resource patterns
+        res_match = re.search(r"\b(event|registration|attendance|notification|ticket|schedule|participant|item|resource|profile|account|record|book|patient|appointment|order|catalog|file|document)s?\b", lower)
+        if res_match:
+            res_key = res_match.group(1).title()
+            merged_map.setdefault(res_key, []).append(item)
+        else:
+            standalone.append(item)
+
+    final_reqs: List[str] = []
+    for res_key, reqs in merged_map.items():
+        if len(reqs) >= 2:
+            # Consolidate actions for this resource
+            actions = []
+            for r in reqs:
+                r_clean = re.sub(rf"(?i)\b{res_key}s?\b", "", r).strip("- *•: ")
+                if r_clean:
+                    actions.append(r_clean)
+            merged_statement = f"System shall manage {res_key} operations ({', '.join(dict.fromkeys(actions))})"
+            final_reqs.append(merged_statement)
+        else:
+            final_reqs.extend(reqs)
+
+    final_reqs.extend(standalone)
+
+    # Final deduplication maintaining order
+    out: List[str] = []
+    for r in final_reqs:
+        if r and r not in out:
+            out.append(r)
+    return out
+
+
+def clean_actor_role(raw: str) -> Optional[str]:
+    """Clean a raw actor string into a concise persona title (1-4 words)."""
+    if not raw or not isinstance(raw, str):
+        return None
+    cleaned = clean_conversational_prefix(raw).strip("- *•: ")
+    if not cleaned or len(cleaned) < 2:
+        return None
+
+    # Discard pure action verb phrases (e.g. "registers for workshops", "manages items")
+    lower = cleaned.lower()
+    if re.match(r"^(?:registers?|browses?|manages?|creates?|oversees?|views?|handles?|monitors?|tracks?|updates?|deletes?|searches?)\b", lower):
+        return None
+
+    # Cut off at descriptive clauses: "who", "that", "responsible for", "can", "to", ":"
+    clause_match = re.search(r"\b(?:who\b|that\b|which\b|responsible for\b|can\b|to\b|shall\b|must\b|allowing\b|is responsible|oversees\b|manages\b|browses\b|registers\b)", cleaned, flags=re.IGNORECASE)
+    if clause_match:
+        cleaned = cleaned[:clause_match.start()].strip()
+
+    if ":" in cleaned:
+        cleaned = cleaned.split(":")[0].strip()
+    if " - " in cleaned:
+        cleaned = cleaned.split(" - ")[0].strip()
+
+    cleaned = cleaned.strip(" .,;()")
+    if not cleaned or len(cleaned.split()) > 5:
+        tokens = cleaned.split()
+        if len(tokens) > 4:
+            cleaned = " ".join(tokens[:3])
+
+    if not cleaned or len(cleaned) < 2:
+        return None
+
+    # Normalize plural to singular
+    words = cleaned.split()
+    singular_words = []
+    for w in words:
+        if w.lower().endswith("s") and not w.lower().endswith(("ss", "us", "is")):
+            singular_words.append(w[:-1])
+        else:
+            singular_words.append(w)
+
+    return " ".join(singular_words).title()
+
+
+def deduplicate_and_normalize_actors(actors_list: List[str]) -> List[str]:
+    """
+    Deduplicate actors and normalize singular vs plural forms.
+    Extracts concise, structured role personas without conversational sentences.
+    """
+    if not actors_list:
+        return []
+
+    normalized_set: Dict[str, str] = {}  # lowercase_singular -> canonical_title
+
+    for raw in actors_list:
+        if not raw or not isinstance(raw, str):
+            continue
+
+        # Split multiple actors separated by comma or slash
+        split_candidates = re.split(r",|/|(?:\s+and\s+)", raw, flags=re.IGNORECASE) if len(raw) < 60 else [raw]
+        for candidate in split_candidates:
+            clean_role = clean_actor_role(candidate)
+            if not clean_role:
+                continue
+
+            singular_key = clean_role.lower().strip()
+            if singular_key not in normalized_set:
+                normalized_set[singular_key] = clean_role
+
+    return list(normalized_set.values())
+
+
 def infer_modules(functional_requirements: List[str], system_type: str = "") -> List[str]:
     """
-    Infer system modules by grouping functional requirements and domain context.
+    Infer business modules dynamically from functional requirements and system type.
+    Extracts modules directly from the functional capabilities of the current problem statement.
     """
     modules: List[str] = []
+    
+    # 1. Dynamically extract domain modules directly from functional requirements
+    for fr in functional_requirements:
+        clean_fr = clean_conversational_prefix(fr)
+        short_title = clean_fr.split(".")[0].strip()
+        clean_name = re.sub(
+            r"^(?:The system shall|Must|Should|Can|Allow users to|Allow [a-zA-Z\s]+ to|Enable|Provide capability to|Manage|Track|Process|Handle|Support)\s+",
+            "",
+            short_title,
+            flags=re.IGNORECASE,
+        ).strip()
+        tokens = [
+            w for w in clean_name.split()
+            if w.lower() not in ("user", "users", "the", "for", "with", "and", "via", "from", "into", "system", "real", "time", "all", "their")
+        ]
+        if tokens and len(tokens) >= 1:
+            mod_candidate = " ".join(tokens[:3]).title()
+            if not mod_candidate.lower().endswith(("management", "module", "service", "tracking", "processing", "engine", "control", "catalog", "operations")):
+                mod_candidate = f"{mod_candidate} Management"
+            if len(mod_candidate) >= 6 and mod_candidate not in modules:
+                modules.append(mod_candidate)
+
+    # 2. Check cross-cutting capability modules with strict keyword support
     joined_text = " ".join(functional_requirements).lower() + " " + system_type.lower()
-
-    module_patterns = [
-        ("Authentication & Access Control Module", ["auth", "login", "register", "rbac", "password", "token", "session", "user"]),
-        ("Patient & User Management Module", ["patient", "profile", "medical history", "demographics", "registration"]),
-        ("Appointment & Scheduling Module", ["appointment", "booking", "schedule", "slot", "doctor schedule", "calendar", "cancel"]),
-        ("Prescription & Pharmacy Module", ["prescription", "pharmacy", "medicine", "drug", "dosage", "chemist"]),
-        ("Laboratory & Diagnostics Module", ["lab", "laboratory", "test", "report", "diagnostic", "specimen"]),
-        ("Billing & Payment Module", ["billing", "payment", "invoice", "fee", "receipt", "stripe", "transaction"]),
-        ("Notification & Communication Module", ["notification", "sms", "email", "alert", "reminder", "message"]),
-        ("System Administration & Audit Module", ["admin", "audit", "configuration", "logs", "dashboard", "report"]),
+    cross_cutting_patterns = [
+        ("Authentication & Access Control", ["auth", "login", "register", "rbac", "password", "token", "session", "access control", "permission"]),
+        ("Notification & Communication", ["notification", "sms alert", "email alert", "push notification", "in-app message", "reminder"]),
+        ("Admin Dashboard & System Operations", ["admin dashboard", "system settings", "audit log", "system admin", "administrative"]),
+        ("Reporting & Analytics", ["report", "analytics", "dashboard metrics", "kpi report", "statistics"]),
+        ("Payment & Fee Processing", ["payment gateway", "fee payment", "tariff", "invoice", "refund", "receipt", "billing"]),
     ]
-
-    for mod_title, keywords in module_patterns:
-        if any(kw in joined_text for kw in keywords):
-            modules.append(mod_title)
+    for mod_title, keywords in cross_cutting_patterns:
+        if any(re.search(rf"\b{re.escape(kw)}\b", joined_text) for kw in keywords):
+            if mod_title not in modules:
+                modules.append(mod_title)
 
     if not modules:
-        # Default fallback modules if none matched
-        modules = [
-            "Core Functional Module",
-            "User Access Control Module",
-            "Data Processing Module",
-            "Integration & Notification Module",
+        modules = ["Core Operations Module", "User Identity & Access", "Reporting & Audit"]
+
+    return list(dict.fromkeys(modules[:6]))
+
+
+def sanitize_api_contracts(api_contracts: List[str], functional_requirements: List[str] = None) -> List[str]:
+    """
+    Remove placeholder endpoints like POST /resource or GET /resource/{id}.
+    ARSRS must not invent dummy APIs.
+    """
+    if not api_contracts:
+        return []
+
+    sanitized: List[str] = []
+    placeholder_tokens = ["/resource", "/endpoint", "/example", "dummy"]
+
+    for api in api_contracts:
+        if not api or not isinstance(api, str):
+            continue
+        api_clean = api.strip()
+        lower = api_clean.lower()
+        if any(token in lower for token in placeholder_tokens):
+            continue
+        if api_clean not in sanitized:
+            sanitized.append(api_clean)
+
+    return sanitized
+
+
+def infer_workflows(functional_requirements: List[str], actors: List[str] = None) -> List[Dict[str, Any]]:
+    """
+    Generate business workflows dynamically from the CURRENT functional requirements and actors.
+    Never injects hardcoded out-of-domain templates.
+    """
+    workflows: List[Dict[str, Any]] = []
+    actors = actors or ["User"]
+    primary_actor = actors[0] if actors else "User"
+
+    # Derive workflows directly from the top functional requirements
+    for idx, fr in enumerate(functional_requirements[:4], 1):
+        clean_fr = clean_conversational_prefix(fr)
+        short_title = clean_fr.split(".")[0].strip()
+        if len(short_title) > 60:
+            short_title = short_title[:57] + "..."
+
+        # Determine best matching actor for this requirement
+        req_actor = primary_actor
+        fr_lower = clean_fr.lower()
+        for act in actors:
+            act_clean = clean_actor_role(act) if isinstance(act, str) else ""
+            if act_clean and act_clean.lower() in fr_lower:
+                req_actor = act_clean
+                break
+        if req_actor == primary_actor and len(actors) > 1 and idx % 2 == 0:
+            req_actor = actors[1]
+
+        # Extract core action keywords for workflow name
+        clean_name = re.sub(
+            r"^(?:The system shall|Must|Should|Can|Allow users to|Allow [a-zA-Z\s]+ to|Enable|Provide capability to)\s+",
+            "",
+            short_title,
+            flags=re.IGNORECASE,
+        ).strip()
+        verbs = [w for w in re.findall(r"\b[A-Za-z]{3,}\b", clean_name) if w.lower() not in ("system", "user", "shall", "must", "allow", "provide", "enable", "support", "with", "from", "that", "the", "for")]
+        action_name = " ".join(verbs[:3]).title() if verbs else f"Action {idx}"
+
+        wf_title = f"{action_name} Workflow" if not action_name.lower().endswith("workflow") else action_name
+        workflows.append({
+            "id": f"WF-{idx:03d}",
+            "name": wf_title,
+            "actor": req_actor,
+            "steps": [
+                f"Initiate {clean_name.lower()}",
+                f"Validate authorization and input parameters for {action_name.lower()}",
+                f"Process and persist {action_name.lower()} state transition",
+                f"Confirm execution and dispatch notification to {req_actor}",
+            ],
+        })
+
+    if not workflows:
+        workflows = [{
+            "id": "WF-001",
+            "name": "Core Domain Transaction Workflow",
+            "actor": primary_actor,
+            "steps": [
+                "Initiate transaction request",
+                "Validate business rules and input parameters",
+                "Execute atomic state update",
+                "Emit completion event and audit log",
+            ],
+        }]
+
+    return workflows
+
+
+def derive_business_rules(
+    constraints: List[str],
+    functional_requirements: List[str],
+    interview_answers: List[str] = None,
+) -> List[str]:
+    """
+    Automatically derive explicit business rules dynamically from constraints and requirements of CURRENT PS.
+    """
+    rules: List[str] = []
+
+    # 1. Rules from explicit constraints
+    for c in constraints:
+        clean_c = clean_conversational_prefix(c)
+        if clean_c and len(clean_c) > 10:
+            rule_text = clean_c if clean_c.endswith(".") else f"{clean_c}."
+            rules.append(rule_text)
+
+    # 2. Dynamic rules derived from functional requirements keywords
+    for fr in functional_requirements:
+        clean_fr = clean_conversational_prefix(fr)
+        fr_low = clean_fr.lower()
+        if any(term in fr_low for term in ("payment", "pay", "fee", "cost", "charge", "price", "tariff")):
+            rules.append("Payment and financial transactions must be verified and authorized prior to completing state transitions.")
+        if any(term in fr_low for term in ("book", "reserve", "slot", "spot", "claim", "schedule", "allocate", "donation", "borrow")):
+            rules.append("Resource reservations, allocations, and claims must enforce strict concurrency locking to prevent double-booking or duplicate allocation.")
+        if any(term in fr_low for term in ("sensor", "iot", "telemetry", "tracking", "gps", "occupancy", "real-time")):
+            rules.append("Real-time telemetry, sensor readings, and status updates must be validated and timestamped to maintain data freshness.")
+        if any(term in fr_low for term in ("cancel", "delete", "remove", "refund", "revoke", "expire", "expiry")):
+            rules.append("Cancellation, expiry handling, and revocation operations must validate eligibility against system policies.")
+        if any(term in fr_low for term in ("stock", "inventory", "sku", "restock")):
+            rules.append("Inventory stock balances and item quantities must remain non-negative with atomic ledger updates.")
+        elif any(term in fr_low for term in ("capacity", "seat", "limit", "quota", "threshold", "slot count")):
+            rules.append("System capacity limits and allocation thresholds must remain non-negative and enforce atomic boundary checks.")
+        if any(term in fr_low for term in ("auth", "login", "register", "role", "access", "permission", "rbac")):
+            rules.append("Only authenticated users with appropriate role permissions may access protected system operations.")
+
+    if not rules:
+        rules = [
+            "Only authenticated users with valid permissions may access protected operations.",
+            "All state-modifying transactions must maintain consistency and persist audit logs.",
         ]
 
-    return list(dict.fromkeys(modules))
+    return list(dict.fromkeys(rules))
 
 
-def infer_api_contracts(functional_requirements: List[str], modules: List[str]) -> List[str]:
+def refine_measurable_nfrs(nfr_list: List[str], interview_answers: List[str] = None) -> List[str]:
     """
-    Infer REST API endpoints from functional requirements and system modules.
-    Example output:
-      POST /api/v1/auth/login
-      POST /api/v1/patients
-      GET /api/v1/patients/{id}
-      POST /api/v1/appointments
-      DELETE /api/v1/appointments/{id}
+    Replace vague NFR statements with measurable requirements.
     """
-    endpoints: List[str] = []
-    joined_text = " ".join(functional_requirements).lower()
+    refined: List[str] = []
+    joined = (" ".join(nfr_list) + " " + " ".join(interview_answers or [])).lower()
 
-    # Rule-based endpoint generator
-    endpoint_rules = [
-        (["login", "authenticate"], "POST /api/v1/auth/login"),
-        (["register user", "patient registration", "signup"], "POST /api/v1/auth/register"),
-        (["patient", "medical history"], "GET /api/v1/patients/{id}"),
-        (["patient", "medical history"], "PUT /api/v1/patients/{id}"),
-        (["appointment", "book appointment"], "POST /api/v1/appointments"),
-        (["appointment", "cancel appointment"], "DELETE /api/v1/appointments/{id}"),
-        (["appointment", "view appointment"], "GET /api/v1/appointments"),
-        (["prescription"], "POST /api/v1/prescriptions"),
-        (["prescription"], "GET /api/v1/prescriptions/{id}"),
-        (["billing", "payment"], "POST /api/v1/payments/checkout"),
-        (["billing", "invoice"], "GET /api/v1/invoices/{id}"),
-        (["lab", "test report"], "GET /api/v1/lab-reports/{id}"),
-        (["notification"], "POST /api/v1/notifications/send"),
-    ]
+    if any(k in joined for k in ["fast", "response time", "latency"]):
+        refined.append("System response time shall be under 2.0 seconds for 95% of standard requests.")
+    if any(k in joined for k in ["uptime", "availability", "sla"]):
+        refined.append("System availability SLA shall meet or exceed 99.9% uptime.")
+    if any(k in joined for k in ["concurrent", "user load", "capacity"]):
+        refined.append("System shall support at least 1,000 active concurrent users without performance degradation.")
+    if any(k in joined for k in ["heavy load", "graceful", "degradation"]):
+        refined.append("System shall maintain graceful degradation and queueing under peak load spikes.")
+    if any(k in joined for k in ["auth", "secure", "encryption", "storage"]):
+        refined.append("All sensitive data at rest and in transit must be encrypted using AES-256 and TLS 1.3.")
 
-    for keywords, endpoint in endpoint_rules:
-        if any(kw in joined_text for kw in keywords):
-            if endpoint not in endpoints:
-                endpoints.append(endpoint)
+    # Retain existing specific NFRs from input
+    for nfr in nfr_list:
+        clean = clean_conversational_prefix(nfr)
+        if clean and not any(vague in clean.lower() for vague in ["fast performance", "good UI", "simple"]):
+            refined.append(clean)
 
-    # General endpoint generation if empty or few
-    if len(endpoints) < 3:
-        for fr in functional_requirements[:5]:
-            lower_fr = fr.lower()
-            if "patient" in lower_fr:
-                endpoints.append("GET /api/v1/patients")
-                endpoints.append("POST /api/v1/patients")
-            elif "appointment" in lower_fr:
-                endpoints.append("POST /api/v1/appointments")
-                endpoints.append("GET /api/v1/appointments/{id}")
-            elif "user" in lower_fr:
-                endpoints.append("POST /api/v1/users/login")
-                endpoints.append("GET /api/v1/users/profile")
+    return list(dict.fromkeys(refined))
 
-    if not endpoints:
-        endpoints = [
-            "POST /api/v1/resource",
-            "GET /api/v1/resource/{id}",
-            "PUT /api/v1/resource/{id}",
-            "DELETE /api/v1/resource/{id}",
-        ]
 
-    return list(dict.fromkeys(endpoints))
+def derive_success_criteria(
+    interview_answers: List[str] = None,
+    business_objectives: List[str] = None,
+    goal: str = "",
+) -> List[str]:
+    """
+    Derive success criteria dynamically matching the actual target problem statement.
+    """
+    criteria: List[str] = []
+    authoritative = (goal + " " + " ".join(business_objectives or [])).lower()
+    full_joined = (authoritative + " " + " ".join(interview_answers or [])).lower()
+
+    # 1. Derive criteria from explicit business objectives
+    if business_objectives:
+        for obj in business_objectives[:3]:
+            clean_obj = clean_conversational_prefix(obj)
+            if clean_obj and len(clean_obj) > 10:
+                criteria.append(f"End-to-end execution of {clean_obj.lower().rstrip('.')} with 100% data consistency.")
+
+    # 2. General operational criteria
+    if not criteria:
+        clean_goal = clean_conversational_prefix(goal) if goal else "core domain operations"
+        criteria.append(f"End-to-end execution of {clean_goal.lower().rstrip('.')} with 100% data consistency and zero unhandled errors.")
+
+    if any(k in full_joined for k in ["latency", "speed", "response", "real-time", "tracking", "fast"]):
+        criteria.append("Average API response latency remains under 500ms for core operational workflows.")
+    if any(k in full_joined for k in ["manual", "effort", "efficiency", "automation", "automate"]):
+        criteria.append("Manual operational effort and paper-based tracking are reduced by over 80%.")
+
+    return list(dict.fromkeys(criteria))
 
 
 def extract_integrations_from_text(raw_text: str, parameters: dict) -> List[str]:
@@ -609,7 +913,6 @@ def extract_integrations_from_text(raw_text: str, parameters: dict) -> List[str]
     """
     integrations: List[str] = []
 
-    # Check external_services parameter
     ext = parameters.get("external_services")
     if isinstance(ext, dict):
         ext = ext.get("value")
@@ -656,9 +959,9 @@ def classify_fr_nfr(items: List[str]) -> Tuple[List[str], List[str]]:
     ]
 
     fr_keywords = [
-        "search books", "borrow books", "return books", "add books",
-        "remove books", "authentication", "login", "authenticate",
-        "checkout", "search catalog", "manage books", "register user"
+        "search", "browse", "filter", "create", "update", "delete", "manage",
+        "authentication", "login", "authenticate", "checkout", "register user",
+        "schedule", "book", "cancel", "process transaction", "upload", "download"
     ]
 
     for item in items:
@@ -712,4 +1015,107 @@ def extract_fallback_goal(raw_input: str, parameters: dict) -> str:
         return f"Build a system to support {actions}."
 
     return "Build a software application based on user requirements."
+
+
+def extract_semantic_functional_requirements(raw_input: str) -> List[str]:
+    """
+    Extract discrete atomic functional requirements directly from raw project input text.
+    Identifies capability verbs, user actions, and system features from sentence clauses.
+    Used when REE extraction returns placeholders or insufficient requirements.
+    """
+    if not raw_input or not raw_input.strip():
+        return []
+
+    frs: List[str] = []
+    text = raw_input.strip()
+
+    # Match clauses that indicate user/staff/admin capabilities
+    # E.g. "allows staff to manage products, record stock-in and stock-out transactions..."
+    capability_patterns = [
+        r"(?:allows?|enables?|lets?)\s+[\w\s]+\s+to\s+([^.]+)",
+        r"(?:can|must|should|will)\s+([^.]+)",
+        r"(?:provides?|features?|includes?)\s+([^.]+)",
+    ]
+
+    for pattern in capability_patterns:
+        for match in re.finditer(pattern, text, re.IGNORECASE):
+            clause = match.group(1).strip()
+            # Split by commas, 'and', 'as well as'
+            parts = re.split(r",\s*|\s+and\s+|\s+as\s+well\s+as\s+", clause)
+            for part in parts:
+                clean = clean_conversational_prefix(part).strip()
+                # Strip leading conjunctions, pronouns, and articles
+                clean = re.sub(r"^(?:and\s+|as\s+well\s+as\s+|or\s+|also\s+|then\s+|plus\s+|to\s+|a\s+|an\s+|the\s+)+", "", clean, flags=re.IGNORECASE).strip()
+                clean = re.sub(r"^(?:view\s+their\s+)", "View ", clean, flags=re.IGNORECASE).strip()
+                clean = re.sub(r"^(?:their\s+)", "", clean, flags=re.IGNORECASE).strip()
+                if len(clean) >= 6 and not any(clean.lower() == existing.lower() for existing in frs):
+                    # Capitalize first letter
+                    frs.append(clean[0].upper() + clean[1:] if clean else clean)
+
+    # If clause matching produced nothing or too few, fallback to sentence splitting
+    if len(frs) < 3:
+        sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
+        for sentence in sentences:
+            clean_s = clean_conversational_prefix(sentence).strip()
+            if len(clean_s) >= 15 and not clean_s.lower().startswith(("the proposed system is", "this project is", "build a")):
+                if not any(clean_s.lower() == existing.lower() for existing in frs):
+                    frs.append(clean_s)
+
+    return frs[:10]
+
+
+def extract_actors_from_ps_text(text: str) -> List[str]:
+    """
+    Extract explicit domain persona roles directly from Problem Statement text.
+    Identifies roles such as Student, Administrator, Organizer, Participant, Doctor, Patient, Recruiter, etc.
+    """
+    if not text or not text.strip():
+        return []
+    actors: List[str] = []
+    lower_text = text.lower()
+
+    # Explicit domain role mappings
+    actor_patterns = [
+        (r"\b(?:students?)\b", "Student"),
+        (r"\b(?:administrators?|admins?)\b", "Administrator"),
+        (r"\b(?:participants?|attendees?)\b", "Participant"),
+        (r"\b(?:organizers?|coordinators?)\b", "Organizer"),
+        (r"\b(?:instructors?|teachers?|professors?|faculty)\b", "Instructor"),
+        (r"\b(?:donors?)\b", "Donor"),
+        (r"\b(?:volunteers?)\b", "Volunteer"),
+        (r"\b(?:doctors?|physicians?)\b", "Doctor"),
+        (r"\b(?:patients?)\b", "Patient"),
+        (r"\b(?:nurses?|staff)\b", "Staff"),
+        (r"\b(?:sellers?|merchants?|vendors?)\b", "Merchant"),
+        (r"\b(?:recruiters?|hiring\s+managers?)\b", "Recruiter"),
+        (r"\b(?:candidates?|applicants?|job\s+seekers?)\b", "Candidate"),
+        (r"\b(?:riders?|passengers?)\b", "Passenger"),
+        (r"\b(?:borrowers?|members?)\b", "Member"),
+        (r"\b(?:librarians?)\b", "Librarian"),
+        (r"\b(?:managers?|supervisors?)\b", "Manager"),
+    ]
+
+    for pattern, canonical_role in actor_patterns:
+        if re.search(pattern, lower_text):
+            if canonical_role not in actors:
+                actors.append(canonical_role)
+
+    # Check grammar clauses: "allows <ACTOR> to", "<ACTOR> can"
+    clause_matches = re.findall(r"(?:allows?|enables?|lets?)\s+([a-zA-Z\s]{3,20})\s+to", text, re.IGNORECASE)
+    for m in clause_matches:
+        cleaned = clean_actor_role(m)
+        if cleaned and len(cleaned) >= 3 and cleaned.lower() not in ("system", "application", "platform", "user", "users"):
+            if cleaned not in actors:
+                actors.append(cleaned)
+
+    can_matches = re.findall(r"\b([A-Z][a-zA-Z\s]{2,20})\s+can\s+(?:create|manage|view|track|access|update|delete|browse)", text)
+    for m in can_matches:
+        cleaned = clean_actor_role(m)
+        if cleaned and len(cleaned) >= 3 and cleaned.lower() not in ("system", "application", "platform", "user", "users"):
+            if cleaned not in actors:
+                actors.append(cleaned)
+
+    return actors
+
+
 

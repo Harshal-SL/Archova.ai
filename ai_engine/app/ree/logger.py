@@ -31,16 +31,16 @@ if hasattr(sys.stderr, "reconfigure"):
 
 
 def _safe_print(text: str) -> None:
-    """Print text with fallback for legacy terminal codepages."""
+    """Print text with fallback for legacy terminal codepages and force stdout flush."""
     try:
-        print(text)
+        print(text, flush=True)
     except UnicodeEncodeError:
         fallback_text = (
             text.replace("✓", "[OK]")
             .replace("⚠", "[!]")
             .replace("•", "*")
         )
-        print(fallback_text)
+        print(fallback_text, flush=True)
 
 
 class REELogger:
@@ -154,8 +154,20 @@ class REELogger:
         with open(path, "w", encoding="utf-8") as f:
             json.dump(arsrs, f, indent=2, ensure_ascii=False)
 
+        # Also save into output/arsrs/ folder for convenience
+        arsrs_dir = Path("output/arsrs")
+        arsrs_dir.mkdir(parents=True, exist_ok=True)
+        arsrs_path = arsrs_dir / "arsrs.json"
+        with open(arsrs_path, "w", encoding="utf-8") as f:
+            json.dump(arsrs, f, indent=2, ensure_ascii=False)
+
+        session_id = arsrs.get("project_profile", {}).get("session_id")
+        if session_id:
+            with open(arsrs_dir / f"arsrs_{session_id}.json", "w", encoding="utf-8") as f:
+                json.dump(arsrs, f, indent=2, ensure_ascii=False)
+
         rel_path = os.path.relpath(path, start=Path.cwd()) if path.is_absolute() else str(path)
-        _safe_print(f"\nARSRS saved successfully:\n{rel_path}")
+        _safe_print(f"\nARSRS saved successfully:\n  • {rel_path}\n  • output/arsrs/arsrs.json")
         return str(path)
 
     def print_summary(

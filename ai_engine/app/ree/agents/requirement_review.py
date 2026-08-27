@@ -119,7 +119,8 @@ DOMAIN CONTEXT:
 
 RULES:
 - CRITICAL: Inspect the full REQUIREMENTS CONTEXT, BUSINESS CONTEXT, and DOMAIN CONTEXT carefully before flagging issues.
-- CRITICAL: If actors (e.g. Patient, Doctor, Admin, etc.) or functional requirements are already present in the context, NEVER flag them as missing or ask who the actors are.
+- CRITICAL: If actors or functional requirements are already present in the context, NEVER flag them as missing or ask who the actors are.
+- Evaluate quality strictly based on the CURRENT Problem Statement and requirements. Never evaluate against unstated features from other domains.
 - Only flag genuine unresolved business ambiguities that cannot be inferred from the context.
 - Return ONLY a raw, valid JSON object starting with '{{' and ending with '}}'.
 - Do NOT wrap the JSON in Markdown code fences (NO ```json).
@@ -278,8 +279,9 @@ class RequirementReviewAgent:
         result = self._gateway.complete(
             capability=Capability.REVIEW,
             prompt=prompt,
-            max_tokens=1500,
+            max_tokens=2500,
             temperature=0.1,   # low temperature for analytical review
+            system_prompt="You are a strict JSON generator. Output ONLY a valid JSON object starting with { and ending with }. Do NOT write 'Here\\'s a thinking process' or any conversational preamble.",
             agent_name=_AGENT_NAME,
         )
 
@@ -316,12 +318,15 @@ class RequirementReviewAgent:
 
         if llm_findings is not None:
             if not isinstance(llm_findings, dict):
-                logger.warning(
-                    "%s: llm_findings is type '%s' instead of dict: %r",
-                    _AGENT_NAME,
-                    type(llm_findings).__name__,
-                    llm_findings,
-                )
+                if isinstance(llm_findings, (list, tuple)) and not llm_findings:
+                    llm_findings = {}
+                else:
+                    logger.warning(
+                        "%s: llm_findings is type '%s' instead of dict: %r",
+                        _AGENT_NAME,
+                        type(llm_findings).__name__,
+                        llm_findings,
+                    )
 
             # Ambiguities
             for item in _safe_list(llm_findings, "ambiguities"):
@@ -686,6 +691,8 @@ def _safe_list(d: Any, key: str) -> list:
         return []
 
     if isinstance(d, (list, tuple)):
+        if not d:
+            return []
         logger.warning(
             "%s: _safe_list received %s instead of dict for key '%s': %r",
             _AGENT_NAME,

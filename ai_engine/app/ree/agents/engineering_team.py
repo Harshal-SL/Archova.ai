@@ -70,6 +70,24 @@ class EngineeringTeamAgent:
         Returns:
             Updated SRC with all three agent sections populated.
         """
+        # ── Dirty-State Check ──────────────────────────────────────────────────
+        # Only rerun engineering if extraction inputs changed.
+        # If only interview answers changed, skip Engineering Team.
+        should_run = (
+            not src.flags.engineering_completed
+            or src.flags.project_context_changed
+            or src.flags.raw_input_changed
+        )
+        if not should_run:
+            logger.info(
+                "EngineeringTeamAgent: inputs unchanged and engineering previously completed — skipping re-execution"
+            )
+            src.add_note(
+                "engineering", "EngineeringTeamAgent",
+                "Skipped re-execution: extraction inputs unchanged (interview answers updated active SRC)."
+            )
+            return src
+
         src.status = REEStatus.ENGINEERING
         logger.info("EngineeringTeamAgent: starting 3 parallel AI specialists")
 
@@ -136,6 +154,11 @@ class EngineeringTeamAgent:
         # Sync flat parameters field after merge
         src.sync_requirements()
 
+        # Update flags
+        src.flags.engineering_completed = True
+        src.flags.project_context_changed = False
+        src.flags.raw_input_changed = False
+
         agent_count = len(completed)
         logger.info(
             "EngineeringTeamAgent: complete — %d/%d agents succeeded",
@@ -194,6 +217,7 @@ def _make_agent_copy(src: SharedRequirementContext) -> SharedRequirementContext:
 
     # Copy flat parameters for agents that read them
     copy.parameters = deepcopy(src.parameters)
+    copy.flags = deepcopy(src.flags)
 
     # Session metadata
     copy.session_id = src.session_id

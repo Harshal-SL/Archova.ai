@@ -215,13 +215,22 @@ class REEOrchestrator:
             # Full resume: restore the entire SRC including interview session
             src = self._deserialise_src(request.prior_src)
             # Update raw_input if a newer prompt was provided
-            if request.combined_prompt and request.combined_prompt != src.raw_input:
-                # Don't overwrite project_context — only update the flat field
-                # so the input agent's skip-guard fires correctly
-                pass  # raw_input comes from the SRC; keep original
+            if request.combined_prompt and request.combined_prompt.strip() and request.combined_prompt.strip() != src.raw_input.strip():
+                src.raw_input = request.combined_prompt
+                src.project_context.normalized_text = ""
+                src.flags.raw_input_changed = True
+                src.flags.project_context_changed = True
+                src.flags.engineering_completed = False
+            else:
+                src.flags.raw_input_changed = False
+                src.flags.project_context_changed = False
+
+            if request.interview_answers:
+                src.flags.interview_answers_changed = True
+
             logger.debug(
-                "REEOrchestrator: restored SRC session_id=%s, interview_round=%d",
-                src.session_id, src.interview_round,
+                "REEOrchestrator: restored SRC session_id=%s, interview_round=%d, eng_completed=%s",
+                src.session_id, src.interview_round, src.flags.engineering_completed,
             )
             return src
 
@@ -230,6 +239,10 @@ class REEOrchestrator:
             raw_input=request.combined_prompt,
             input_sources=list(request.input_sources),
         )
+        src.flags.raw_input_changed = True
+        src.flags.project_context_changed = True
+        src.flags.engineering_completed = False
+
         if request.prior_parameters:
             src.parameters = dict(request.prior_parameters)
             src.requirements.parameters = src.parameters
@@ -367,6 +380,13 @@ class REEOrchestrator:
         src.errors = data.get("errors", [])
         src.session_id = data.get("session_id", src.session_id)
         src.created_at = data.get("created_at", src.created_at)
+
+        flags_data = data.get("flags", {})
+        if flags_data and isinstance(flags_data, dict):
+            src.flags.raw_input_changed = bool(flags_data.get("raw_input_changed", False))
+            src.flags.project_context_changed = bool(flags_data.get("project_context_changed", False))
+            src.flags.interview_answers_changed = bool(flags_data.get("interview_answers_changed", False))
+            src.flags.engineering_completed = bool(flags_data.get("engineering_completed", False))
 
         # ── Enums ────────────────────────────────────────────────────────────
         try:
