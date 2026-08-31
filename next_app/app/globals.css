@@ -1,20 +1,29 @@
 @import "tailwindcss";
 @import "@xyflow/react/dist/style.css";
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Geist Mono', 'Inter', Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 /* Scrollbar styling */
@@ -22,25 +31,92 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #333333;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #666666;
+  background: #888;
   border-radius: 3px;
 }
-
-/* React Flow dark mode */
-.react-flow__background {
-  background-color: #0F0F0F !important;
+.dark ::-webkit-scrollbar-thumb {
+  background: #555;
 }
 
-/* Base utility overrides */
-* {
-  border-color: #2A2A2A;
+/* React Flow dark mode & Animations */
+.dark .react-flow__background {
+  background-color: #090a0f !important;
 }
 
-/* Submitting Focus Outlines */
-*:focus-visible {
-  outline: 2px solid white;
-  outline-offset: 2px;
+@keyframes dashFlow {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
+
+.react-flow__edge-path {
+  transition: stroke 0.2s, stroke-width 0.2s;
+}
+
+.react-flow__handle {
+  opacity: 0.7;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* ── Animated Bubble Background ── */
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  6% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(-52vh) translateX(calc(var(--bdrift, 40px) * 0.5)) scale(1.04);
+  }
+  88% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-108vh) translateX(var(--bdrift, 40px)) scale(0.92);
+    opacity: 0;
+  }
+}
+
+.bubble-layer {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bubble-item {
+  position: absolute;
+  bottom: -80px;
+  animation: bubbleRise linear infinite;
+  user-select: none;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Hide Next.js Dev Tools floating button & overlay */
+#next-logo,
+[data-nextjs-dev-tools-button],
+[data-next-mark],
+nextjs-portal,
+#nextjs-dev-tools-menu,
+[aria-label="Close Next.js Dev Tools"],
+[aria-label="Open Next.js Dev Tools"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+

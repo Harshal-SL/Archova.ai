@@ -1,31 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUp } from "lucide-react";
+import { Send } from "lucide-react";
 
 interface Props {
   onSend: (text: string) => void;
-  disabled?: boolean;
 }
 
-export default function PromptInput({ onSend, disabled = false }: Props) {
+export default function PromptInput({ onSend }: Props) {
   const [value, setValue] = useState("");
 
   const handleSend = () => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
+    if (!trimmed) return;
     onSend(trimmed);
     setValue("");
   };
 
   return (
-    <div className="border-t border-[#2A2A2A] bg-[#0A0A0A] px-4 py-4 shrink-0">
-      <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-2xl border border-[#333333] bg-[#111111] px-4 py-3 transition-colors focus-within:border-white focus-within:ring-1 focus-within:ring-white">
+    <div className="shrink-0 border-t border-gray-200 bg-white px-4 pt-3 pb-3.5 dark:border-gray-800 dark:bg-black">
+      <div className="mx-auto flex max-w-3xl items-end gap-2.5 rounded-2xl border border-gray-300/80 bg-gray-50/80 px-4 py-2.5 shadow-sm transition-all focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-700/80 dark:bg-gray-900/80">
         <textarea
-          id="prompt-input"
           rows={1}
           value={value}
-          disabled={disabled}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
@@ -33,18 +30,22 @@ export default function PromptInput({ onSend, disabled = false }: Props) {
               handleSend();
             }
           }}
-          placeholder={disabled ? "Generating your design…" : "Describe a system to design…"}
-          className="max-h-40 flex-1 resize-none bg-transparent py-1 text-[15px] font-sans outline-none text-white placeholder:text-[#555555] disabled:opacity-50"
+          placeholder="Describe your system architecture requirements..."
+          className="max-h-32 flex-1 resize-none bg-transparent py-1 text-sm outline-none placeholder:text-gray-400 dark:text-white"
         />
         <button
-          id="send-btn"
           onClick={handleSend}
-          disabled={!value.trim() || disabled}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-black transition-transform hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100"
+          disabled={!value.trim()}
+          title="Send prompt"
+          aria-label="Send prompt"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-sm transition-all hover:opacity-95 hover:shadow-md disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          <ArrowUp className="h-5 w-5" strokeWidth={3} />
+          <Send className="h-4 w-4" />
         </button>
       </div>
+      <p className="mt-2 text-center text-[11px] text-gray-400">
+        ArchAI can make mistakes. Verify important architecture decisions.
+      </p>
     </div>
   );
 }

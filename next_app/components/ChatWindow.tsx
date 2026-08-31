@@ -1,37 +1,29 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { Cpu, Loader2 } from "lucide-react";
+import {
+  Cpu,
+  Loader2,
+} from "lucide-react";
 import { useAppStore, generateMsgId } from "@/lib/store";
-import { apiGenerate, apiCreateSession, apiUpdateSessionTitle } from "@/lib/api";
+import { aiEngineApi } from "@/lib/ai-engine-client";
 import ChatMessage from "./ChatMessage";
 import PromptInput from "./PromptInput";
+import InterviewCard from "./InterviewCard";
 
-// Typing indicator – three blinking dots
-function TypingIndicator() {
-  return (
-    <div className="flex w-full gap-4 px-4 py-6 justify-start">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#333333] bg-black">
-        <Cpu className="h-4 w-4 text-white" />
-      </div>
-      <div className="max-w-[80%] rounded-2xl px-5 py-4 border border-[#333333] bg-[#1A1A1A] flex items-center gap-1.5">
-        {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="h-2 w-2 rounded-full bg-white animate-bounce"
-            style={{ animationDelay: `${i * 0.15}s` }}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const STARTER_PROMPTS = [
-  "Design a URL shortener like Bitly",
-  "Build a real-time chat system",
-  "Create a scalable e-commerce platform",
-  "Design a video streaming service",
+const SAMPLE_PROMPTS = [
+  {
+    label: "Event Management",
+    text: "Build a modern Online Event Management System for university hackathons. Users can browse events, register, submit artifacts, and receive live notifications. Organizers manage schedules, judge scoring, and track real-time attendance.",
+  },
+  {
+    label: "College Library",
+    text: "Build a modern College Library Management System. Students authenticate securely, search the catalog, and borrow or reserve books. Librarians manage inventory, circulation, overdue fines, and administrative reports.",
+  },
+  {
+    label: "Smart Parking",
+    text: "Build an IoT-Enabled Smart Parking Management System. Drivers view real-time parking slot availability, reserve slots, and pay digital fees. Attendants verify vehicle check-in with automated license plate recognition.",
+  },
 ];
 
 export default function ChatWindow() {
@@ -39,130 +31,160 @@ export default function ChatWindow() {
     sessions,
     activeSessionId,
     addMessage,
-    setArchitectureReady,
     createSession,
-    updateSessionTitle,
-    isGenerating,
-    setIsGenerating,
-    user,
+    generationId,
+    currentQuestion,
+    interviewCompleted,
+    checkApiHealth,
+    addLogEntry,
   } = useAppStore();
 
+  const [starting, setStarting] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
   const session = sessions.find((s) => s.id === activeSessionId);
   const messages = session?.messages ?? [];
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages.length, isGenerating]);
+    checkApiHealth();
+  }, [checkApiHealth]);
 
-  const handleSend = async (text: string) => {
-    // Create session if none active
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length, starting, currentQuestion, interviewCompleted]);
+
+  const handleStartGeneration = async (promptText: string) => {
     let sid = activeSessionId;
     if (!sid) {
-      // Try to create in Supabase if logged in
-      if (user) {
-        const dbSess = await apiCreateSession(user.id, text.slice(0, 60));
-        if (dbSess) {
-          createSession(dbSess.id, dbSess.title);
-          sid = dbSess.id;
-        } else {
-          sid = createSession();
-        }
-      } else {
-        sid = createSession();
-      }
+      sid = await createSession(promptText.slice(0, 30));
     }
 
-    // Add user message optimistically
-    addMessage(sid, { id: generateMsgId(), role: "user", content: text });
+    // 1. Add user prompt to chat
+    await addMessage(sid, {
+      id: generateMsgId(),
+      role: "user",
+      content: promptText,
+    });
 
-    // Update session title from first message
-    if (!session || session.messages.length === 0) {
-      const title = text.length > 50 ? text.slice(0, 50) + "…" : text;
-      updateSessionTitle(sid, title);
-      if (user) apiUpdateSessionTitle(sid, title).catch(() => {});
-    }
+    setStarting(true);
+    const now = new Date().toTimeString().split(" ")[0];
 
-    setIsGenerating(true);
+    addLogEntry({
+      timestamp: now,
+      stage: "CLIENT",
+      message: "🚀 Sending problem statement to AI Architecture Engine...",
+      level: "INFO",
+    });
 
     try {
-      const data = await apiGenerate(sid, text, user?.id);
+      // 2. Call POST /api/v1/generations
+      const response = await aiEngineApi.startGeneration(promptText);
 
-      if (data.error) {
-        addMessage(sid, {
-          id: generateMsgId(),
-          role: "ai",
-          content: `⚠️ ${data.error}`,
-        });
-        return;
-      }
-
-      const responseText = data.response ?? "Here is your system design.";
-      addMessage(sid, {
-        id: generateMsgId(),
-        role: "ai",
-        content: responseText,
+      useAppStore.setState({
+        generationId: response.generation_id,
+        generationStatus: response.status || "INTERVIEW_IN_PROGRESS",
+        currentQuestion: response.current_question || null,
+        interviewCompleted: response.status === "INTERVIEW_COMPLETED",
       });
 
-      // Attach architecture data to session
-      if (data.architectureData) {
-        setArchitectureReady(sid, data.architectureData);
-      } else {
-        setArchitectureReady(sid);
-      }
-    } catch {
-      addMessage(sid, {
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "REE",
+        message: `Generation session started: ${response.generation_id}`,
+        level: "INFO",
+      });
+
+      // 3. Add assistant acknowledgment
+      await addMessage(sid, {
         id: generateMsgId(),
         role: "ai",
-        content: "⚠️ Unable to reach the AI service. Make sure Ollama is running on localhost:11434 (`ollama serve`).",
+        content: `I've received your requirements and initialized the **REE Input Understanding** multi-agent pipeline.\n\nPlease answer the clarifying interview questions below to complete the architecture specification.`,
+      });
+    } catch (err) {
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Failed to process requirements in Architecture Engine.";
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CLIENT",
+        message: `❌ Error: ${msg}`,
+        level: "ERROR",
+      });
+
+      await addMessage(sid, {
+        id: generateMsgId(),
+        role: "ai",
+        content: `⚠️ **Error initializing Architecture Engine**\n\n${msg}`,
       });
     } finally {
-      setIsGenerating(false);
+      setStarting(false);
     }
   };
 
-  // Empty state
-  if (!session || messages.length === 0) {
-    return (
-      <div className="flex flex-1 flex-col bg-[#0A0A0A]">
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#333333] bg-black">
-            <Cpu className="h-8 w-8 text-white" />
-          </div>
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">What are we designing today?</h2>
-            <p className="text-sm text-[#555555] font-mono">Powered by Ollama · Saved to Supabase</p>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 max-w-2xl w-full mt-2">
-            {STARTER_PROMPTS.map((prompt) => (
-              <button
-                key={prompt}
-                onClick={() => handleSend(prompt)}
-                disabled={isGenerating}
-                className="rounded-xl border border-[#2A2A2A] bg-[#111111] px-4 py-3 text-left text-sm text-[#AAAAAA] transition-colors hover:bg-[#1A1A1A] hover:border-[#555] hover:text-white disabled:opacity-50"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
-        </div>
-        <PromptInput onSend={handleSend} disabled={isGenerating} />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-1 flex-col bg-[#0A0A0A] min-w-0">
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-4xl py-6">
+    <div className="flex h-full w-full flex-col justify-between overflow-hidden bg-white dark:bg-black min-h-0">
+      {/* Messages / Main Workflow Scroll Area */}
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
+        {/* Welcome / Compact starter state matching reference screenshot */}
+        {messages.length === 0 && !generationId && (
+          <div className="mx-auto max-w-2xl py-12 flex flex-col items-center text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
+              <Cpu className="h-7 w-7 text-white" />
+            </div>
+            <h2 className="mt-3 text-2xl font-bold text-gray-900 dark:text-white">
+              ArchAI
+            </h2>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 max-w-md">
+              Describe your system to generate an end-to-end architecture with ARSRS,
+              High-Level Design, and 5 Low-Level Designs.
+            </p>
+
+            {/* Compact Quick Samples Bar (Identical to reference screenshot) */}
+            <div className="mt-6 flex items-center justify-center gap-2 flex-wrap text-xs">
+              <span className="text-gray-500 dark:text-gray-400">Quick Samples:</span>
+              {SAMPLE_PROMPTS.map((sample, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => handleStartGeneration(sample.text)}
+                  className="rounded-full border border-gray-200 bg-gray-100/90 px-3.5 py-1 text-xs font-medium text-gray-700 transition-all hover:border-indigo-400 hover:bg-indigo-50/60 dark:border-gray-800 dark:bg-gray-800/80 dark:text-gray-300 dark:hover:border-indigo-600 dark:hover:bg-indigo-950/40"
+                >
+                  {sample.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Chat Messages */}
+        <div className="mx-auto max-w-3xl space-y-3">
           {messages.map((m) => (
             <ChatMessage key={m.id} msg={m} />
           ))}
-          {isGenerating && <TypingIndicator />}
+
+          {/* Loading prompt analyzer indicator */}
+          {starting && (
+            <div className="flex items-center gap-2.5 rounded-2xl bg-indigo-50/80 p-3.5 text-xs text-indigo-900 dark:bg-indigo-950/30 dark:text-indigo-200">
+              <Loader2 className="h-4 w-4 animate-spin text-indigo-500" />
+              <span>Analyzing problem statement with REE Multi-Agent pipeline...</span>
+            </div>
+          )}
+
+          {/* Interactive Interview Step */}
+          {generationId && (
+            <div className="pt-2">
+              <InterviewCard />
+            </div>
+          )}
+
           <div ref={bottomRef} />
         </div>
       </div>
-      <PromptInput onSend={handleSend} disabled={isGenerating} />
+
+      {/* Fixed/Pinned Prompt Input at Bottom */}
+      <PromptInput onSend={handleStartGeneration} />
     </div>
   );
 }
