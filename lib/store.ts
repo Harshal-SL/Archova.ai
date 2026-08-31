@@ -104,6 +104,9 @@ interface AppState {
   loadSessionsFromSupabase: () => Promise<void>;
   resetGenerationSession: () => void;
 
+  // ── Demo & Offline Testing ──
+  loadDemoData: () => void;
+
   // ── Explanations Modal ──
   explainOpen: boolean;
   explainNode: string | null;
@@ -112,6 +115,8 @@ interface AppState {
   openExplain: (nodeId: string, title?: string, content?: string) => void;
   closeExplain: () => void;
 }
+
+import { hldNodes as initialHldNodes, hldEdges as initialHldEdges, dummyHldData, dummyAllLldData } from "./mock-data";
 
 const initialLldStatus: Record<LldType, LldStatusType> = {
   backend: "NOT_STARTED",
@@ -503,6 +508,25 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
+  // Demo & Offline Testing
+  loadDemoData: () => {
+    set({
+      hldData: dummyHldData as Record<string, unknown>,
+      hldNodes: initialHldNodes,
+      hldEdges: initialHldEdges,
+      lldData: dummyAllLldData as Record<LldType, Record<string, unknown> | null>,
+      lldStatus: {
+        backend: "READY",
+        frontend: "READY",
+        database: "READY",
+        security: "READY",
+        cloud: "READY",
+      },
+      generationStatus: "COMPLETED",
+      activePipelineStep: 3,
+    });
+  },
+
   // Modal Explanations
   explainOpen: false,
   explainNode: null,
@@ -523,3 +547,4 @@ export const useAppStore = create<AppState>((set, get) => ({
       explainContent: undefined,
     }),
 }));
+

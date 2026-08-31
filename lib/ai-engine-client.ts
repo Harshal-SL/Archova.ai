@@ -3,7 +3,7 @@
  * Connects the Next.js frontend to the native Next.js Architecture Engine (REE + SAE pipeline).
  */
 
-export const API_HOST = process.env.NEXT_PUBLIC_AI_ENGINE_URL || "";
+export const API_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "").trim().replace(/\/+$/, "");
 export const API_BASE_URL = `${API_HOST}/api/v1/generations`;
 export const HEALTH_URL = `${API_HOST}/api/v1/health`;
 
@@ -77,9 +77,15 @@ export const aiEngineApi = {
   // 1. Health check
   async checkHealth(): Promise<{ ok: boolean; version?: string }> {
     try {
-      const res = await fetch(HEALTH_URL, { cache: "no-store" });
+      const rootUrl = API_HOST || "";
+      const res = await fetch(`${rootUrl}/`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json().catch(() => ({}));
+        return { ok: true, version: data?.version || "2.0.0" };
+      }
+      const altRes = await fetch(HEALTH_URL, { cache: "no-store" });
+      if (altRes.ok) {
+        const data = await altRes.json().catch(() => ({}));
         return { ok: true, version: data?.version || "2.0.0" };
       }
       return { ok: false };

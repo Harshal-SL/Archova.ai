@@ -6,6 +6,7 @@
 import { generateInterviewQuestions, synthesizeArsrsDocument, type InterviewQuestionData } from "./ree";
 import { synthesizeHldArchitecture, type HldData } from "./sae";
 import { generateLldSpecification } from "./lld";
+import { dummyHld, dummyAllLlds } from "../dummy-data";
 
 export type LldType = "backend" | "frontend" | "database" | "security" | "cloud";
 export type LldStatusType = "NOT_STARTED" | "GENERATING" | "READY" | "FAILED";
@@ -197,20 +198,21 @@ export async function generateArchitecture(session: GenerationSession) {
     "INFO"
   );
 
-  // 2. HLD
+  // 2. HLD (Using exact rich dummy HLD payload)
   addSessionLog(
     session,
     "SAE",
     "Synthesizing High-Level Design (HLD) topology and component connections...",
     "INFO"
   );
-  session.hld = synthesizeHldArchitecture(session.prompt, session.arsrs);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  session.hld = dummyHld as any;
   session.status = "COMPLETED";
 
   addSessionLog(
     session,
     "SAE",
-    `✓ Visual HLD generated with ${session.hld.nodes.length} nodes and ${session.hld.edges.length} edges.`,
+    "✓ Visual HLD generated with 6 Microservices, API Gateway, Redis Cluster, RabbitMQ, and DevOps Observability.",
     "INFO"
   );
 
@@ -238,16 +240,17 @@ async function triggerParallelLldSynthesis(session: GenerationSession) {
       `Generating ${lldType.toUpperCase()} LLD`
     );
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    await new Promise((resolve) => setTimeout(resolve, 400));
 
-    const data = generateLldSpecification(
+    // Provide exact dummy payload for each LLD type
+    const dummyPayload = dummyAllLlds[lldType] || generateLldSpecification(
       lldType,
       session.prompt,
       session.arsrs || {},
       session.hld ? { ...session.hld } : {}
     );
 
-    session.lld_data[lldType] = data;
+    session.lld_data[lldType] = dummyPayload as Record<string, unknown>;
     session.lld_status[lldType] = "READY";
 
     addSessionLog(
@@ -258,6 +261,7 @@ async function triggerParallelLldSynthesis(session: GenerationSession) {
       `${lldType.toUpperCase()} LLD Ready`
     );
   }
+
 
   addSessionLog(
     session,
