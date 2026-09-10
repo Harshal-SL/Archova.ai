@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Cpu, Info } from "lucide-react";
+import { X, Cpu } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { explanations } from "@/lib/mock-data";
 
@@ -27,37 +27,37 @@ export default function ExplainModal() {
   const isJson = content.trim().startsWith("{") || content.trim().startsWith("[");
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="relative mx-auto w-full max-w-xl rounded-2xl border border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-gray-900">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="relative mx-auto w-full max-w-xl rounded-2xl border border-neutral-300 bg-white p-6 sm:p-7 shadow-2xl dark:border-neutral-800 dark:bg-black text-black dark:text-white">
         {/* Close */}
         <button
           onClick={closeExplain}
-          className="absolute right-4 top-4 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="absolute right-4 top-4 rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-900 dark:hover:text-white"
         >
           <X className="h-5 w-5" />
         </button>
 
         {/* Header */}
         <div className="mb-4 flex items-center gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/25">
-            <Cpu className="h-5 w-5 text-white" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black">
+            <Cpu className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-gray-900 dark:text-white">
+            <h3 className="font-heading text-base font-bold tracking-tight text-black dark:text-white">
               {title}
             </h3>
-            <p className="text-xs text-gray-500">Component Specification & Explanation</p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">Component Specification & Explanation</p>
           </div>
         </div>
 
         {/* Body */}
         <div className="max-h-96 overflow-y-auto pr-1">
           {isJson ? (
-            <pre className="rounded-xl border border-gray-200 bg-gray-50 p-4 font-mono text-xs text-gray-800 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-200">
+            <pre className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 font-mono text-xs text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
               {content}
             </pre>
           ) : (
-            <p className="leading-relaxed text-sm text-gray-700 dark:text-gray-300">
+            <p className="leading-relaxed text-xs sm:text-sm text-neutral-700 dark:text-neutral-300">
               {content}
             </p>
           )}
@@ -67,7 +67,7 @@ export default function ExplainModal() {
         <div className="mt-6 flex justify-end">
           <button
             onClick={closeExplain}
-            className="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-5 py-2 text-xs font-semibold text-white shadow-md shadow-indigo-500/20 transition-opacity hover:opacity-90"
+            className="rounded-lg bg-black px-6 py-2 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
           >
             Got it
           </button>

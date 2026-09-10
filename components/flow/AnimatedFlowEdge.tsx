@@ -43,9 +43,7 @@ export const AnimatedFlowEdge = memo(
     const edgeData = (data || {}) as CustomEdgeData;
     const label = edgeData.label || "";
     const isAnimated = edgeData.animated !== false;
-    const strokeColor = selected
-      ? "#818cf8"
-      : (style.stroke as string) || "#4f46e5";
+    const strokeColor = (style.stroke as string) || (selected ? "#000000" : "#737373");
 
     const customMarkerId = `arrowhead-${id}`;
     const effectiveMarkerEnd = markerEnd || `url(#${customMarkerId})`;
@@ -59,8 +57,8 @@ export const AnimatedFlowEdge = memo(
             refX="6"
             refY="5"
             markerUnits="strokeWidth"
-            markerWidth="6"
-            markerHeight="6"
+            markerWidth="5"
+            markerHeight="5"
             orient="auto-start-reverse"
           >
             <path
@@ -72,20 +70,7 @@ export const AnimatedFlowEdge = memo(
           </marker>
         </defs>
 
-        {/* Base Glow Layer */}
-        <BaseEdge
-          id={`${id}-glow`}
-          path={edgePath}
-          style={{
-            ...style,
-            stroke: strokeColor,
-            strokeWidth: selected ? 4 : 2,
-            opacity: selected ? 0.8 : 0.35,
-            filter: "drop-shadow(0 0 4px rgba(99, 102, 241, 0.4))",
-          }}
-        />
-
-        {/* Main Edge Path with Directional Arrow */}
+        {/* Base Stroke Layer */}
         <BaseEdge
           id={id}
           path={edgePath}
@@ -93,13 +78,13 @@ export const AnimatedFlowEdge = memo(
           style={{
             ...style,
             stroke: strokeColor,
-            strokeWidth: selected ? 2.5 : 1.75,
+            strokeWidth: selected ? 2.5 : 1.5,
             strokeDasharray: isAnimated ? "6 6" : undefined,
             animation: isAnimated ? "dashFlow 20s linear infinite" : undefined,
           }}
         />
 
-        {/* Optional Interactive Protocol / Event Label */}
+        {/* Interactive Protocol / Event Label in Pure Monochrome */}
         {label && (
           <EdgeLabelRenderer>
             <div
@@ -108,13 +93,11 @@ export const AnimatedFlowEdge = memo(
                 transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
                 pointerEvents: "all",
               }}
-              className={`nodrag nopan flex items-center gap-1 rounded-md border px-2 py-0.5 text-[9.5px] font-mono font-medium shadow-md backdrop-blur-md transition-all duration-200 ${
-                selected
-                  ? "border-indigo-400 bg-zinc-950 text-indigo-300 ring-1 ring-indigo-400"
-                  : "border-zinc-700/80 bg-zinc-950/90 text-zinc-300 hover:border-zinc-500 hover:text-white"
+              className={`nodrag nopan flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-0.5 text-[9.5px] font-mono font-bold text-black shadow-xs backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900 dark:text-white transition-all duration-200 ${
+                selected ? "ring-2 ring-black dark:ring-white" : ""
               }`}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-black dark:bg-white" />
               <span>{label}</span>
             </div>
           </EdgeLabelRenderer>

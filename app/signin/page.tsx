@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Cpu, Mail, Lock, Loader2, AlertCircle, CheckCircle2, Send } from "lucide-react";
+import { Cpu, Mail, Lock, Loader2, AlertCircle, CheckCircle2, Send, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import BubbleBg from "@/components/BubbleBg";
 import { supabase } from "@/lib/supabaseClient";
@@ -83,122 +83,131 @@ export default function SignInPage() {
   const isEmailUnconfirmed = errorMessage?.toLowerCase().includes("confirm") || errorMessage?.toLowerCase().includes("verified");
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-white dark:bg-black">
+    <div className="relative min-h-screen overflow-x-hidden bg-white text-black dark:bg-black dark:text-white transition-colors">
       <BubbleBg />
-      <div className="relative z-10">
-        <Navbar />
+      <Navbar />
 
-        <div className="flex min-h-screen items-center justify-center px-4 pt-14">
-          <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white/90 p-8 shadow-xl backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/90">
-            {/* Header */}
-            <div className="mb-8 flex flex-col items-center">
-              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
-                <Cpu className="h-7 w-7 text-white" />
-              </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back</h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Sign in to your ArchAI account
-              </p>
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 pt-14 pb-12">
+        <div className="w-full max-w-md monochrome-card rounded-3xl p-8 sm:p-10 backdrop-blur-xl shadow-xl">
+          {/* Back to Home Link */}
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white mb-6 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Back to Home</span>
+          </Link>
+
+          {/* Header */}
+          <div className="mb-8 flex flex-col items-center text-center">
+            <div className="mb-3.5 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-md">
+              <Cpu className="h-7 w-7" />
             </div>
-
-            {/* Error Message */}
-            {errorMessage && (
-              <div className="mb-4 space-y-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 shrink-0 text-red-500" />
-                  <span>{errorMessage}</span>
-                </div>
-                {isEmailUnconfirmed && (
-                  <button
-                    type="button"
-                    onClick={handleResendConfirmation}
-                    disabled={resending}
-                    className="mt-1 flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 transition-colors hover:bg-red-200 dark:bg-red-900/60 dark:text-red-200 dark:hover:bg-red-900"
-                  >
-                    {resending ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Send className="h-3.5 w-3.5" />
-                    )}
-                    <span>Resend Confirmation Email</span>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Success Message */}
-            {successMessage && (
-              <div className="mb-4 flex items-start gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900/50 dark:bg-green-950/40 dark:text-green-300">
-                <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
-                <span>{successMessage}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Email
-                </label>
-                <div className="flex items-center rounded-xl border border-gray-300 bg-gray-50 px-3 transition-colors focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800">
-                  <Mail className="h-4 w-4 text-gray-400" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    required
-                    disabled={loading}
-                    className="w-full bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Password
-                </label>
-                <div className="flex items-center rounded-xl border border-gray-300 bg-gray-50 px-3 transition-colors focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800">
-                  <Lock className="h-4 w-4 text-gray-400" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    disabled={loading}
-                    className="w-full bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-gray-400 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:opacity-95 hover:shadow-xl hover:shadow-indigo-500/30 disabled:opacity-60"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
-              </button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-              Don&apos;t have an account?{" "}
-              <Link
-                href="/signup"
-                className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
-              >
-                Sign Up
-              </Link>
+            <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight">
+              Welcome back
+            </h1>
+            <p className="mt-1.5 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400">
+              Sign in to your ArchAI Architecture Studio
             </p>
           </div>
+
+          {/* Error Message */}
+          {errorMessage && (
+            <div className="mb-5 space-y-2 rounded-xl border border-red-200 bg-red-50/90 p-3.5 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-500 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+              {isEmailUnconfirmed && (
+                <button
+                  type="button"
+                  onClick={handleResendConfirmation}
+                  disabled={resending}
+                  className="mt-1.5 flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-800 transition-colors hover:bg-red-200 dark:bg-red-900/60 dark:text-red-200 dark:hover:bg-red-900"
+                >
+                  {resending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Send className="h-3.5 w-3.5" />
+                  )}
+                  <span>Resend Confirmation Email</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-5 flex items-start gap-2 rounded-xl border border-neutral-300 bg-neutral-100 p-3.5 text-xs text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-black dark:text-white mt-0.5" />
+              <span>{successMessage}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Work Email
+              </label>
+              <div className="flex items-center rounded-xl border border-neutral-300 bg-white px-3.5 transition-all focus-within:border-black focus-within:ring-2 focus-within:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:focus-within:border-white dark:focus-within:ring-white/10">
+                <Mail className="h-4 w-4 text-neutral-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="engineer@company.com"
+                  required
+                  disabled={loading}
+                  className="w-full bg-transparent px-3 py-2.5 text-xs text-black placeholder:text-neutral-400 outline-none dark:text-white dark:placeholder:text-neutral-500"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+                Password
+              </label>
+              <div className="flex items-center rounded-xl border border-neutral-300 bg-white px-3.5 transition-all focus-within:border-black focus-within:ring-2 focus-within:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:focus-within:border-white dark:focus-within:ring-white/10">
+                <Lock className="h-4 w-4 text-neutral-400" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={loading}
+                  className="w-full bg-transparent px-3 py-2.5 text-xs text-black placeholder:text-neutral-400 outline-none dark:text-white dark:placeholder:text-neutral-500"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black py-3 text-xs font-bold shadow-md transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Authenticating...</span>
+                </>
+              ) : (
+                "Sign In to Studio"
+              )}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-xs text-neutral-500 dark:text-neutral-400">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-bold text-black hover:underline dark:text-white"
+            >
+              Create Account
+            </Link>
+          </p>
         </div>
       </div>
     </div>

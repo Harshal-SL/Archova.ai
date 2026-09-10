@@ -107,7 +107,7 @@ export function generateLldSpecification(
       ],
       styling_tokens: {
         theme: "Dark / Light Mode toggle with local persistence",
-        accent_gradients: "from-indigo-500 to-purple-600",
+        accent_gradients: "Pure Black & White Monochrome with neutral grayscale accents",
         border_radius: "rounded-2xl cards, rounded-xl buttons, rounded-full chips",
       },
     };

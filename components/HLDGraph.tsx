@@ -5,13 +5,11 @@ import {
   ReactFlow,
   Background,
   Controls,
-  Panel,
   MarkerType,
   useNodesState,
   useEdgesState,
   type NodeMouseHandler,
   type Node,
-  type Edge,
 } from "@xyflow/react";
 import {
   Search,
@@ -21,13 +19,11 @@ import {
   ArrowRight,
   Maximize2,
   Minimize2,
-  Activity,
   Server,
   Database,
   ShieldCheck,
   Globe,
   Radio,
-  ExternalLink,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { architectureNodeTypes } from "./flow/ArchitectureNodes";
@@ -40,7 +36,10 @@ export default function HLDGraph() {
     setSelectedNode,
     setActivePipelineStep,
     setActiveLldType,
+    theme,
   } = useAppStore();
+
+  const isDark = theme === "dark";
 
   const initialNodes = dynamicNodes || [];
   const initialEdges = dynamicEdges || [];
@@ -155,7 +154,9 @@ export default function HLDGraph() {
     return edges.map((e) => {
       const isConnected = connectedEdgesSet ? connectedEdgesSet.has(e.id) : true;
       const isDimmed = connectedEdgesSet && !isConnected;
-      const strokeColor = isConnected && hoveredNodeId !== null ? "#818cf8" : (e.style?.stroke as string) || "#6366f1";
+      const strokeColor = isDark
+        ? (isConnected && hoveredNodeId !== null ? "#ffffff" : "#737373")
+        : (isConnected && hoveredNodeId !== null ? "#000000" : "#525252");
 
       return {
         ...e,
@@ -163,20 +164,20 @@ export default function HLDGraph() {
         selected: isConnected && hoveredNodeId !== null,
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 18,
-          height: 18,
+          width: 16,
+          height: 16,
           color: strokeColor,
         },
         style: {
           ...e.style,
           opacity: isDimmed ? 0.15 : 1,
           stroke: strokeColor,
-          strokeWidth: isConnected && hoveredNodeId !== null ? 3 : 1.75,
+          strokeWidth: isConnected && hoveredNodeId !== null ? 2.5 : 1.5,
           transition: "opacity 0.2s ease, stroke 0.2s ease",
         },
       };
     });
-  }, [edges, connectedEdgesSet, hoveredNodeId, animationsEnabled]);
+  }, [edges, connectedEdgesSet, hoveredNodeId, animationsEnabled, isDark]);
 
   // Jump to corresponding LLD tab from drawer
   const handleJumpToLld = (type: "backend" | "frontend" | "database" | "security" | "cloud") => {
@@ -185,11 +186,11 @@ export default function HLDGraph() {
   };
 
   return (
-    <div className={`relative h-full w-full bg-[#0a0b10] text-white ${isFullscreen ? "fixed inset-0 z-50" : ""}`}>
-      {/* ── Top Floating Control Panel ── */}
+    <div className={`relative h-full w-full bg-white text-black dark:bg-black dark:text-white ${isFullscreen ? "fixed inset-0 z-50" : ""}`}>
+      {/* ── Top Floating Control Panel Monochrome ── */}
       <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2">
         {/* Layer Filters */}
-        <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-950/80 p-1 backdrop-blur-md shadow-xl">
+        <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white/95 p-1 shadow-sm backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95">
           {[
             { id: "all", label: "All Layers" },
             { id: "frontend", label: "Frontend" },
@@ -202,10 +203,10 @@ export default function HLDGraph() {
             <button
               key={tab.id}
               onClick={() => setSelectedLayer(tab.id)}
-              className={`rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all ${
+              className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 ${
                 selectedLayer === tab.id
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                  ? "bg-black text-white dark:bg-white dark:text-black"
+                  : "text-neutral-600 hover:text-black hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
               }`}
             >
               {tab.label}
@@ -215,18 +216,18 @@ export default function HLDGraph() {
 
         {/* Search / Filter Input */}
         <div className="relative flex items-center">
-          <Search className="absolute left-2.5 h-3.5 w-3.5 text-zinc-400" />
+          <Search className="absolute left-2.5 h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
           <input
             type="text"
             placeholder="Filter components..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 w-44 rounded-xl border border-zinc-800 bg-zinc-950/80 pl-8 pr-3 text-xs text-zinc-200 placeholder-zinc-500 backdrop-blur-md focus:border-indigo-500 focus:outline-none"
+            className="h-8 w-44 rounded-lg border border-neutral-300 bg-white/95 pl-8 pr-3 text-xs text-black placeholder:text-neutral-400 backdrop-blur-md focus:border-black focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-white"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 text-zinc-400 hover:text-white"
+              className="absolute right-2 text-neutral-400 hover:text-black dark:hover:text-white"
             >
               <X className="h-3 w-3" />
             </button>
@@ -236,21 +237,21 @@ export default function HLDGraph() {
         {/* Flow Animation Toggle */}
         <button
           onClick={() => setAnimationsEnabled(!animationsEnabled)}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all ${
+          className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 ${
             animationsEnabled
-              ? "border-emerald-500/50 bg-emerald-950/40 text-emerald-300"
-              : "border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-white"
+              ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+              : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
           }`}
           title="Toggle data flow animation"
         >
-          <Zap className={`h-3.5 w-3.5 ${animationsEnabled ? "text-emerald-400 animate-pulse" : ""}`} />
+          <Zap className="h-3.5 w-3.5" />
           <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
         </button>
 
         {/* Fullscreen Toggle */}
         <button
           onClick={() => setIsFullscreen(!isFullscreen)}
-          className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 backdrop-blur-md hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
           title="Toggle Fullscreen"
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -259,13 +260,13 @@ export default function HLDGraph() {
 
       {/* ── React Flow Interactive Canvas or Empty State ── */}
       {nodes.length === 0 ? (
-        <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-[#0a0b10]">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 text-zinc-500 shadow-xl">
-            <Layers className="h-8 w-8 text-indigo-400/60" />
+        <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-white text-black dark:bg-black dark:text-white">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100 text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
+            <Layers className="h-8 w-8" />
           </div>
-          <h3 className="text-base font-bold text-white">No High-Level Design (HLD) Generated Yet</h3>
-          <p className="mt-1.5 max-w-md text-xs text-zinc-400 leading-relaxed">
-            Enter your project requirements in Step 1 and complete the stakeholder clarification questions to synthesize the interactive visual topology.
+          <h3 className="font-heading text-lg font-bold text-black dark:text-white">No High-Level Design (HLD) Generated Yet</h3>
+          <p className="mt-1.5 max-w-md text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            Enter your project requirements in Step 1 and complete the stakeholder interview questions to synthesize the interactive visual topology.
           </p>
         </div>
       ) : (
@@ -285,18 +286,18 @@ export default function HLDGraph() {
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
         >
-          <Background gap={22} size={1.2} color="#27272a" />
-          <Controls className="!border-zinc-800 !bg-zinc-950/90 !text-white [&>button]:!border-zinc-800 [&>button]:!bg-zinc-900 [&>button]:!text-zinc-200" />
+          <Background gap={24} size={1} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"} />
+          <Controls className="!border-neutral-300 !bg-white !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-neutral-700 dark:!bg-neutral-900 dark:!text-white dark:[&>button]:!border-neutral-800 dark:[&>button]:!bg-neutral-900 dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-neutral-800 dark:[&>button:hover]:!text-white" />
         </ReactFlow>
       )}
 
       {/* ── Interactive Component Inspector Drawer (Slide-over) ── */}
       {inspectorOpen && selectedNodeData && (
-        <div className="absolute top-0 right-0 z-30 flex h-full w-96 flex-col border-l border-zinc-800 bg-zinc-950/95 p-6 backdrop-blur-xl shadow-2xl animate-in slide-in-from-right duration-200">
+        <div className="absolute top-0 right-0 z-30 flex h-full w-96 flex-col border-l border-neutral-300 bg-white/98 p-6 backdrop-blur-xl shadow-2xl animate-in slide-in-from-right duration-200 dark:border-neutral-800 dark:bg-black/98">
           {/* Drawer Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+          <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black">
                 {selectedNodeData.type === "database" ? (
                   <Database className="h-5 w-5" />
                 ) : selectedNodeData.type === "gateway" ? (
@@ -310,10 +311,10 @@ export default function HLDGraph() {
                 )}
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                   {String(selectedNodeData.data?.code || selectedNodeData.type || "Component")}
                 </span>
-                <h3 className="text-sm font-bold text-white leading-tight">
+                <h3 className="font-heading text-sm font-bold text-black dark:text-white leading-tight">
                   {String(selectedNodeData.data?.label || selectedNodeData.id)}
                 </h3>
               </div>
@@ -321,7 +322,7 @@ export default function HLDGraph() {
 
             <button
               onClick={() => setInspectorOpen(false)}
-              className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-850 hover:text-white"
+              className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
@@ -330,9 +331,9 @@ export default function HLDGraph() {
           {/* Drawer Body Specs */}
           <div className="flex-1 overflow-y-auto py-4 space-y-4 text-xs">
             {/* Description */}
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5">
-              <span className="text-[11px] font-semibold text-zinc-400">Architecture Role</span>
-              <p className="mt-1 text-zinc-200 leading-relaxed">
+            <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+              <span className="text-[11px] font-bold text-black dark:text-white">Architecture Role</span>
+              <p className="mt-1 text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal">
                 {String(
                   selectedNodeData.data?.description ||
                     `${selectedNodeData.data?.label} architectural component in High-Level Design.`
@@ -342,17 +343,17 @@ export default function HLDGraph() {
 
             {/* Tech Stack & Protocol */}
             <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-400">Technical Specifications</span>
+              <span className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Technical Specifications</span>
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-2.5">
-                  <span className="text-[10px] text-zinc-500">Technology</span>
-                  <p className="font-semibold text-zinc-200 truncate">
+                <div className="rounded-lg border border-neutral-200 bg-white p-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+                  <span className="text-[10px] text-neutral-500 font-semibold">Technology</span>
+                  <p className="font-bold text-black dark:text-white truncate">
                     {String(selectedNodeData.data?.tech || selectedNodeData.data?.engine || "Standard Microservice")}
                   </p>
                 </div>
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-2.5">
-                  <span className="text-[10px] text-zinc-500">Protocol / Engine</span>
-                  <p className="font-semibold text-zinc-200 truncate">
+                <div className="rounded-lg border border-neutral-200 bg-white p-2.5 dark:border-neutral-800 dark:bg-neutral-900">
+                  <span className="text-[10px] text-neutral-500 font-semibold">Protocol / Engine</span>
+                  <p className="font-bold text-black dark:text-white truncate">
                     {String(selectedNodeData.data?.protocol || selectedNodeData.data?.schema || "gRPC / HTTPS")}
                   </p>
                 </div>
@@ -361,7 +362,7 @@ export default function HLDGraph() {
 
             {/* Ingress / Egress Topology Connections */}
             <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-400">Topology Connections</span>
+              <span className="text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Topology Connections</span>
               <div className="space-y-1.5">
                 {edges
                   .filter((e) => e.source === selectedNodeData.id || e.target === selectedNodeData.id)
@@ -372,16 +373,16 @@ export default function HLDGraph() {
                     return (
                       <div
                         key={e.id}
-                        className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-[11px]"
+                        className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[11px] dark:border-neutral-800 dark:bg-neutral-900"
                       >
-                        <span className="text-zinc-400">
+                        <span className="font-bold text-black dark:text-white">
                           {isSource ? "Outflow ➔" : "Inflow ⬅"}
                         </span>
-                        <span className="font-semibold text-zinc-200">
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200">
                           {String(otherNode?.data?.label || otherNodeId)}
                         </span>
                         {Boolean((e.data as Record<string, unknown> | undefined)?.label) ? (
-                          <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[9px] font-mono text-zinc-400">
+                          <span className="rounded border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-[9px] font-mono text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                             {String((e.data as Record<string, unknown>).label)}
                           </span>
                         ) : null}
@@ -393,19 +394,19 @@ export default function HLDGraph() {
           </div>
 
           {/* Drawer Footer Actions: Jump to LLD */}
-          <div className="pt-4 border-t border-zinc-800 space-y-2">
-            <span className="text-[11px] font-semibold text-zinc-400">Inspect Domain LLD</span>
+          <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
+            <span className="text-[11px] font-bold text-black dark:text-white uppercase tracking-wider">Inspect Domain LLD</span>
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => handleJumpToLld("backend")}
-                className="flex items-center justify-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900 py-2 text-xs font-semibold text-zinc-200 hover:border-indigo-500 hover:text-white"
+                className="flex items-center justify-center gap-1 rounded-lg bg-black py-2 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
               >
                 <span>Backend LLD</span>
                 <ArrowRight className="h-3 w-3" />
               </button>
               <button
                 onClick={() => handleJumpToLld("database")}
-                className="flex items-center justify-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900 py-2 text-xs font-semibold text-zinc-200 hover:border-emerald-500 hover:text-white"
+                className="flex items-center justify-center gap-1 rounded-lg border border-neutral-300 bg-white py-2 text-xs font-semibold text-neutral-800 shadow-xs transition-colors hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
               >
                 <span>Database LLD</span>
                 <ArrowRight className="h-3 w-3" />

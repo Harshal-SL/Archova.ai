@@ -21,8 +21,6 @@ import {
   Database,
   ShieldCheck,
   Globe,
-  Radio,
-  ExternalLink,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { parseLldToReactFlow } from "@/lib/graph-parser";
@@ -35,7 +33,8 @@ interface Props {
 }
 
 export default function LLDGraph({ customLldType, customLldData }: Props) {
-  const { activeLldType, lldData, openExplain } = useAppStore();
+  const { activeLldType, lldData, theme } = useAppStore();
+  const isDark = theme === "dark";
 
   const type = customLldType || activeLldType || "backend";
   const data = customLldData || lldData[activeLldType as keyof typeof lldData] || null;
@@ -101,7 +100,6 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
     return set;
   }, [hoveredNodeId, edges]);
 
-  // Display nodes with search & hover dimming
   const displayNodes = useMemo(() => {
     return nodes.map((n) => {
       if (n.type === "layerGroup") return n;
@@ -112,7 +110,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
       }
 
       if (searchQuery.trim()) {
-        const str = `${n.data?.label || ""} ${n.data?.code || ""} ${n.data?.description || ""} ${n.data?.tech || ""}`.toLowerCase();
+        const str = `${n.data?.label || ""} ${n.data?.code || ""} ${n.data?.description || ""}`.toLowerCase();
         if (!str.includes(searchQuery.toLowerCase())) {
           opacity = 0.15;
         }
@@ -123,7 +121,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         style: {
           ...n.style,
           opacity,
-          transition: "opacity 0.2s ease, transform 0.2s ease",
+          transition: "opacity 0.2s ease",
         },
       };
     });
@@ -133,7 +131,9 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
     return edges.map((e) => {
       const isConnected = connectedEdgesSet ? connectedEdgesSet.has(e.id) : true;
       const isDimmed = connectedEdgesSet && !isConnected;
-      const strokeColor = isConnected && hoveredNodeId !== null ? "#818cf8" : (e.style?.stroke as string) || "#6366f1";
+      const strokeColor = isDark
+        ? (isConnected && hoveredNodeId !== null ? "#ffffff" : "#737373")
+        : (isConnected && hoveredNodeId !== null ? "#000000" : "#525252");
 
       return {
         ...e,
@@ -141,37 +141,37 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         selected: isConnected && hoveredNodeId !== null,
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 18,
-          height: 18,
+          width: 16,
+          height: 16,
           color: strokeColor,
         },
         style: {
           ...e.style,
           opacity: isDimmed ? 0.15 : 1,
           stroke: strokeColor,
-          strokeWidth: isConnected && hoveredNodeId !== null ? 3 : 1.75,
+          strokeWidth: isConnected && hoveredNodeId !== null ? 2.5 : 1.5,
           transition: "opacity 0.2s ease, stroke 0.2s ease",
         },
       };
     });
-  }, [edges, connectedEdgesSet, hoveredNodeId, animationsEnabled]);
+  }, [edges, connectedEdgesSet, hoveredNodeId, animationsEnabled, isDark]);
 
   return (
-    <div className={`relative h-full w-full bg-[#0a0b10] text-white ${isFullscreen ? "fixed inset-0 z-50" : ""}`}>
+    <div className={`relative h-full w-full bg-white text-black dark:bg-black dark:text-white ${isFullscreen ? "fixed inset-0 z-50" : ""}`}>
       {/* ── Top Floating Control Panel ── */}
       <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2">
         {/* Search Input */}
         <div className="relative flex items-center">
-          <Search className="absolute left-2.5 h-3.5 w-3.5 text-zinc-400" />
+          <Search className="absolute left-2.5 h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
           <input
             type="text"
             placeholder={`Filter ${type.toUpperCase()} components...`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 w-48 rounded-xl border border-zinc-800 bg-zinc-950/80 pl-8 pr-3 text-xs text-zinc-200 placeholder-zinc-500 backdrop-blur-md focus:border-indigo-500 focus:outline-none"
+            className="h-8 w-48 rounded-lg border border-neutral-300 bg-white/95 pl-8 pr-3 text-xs text-black placeholder:text-neutral-400 backdrop-blur-md focus:border-black focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-white shadow-xs"
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-2 text-zinc-400 hover:text-white">
+            <button onClick={() => setSearchQuery("")} className="absolute right-2 text-neutral-400 hover:text-black dark:hover:text-white">
               <X className="h-3 w-3" />
             </button>
           )}
@@ -180,21 +180,21 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         {/* Animation Toggle */}
         <button
           onClick={() => setAnimationsEnabled(!animationsEnabled)}
-          className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all ${
+          className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 ${
             animationsEnabled
-              ? "border-emerald-500/50 bg-emerald-950/40 text-emerald-300"
-              : "border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-white"
+              ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+              : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
           }`}
           title="Toggle data flow animation"
         >
-          <Zap className={`h-3.5 w-3.5 ${animationsEnabled ? "text-emerald-400 animate-pulse" : ""}`} />
+          <Zap className="h-3.5 w-3.5" />
           <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
         </button>
 
         {/* Fullscreen Toggle */}
         <button
           onClick={() => setIsFullscreen(!isFullscreen)}
-          className="flex h-8 w-8 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-950/80 text-zinc-400 backdrop-blur-md hover:text-white"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-xs"
           title="Toggle Fullscreen"
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -203,12 +203,12 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
 
       {/* ── React Flow Canvas or Empty State ── */}
       {nodes.length === 0 ? (
-        <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-[#0a0b10]">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900/60 text-zinc-500 shadow-xl">
-            <Server className="h-8 w-8 text-indigo-400/60" />
+        <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-white text-black dark:bg-black dark:text-white">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100 text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
+            <Server className="h-8 w-8" />
           </div>
-          <h3 className="text-base font-bold text-white">No {type.toUpperCase()} LLD Generated Yet</h3>
-          <p className="mt-1.5 max-w-md text-xs text-zinc-400 leading-relaxed">
+          <h3 className="font-heading text-lg font-bold text-black dark:text-white">No {type.toUpperCase()} LLD Generated Yet</h3>
+          <p className="mt-1.5 max-w-md text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
             Low-Level Designs will be synthesized in the background once the High-Level Architecture is generated.
           </p>
         </div>
@@ -230,33 +230,32 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
         >
-          <Background gap={22} size={1.2} color="#27272a" />
-          <Controls className="!border-zinc-800 !bg-zinc-950/90 !text-white [&>button]:!border-zinc-800 [&>button]:!bg-zinc-900 [&>button]:!text-zinc-200" />
+          <Background gap={24} size={1} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"} />
+          <Controls className="!border-neutral-300 !bg-white !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-neutral-700 dark:!bg-neutral-900 dark:!text-white dark:[&>button]:!border-neutral-800 dark:[&>button]:!bg-neutral-900 dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-neutral-800 dark:[&>button:hover]:!text-white" />
         </ReactFlow>
       )}
 
-      {/* ── Interactive Component Inspector Drawer (Slide-over) ── */}
+      {/* ── Interactive Component Inspector Drawer ── */}
       {inspectorOpen && selectedNodeData && (
-        <div className="absolute top-0 right-0 z-30 flex h-full w-96 flex-col border-l border-zinc-800 bg-zinc-950/95 p-6 backdrop-blur-xl shadow-2xl animate-in slide-in-from-right duration-200">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-zinc-800">
+        <div className="absolute top-0 right-0 z-30 flex h-full w-96 flex-col border-l border-neutral-300 bg-white/98 p-6 backdrop-blur-xl shadow-2xl animate-in slide-in-from-right duration-200 dark:border-neutral-800 dark:bg-black/98">
+          <div className="flex items-center justify-between pb-4 border-b border-neutral-200 dark:border-neutral-800">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400">
-                {selectedNodeData.type === "database" ? (
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black">
+                {type === "database" ? (
                   <Database className="h-5 w-5" />
-                ) : selectedNodeData.type === "gateway" ? (
+                ) : type === "security" ? (
                   <ShieldCheck className="h-5 w-5" />
-                ) : selectedNodeData.type === "frontend" ? (
+                ) : type === "frontend" ? (
                   <Globe className="h-5 w-5" />
                 ) : (
                   <Server className="h-5 w-5" />
                 )}
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
-                  {String(selectedNodeData.data?.code || selectedNodeData.type || type.toUpperCase())}
+                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                  {type.toUpperCase()} LLD
                 </span>
-                <h3 className="text-sm font-bold text-white leading-tight">
+                <h3 className="font-heading text-sm font-bold text-black dark:text-white leading-tight">
                   {String(selectedNodeData.data?.label || selectedNodeData.id)}
                 </h3>
               </div>
@@ -264,69 +263,30 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
 
             <button
               onClick={() => setInspectorOpen(false)}
-              className="rounded-lg p-1 text-zinc-400 hover:bg-zinc-850 hover:text-white"
+              className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-900 dark:hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
-          {/* Body */}
           <div className="flex-1 overflow-y-auto py-4 space-y-4 text-xs">
-            <div className="rounded-xl border border-zinc-800/80 bg-zinc-900/60 p-3.5">
-              <span className="text-[11px] font-semibold text-zinc-400">Architecture Specification</span>
-              <p className="mt-1 text-zinc-200 leading-relaxed">
+            <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-900">
+              <span className="text-[11px] font-bold text-black dark:text-white">LLD Specification</span>
+              <p className="mt-1 text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal">
                 {String(
                   selectedNodeData.data?.description ||
-                    `${selectedNodeData.data?.label} specification in ${type.toUpperCase()} LLD.`
+                    `${selectedNodeData.data?.label} detailed architectural component in ${type.toUpperCase()} LLD.`
                 )}
               </p>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-400">Technical Details</span>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-2.5">
-                  <span className="text-[10px] text-zinc-500">Framework / Tech</span>
-                  <p className="font-semibold text-zinc-200 truncate">
-                    {String(selectedNodeData.data?.tech || selectedNodeData.data?.engine || "Standard")}
-                  </p>
-                </div>
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-2.5">
-                  <span className="text-[10px] text-zinc-500">Protocol / Schema</span>
-                  <p className="font-semibold text-zinc-200 truncate">
-                    {String(selectedNodeData.data?.protocol || selectedNodeData.data?.schema || type.toUpperCase())}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-400">Connected Ingress & Egress</span>
-              <div className="space-y-1.5">
-                {edges
-                  .filter((e) => e.source === selectedNodeData.id || e.target === selectedNodeData.id)
-                  .map((e) => {
-                    const isSource = e.source === selectedNodeData.id;
-                    const otherNodeId = isSource ? e.target : e.source;
-                    const otherNode = nodes.find((n) => n.id === otherNodeId);
-                    return (
-                      <div
-                        key={e.id}
-                        className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2 text-[11px]"
-                      >
-                        <span className="text-zinc-400">{isSource ? "Outflow ➔" : "Inflow ⬅"}</span>
-                        <span className="font-semibold text-zinc-200">
-                          {String(otherNode?.data?.label || otherNodeId)}
-                        </span>
-                        {Boolean((e.data as Record<string, unknown> | undefined)?.label) ? (
-                          <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[9px] font-mono text-zinc-400">
-                            {String((e.data as Record<string, unknown>).label)}
-                          </span>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-              </div>
+            <div className="rounded-lg border border-neutral-200 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900 font-mono text-[11px]">
+              <span className="text-neutral-500 block mb-1 font-sans font-semibold text-[10px] uppercase tracking-wider">
+                Raw Component Node
+              </span>
+              <pre className="whitespace-pre-wrap overflow-x-auto text-neutral-800 dark:text-neutral-200">
+                {JSON.stringify(selectedNodeData.data, null, 2)}
+              </pre>
             </div>
           </div>
         </div>

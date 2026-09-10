@@ -116,30 +116,34 @@ interface AppState {
   closeExplain: () => void;
 }
 
-import { hldNodes as initialHldNodes, hldEdges as initialHldEdges, dummyHldData, dummyAllLldData } from "./mock-data";
+import {
+  hldNodes as initialHldNodes,
+  hldEdges as initialHldEdges,
+  dummyHldData,
+  dummyAllLldData,
+  dummyArsrs,
+  sampleInterviewQuestions,
+} from "./mock-data";
 
 const initialLldStatus: Record<LldType, LldStatusType> = {
-  backend: "NOT_STARTED",
-  frontend: "NOT_STARTED",
-  database: "NOT_STARTED",
-  security: "NOT_STARTED",
-  cloud: "NOT_STARTED",
+  backend: "READY",
+  frontend: "READY",
+  database: "READY",
+  security: "READY",
+  cloud: "READY",
 };
 
-const initialLldData: Record<LldType, Record<string, unknown> | null> = {
-  backend: null,
-  frontend: null,
-  database: null,
-  security: null,
-  cloud: null,
-};
+const initialLldData: Record<LldType, Record<string, unknown> | null> = dummyAllLldData as Record<
+  LldType,
+  Record<string, unknown> | null
+>;
 
 const initialLldMessages: Record<LldType, string | null> = {
-  backend: null,
-  frontend: null,
-  database: null,
-  security: null,
-  cloud: null,
+  backend: "Sample Backend LLD blueprint loaded",
+  frontend: "Sample Frontend LLD blueprint loaded",
+  database: "Sample Database LLD blueprint loaded",
+  security: "Sample Security LLD blueprint loaded",
+  cloud: "Sample Cloud LLD blueprint loaded",
 };
 
 let sessionCounter = 0;
@@ -247,13 +251,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   sidebarOpen: true,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
 
-  // API Health
-  apiConnected: false,
-  apiVersion: "2.0.0",
+  // API Health — Standalone Frontend Mode
+  apiConnected: true,
+  apiVersion: "2.5.0-client",
   checkApiHealth: async () => {
-    const res = await aiEngineApi.checkHealth();
-    set({ apiConnected: res.ok, apiVersion: res.version || "2.0.0" });
-    return res.ok;
+    set({ apiConnected: true, apiVersion: "2.5.0-client" });
+    return true;
   },
 
   // Step-by-Step / Slider Pipeline Navigation
@@ -272,22 +275,22 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Generation Pipeline
-  generationId: null,
-  generationStatus: "IDLE",
-  currentQuestion: null,
-  interviewCompleted: false,
+  // Generation Pipeline — Preloaded with Sample Data
+  generationId: "sample-gen-library-system",
+  generationStatus: "COMPLETED",
+  currentQuestion: sampleInterviewQuestions[0],
+  interviewCompleted: true,
   activeProcess: null,
 
-  // Specs & Diagrams
-  arsrsData: null,
-  hldData: null,
-  hldNodes: [],
-  hldEdges: [],
+  // Specs & Diagrams — Preloaded with Sample Data
+  arsrsData: dummyArsrs as Record<string, unknown>,
+  hldData: dummyHldData as Record<string, unknown>,
+  hldNodes: initialHldNodes,
+  hldEdges: initialHldEdges,
   selectedNode: null,
   setSelectedNode: (id) => set({ selectedNode: id }),
 
-  // LLDs
+  // LLDs — Preloaded with Sample Data
   lldStatus: initialLldStatus,
   lldData: initialLldData,
   lldMessages: initialLldMessages,
@@ -331,19 +334,19 @@ export const useAppStore = create<AppState>((set, get) => ({
   setLogs: (logs) => set({ logs }),
   clearLogs: () => set({ logs: [] }),
 
-  // Reset Session
+  // Reset Session — Resets to rich sample data
   resetGenerationSession: () => {
     set({
       activePipelineStep: 1,
-      generationId: null,
-      generationStatus: "IDLE",
-      currentQuestion: null,
-      interviewCompleted: false,
+      generationId: "sample-gen-library-system",
+      generationStatus: "COMPLETED",
+      currentQuestion: sampleInterviewQuestions[0],
+      interviewCompleted: true,
       activeProcess: null,
-      arsrsData: null,
-      hldData: null,
-      hldNodes: [],
-      hldEdges: [],
+      arsrsData: dummyArsrs as Record<string, unknown>,
+      hldData: dummyHldData as Record<string, unknown>,
+      hldNodes: initialHldNodes,
+      hldEdges: initialHldEdges,
       selectedNode: null,
       lldStatus: initialLldStatus,
       lldData: initialLldData,
@@ -352,9 +355,30 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
   },
 
-  // Chat sessions
-  sessions: [],
-  activeSessionId: null,
+  // Chat sessions — Preloaded with sample session
+  sessions: [
+    {
+      id: "session-sample-library",
+      title: "College Library Management",
+      generationId: "sample-gen-library-system",
+      hasArchitecture: true,
+      messages: [
+        {
+          id: "msg-sample-u1",
+          role: "user",
+          content:
+            "Build a modern College Library Management System. Students authenticate securely, search the catalog, and borrow or reserve books. Librarians manage inventory, circulation, overdue fines, and administrative reports.",
+        },
+        {
+          id: "msg-sample-ai1",
+          role: "ai",
+          content:
+            "I've analyzed your requirements and synthesized the full architecture pipeline:\n\n✓ **ARSRS Document**: Requirements specification, non-functional constraints, and domain entities\n✓ **High-Level Design (HLD)**: Interactive microservices topology with 9 components and live flow\n✓ **5 Low-Level Designs (LLDs)**: Backend, Frontend, Database, Security, and Cloud blueprints\n\nNavigate through the steps above to explore the generated architecture!",
+        },
+      ],
+    },
+  ],
+  activeSessionId: "session-sample-library",
 
   loadSessionsFromSupabase: async () => {
     const currentUser = get().user;
