@@ -36,6 +36,7 @@ export default function HLDGraph() {
     setSelectedNode,
     setActivePipelineStep,
     setActiveLldType,
+    openExplain,
     theme,
   } = useAppStore();
 
@@ -393,25 +394,19 @@ export default function HLDGraph() {
             </div>
           </div>
 
-          {/* Drawer Footer Actions: Jump to LLD */}
+          {/* Drawer Footer Actions */}
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
-            <span className="text-[11px] font-bold text-black dark:text-white uppercase tracking-wider">Inspect Domain LLD</span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleJumpToLld("backend")}
-                className="flex items-center justify-center gap-1 rounded-lg bg-black py-2 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-              >
-                <span>Backend LLD</span>
-                <ArrowRight className="h-3 w-3" />
-              </button>
-              <button
-                onClick={() => handleJumpToLld("database")}
-                className="flex items-center justify-center gap-1 rounded-lg border border-neutral-300 bg-white py-2 text-xs font-semibold text-neutral-800 shadow-xs transition-colors hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
-              >
-                <span>Database LLD</span>
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                const label = String(selectedNodeData.data?.label || selectedNodeData.id);
+                const desc = String(selectedNodeData.data?.description || `High-Level Design component: ${label}`);
+                openExplain(selectedNodeData.id, `${label} — Architecture Specification`, desc);
+              }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-black py-2.5 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
+            >
+              <span>View Full Component Specification</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
           </div>
         </div>
       )}
