@@ -49,7 +49,6 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
       return;
     }
 
-    // 1. Initial historical logs fetch
     aiEngineApi
       .getLogs(generationId)
       .then((res) => {
@@ -59,7 +58,6 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
       })
       .catch(() => {});
 
-    // 2. Connect to EventSource (SSE)
     const sseUrl = aiEngineApi.getLogsStreamUrl(generationId);
     const eventSource = new EventSource(sseUrl);
     sseRef.current = eventSource;
@@ -86,56 +84,34 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
   }, [generationId, addLogEntry, setLogs]);
 
   const getStageBadgeClass = (stage: string) => {
-    const s = stage.toLowerCase().replace(/_/g, "-");
-    switch (s) {
-      case "ree":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      case "sae":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-      case "interview":
-        return "bg-amber-500/20 text-amber-400 border-amber-500/30";
-      case "lld-backend":
-        return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
-      case "lld-frontend":
-        return "bg-pink-500/20 text-pink-400 border-pink-500/30";
-      case "lld-database":
-        return "bg-sky-500/20 text-sky-400 border-sky-500/30";
-      case "lld-security":
-        return "bg-rose-500/20 text-rose-400 border-rose-500/30";
-      case "lld-cloud":
-        return "bg-teal-500/20 text-teal-400 border-teal-500/30";
-      case "client":
-        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
-      default:
-        return "bg-indigo-500/20 text-indigo-400 border-indigo-500/30";
-    }
+    return "bg-neutral-100 text-black border-neutral-300 dark:bg-neutral-900 dark:text-white dark:border-neutral-700";
   };
 
   return (
-    <div className="flex flex-col border-t border-gray-200 bg-[#090d16] text-gray-200 dark:border-gray-800 font-mono text-xs overflow-hidden">
+    <div className="flex flex-col border-t-2 border-t-black dark:border-t-white bg-white text-black font-mono text-xs overflow-hidden dark:bg-black dark:text-white">
       {/* Terminal Header */}
-      <div className="flex items-center justify-between bg-[#060911] px-3 py-2 border-b border-gray-800/80">
+      <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-100/80 px-3 py-2 dark:border-neutral-800 dark:bg-neutral-900">
         <div className="flex items-center gap-1.5 min-w-0">
           <div className="flex items-center gap-1 shrink-0">
-            <span className="h-2 w-2 rounded-full bg-red-500/80" />
-            <span className="h-2 w-2 rounded-full bg-amber-500/80" />
-            <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
+            <span className="h-2 w-2 rounded-full bg-neutral-400 dark:bg-neutral-600" />
+            <span className="h-2 w-2 rounded-full bg-neutral-400 dark:bg-neutral-600" />
+            <span className="h-2 w-2 rounded-full bg-neutral-400 dark:bg-neutral-600" />
           </div>
-          <div className="flex items-center gap-1 font-semibold text-gray-300 truncate">
-            <Terminal className="h-3 w-3 text-indigo-400 shrink-0" />
-            <span className="text-[11px] truncate">Pipeline Logs</span>
+          <div className="flex items-center gap-1 font-bold truncate text-black dark:text-white">
+            <Terminal className="h-3.5 w-3.5 text-black dark:text-white shrink-0" />
+            <span className="font-heading text-[11px] font-bold tracking-tight truncate">Pipeline Stream</span>
           </div>
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
           {generationId && (
-            <span className="flex items-center gap-1 text-[10px] text-emerald-400">
+            <span className="flex items-center gap-1 text-[10px] text-black dark:text-white font-semibold">
               <Radio className="h-2.5 w-2.5 animate-pulse" />
-              <span className="hidden sm:inline">SSE</span>
+              <span className="hidden sm:inline">LIVE</span>
             </span>
           )}
 
-          <span className="rounded bg-gray-800 px-1.5 py-0.5 text-[9px] font-bold text-gray-400">
+          <span className="rounded border border-neutral-300 bg-neutral-200 px-1.5 py-0.5 text-[9px] font-bold text-black dark:border-neutral-700 dark:bg-neutral-800 dark:text-white">
             {logs.length}
           </span>
 
@@ -143,10 +119,10 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
             onClick={toggleAutoScrollLogs}
             title="Toggle Auto-Scroll"
             className={clsx(
-              "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-colors",
+              "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
               autoScrollLogs
-                ? "bg-indigo-500/20 text-indigo-300"
-                : "bg-gray-800 text-gray-400 hover:text-white"
+                ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
+                : "border border-neutral-300 bg-white text-neutral-600 hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-400 dark:hover:text-white"
             )}
           >
             {autoScrollLogs ? "Scroll:ON" : "OFF"}
@@ -155,7 +131,7 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
           <button
             onClick={clearLogs}
             title="Clear logs"
-            className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
+            className="rounded p-1 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
           >
             <Trash2 className="h-3 w-3" />
           </button>
@@ -163,7 +139,7 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
           <button
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expand logs" : "Collapse logs"}
-            className="rounded p-1 text-gray-400 hover:bg-gray-800 hover:text-white"
+            className="rounded p-1 text-neutral-500 hover:bg-neutral-200 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
           >
             {collapsed ? (
               <ChevronUp className="h-3 w-3" />
@@ -178,11 +154,11 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
       {!collapsed && (
         <div
           ref={terminalBodyRef}
-          className="h-44 overflow-y-auto p-2.5 space-y-1 bg-[#060911]/90"
+          className="h-44 overflow-y-auto p-2.5 space-y-1 bg-white text-black dark:bg-black dark:text-white"
         >
           {logs.length === 0 ? (
-            <div className="py-4 text-center text-gray-500 italic text-[11px]">
-              <ScrollText className="mx-auto h-5 w-5 mb-1 text-gray-600" />
+            <div className="py-4 text-center text-neutral-400 dark:text-neutral-600 italic text-[11px]">
+              <ScrollText className="mx-auto h-5 w-5 mb-1 text-neutral-400" />
               <span>Real-time pipeline logs will stream here.</span>
             </div>
           ) : (
@@ -191,7 +167,7 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
                 key={idx}
                 className="flex items-baseline gap-1.5 font-mono text-[10px] leading-relaxed break-words"
               >
-                <span className="shrink-0 text-gray-500">[{entry.timestamp}]</span>
+                <span className="shrink-0 text-neutral-400 dark:text-neutral-600">[{entry.timestamp}]</span>
                 <span
                   className={clsx(
                     "shrink-0 rounded border px-1 py-0.2 text-[8px] font-bold uppercase",
@@ -204,10 +180,10 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
                   className={clsx(
                     "flex-1",
                     entry.level === "ERROR"
-                      ? "font-semibold text-red-400"
+                      ? "font-bold text-red-600 dark:text-red-400"
                       : entry.level === "WARNING"
-                      ? "text-amber-300"
-                      : "text-gray-200"
+                      ? "font-bold text-amber-600 dark:text-amber-400"
+                      : "text-black dark:text-white"
                   )}
                 >
                   {entry.message}

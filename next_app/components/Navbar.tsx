@@ -6,35 +6,33 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Cpu,
   LogOut,
-  Radio,
   RotateCcw,
-  RefreshCw,
   Zap,
+  ArrowUpRight,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, type PipelineStep } from "@/lib/store";
 import clsx from "clsx";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const isChat = pathname === "/chat";
+  const isLanding = pathname === "/";
 
   const {
     user,
     initAuth,
     signOut,
-    apiConnected,
-    apiVersion,
-    checkApiHealth,
     generationId,
     resetGenerationSession,
+    activePipelineStep,
+    setActivePipelineStep,
   } = useAppStore();
 
   useEffect(() => {
     initAuth();
-    checkApiHealth();
-  }, [initAuth, checkApiHealth]);
+  }, [initAuth]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -49,61 +47,94 @@ export default function Navbar() {
 
   const userInitial = displayName.charAt(0).toUpperCase();
 
+  const navLinks = [
+    { label: "Home", href: isLanding ? "#home" : "/#home" },
+    { label: "About", href: isLanding ? "#about" : "/#about" },
+    { label: "Services", href: isLanding ? "#services" : "/#services" },
+    { label: "Contact", href: isLanding ? "#contact" : "/#contact" },
+  ];
+
   return (
-    <nav className="fixed top-0 z-50 flex h-14 w-full items-center justify-between border-b border-gray-200 bg-white/80 px-4 backdrop-blur-md dark:border-gray-800 dark:bg-gray-950/80 md:px-6">
-      {/* Brand logo */}
-      <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-md shadow-indigo-500/20">
-            <Cpu className="h-4 w-4 text-white" />
+    <nav className="fixed top-0 z-50 flex h-14 w-full items-center justify-between border-b border-neutral-200 bg-white/90 px-4 backdrop-blur-xl transition-colors dark:border-neutral-800 dark:bg-black/90 md:px-8">
+      {/* Brand logo & Nav links */}
+      <div className="flex items-center gap-6 lg:gap-8">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
+            <Cpu className="h-4 w-4" />
           </div>
-          <span className="bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
-            ArchAI
+          <span className="font-heading font-extrabold text-lg tracking-tight text-black dark:text-white">
+            Arch<span className="text-neutral-500 dark:text-neutral-400">AI</span>
           </span>
         </Link>
 
-        {/* API Connection Health Badge */}
+        {/* Section Links for Landing Page */}
+        {!isChat && (
+          <div className="hidden md:flex items-center gap-6 text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="transition-colors hover:text-black dark:hover:text-white"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* View Switcher for Chat Studio */}
+        {isChat && (
+          <div className="hidden md:flex items-center rounded-lg border border-neutral-300 bg-neutral-100 p-0.5 dark:border-neutral-800 dark:bg-neutral-900">
+            {[
+              { step: 1, label: "1. Interview" },
+              { step: 2, label: "2. ARSRS Spec" },
+              { step: 3, label: "3. Visual HLD" },
+              { step: 4, label: "4. Low-Level Designs" },
+            ].map(({ step, label }) => (
+              <button
+                key={step}
+                onClick={() => setActivePipelineStep(step as PipelineStep)}
+                className={clsx(
+                  "rounded-md px-3 py-1 text-xs font-semibold transition-all",
+                  activePipelineStep === step
+                    ? "bg-black text-white shadow-xs dark:bg-white dark:text-black"
+                    : "text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Frontend Standalone Sample Mode Badge */}
         <div className="hidden sm:flex items-center gap-2">
-          <button
-            onClick={() => checkApiHealth()}
-            title="Click to recheck API health"
-            className={clsx(
-              "flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-all",
-              apiConnected
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20"
-            )}
-          >
-            <span
-              className={clsx(
-                "h-1.5 w-1.5 rounded-full",
-                apiConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
-              )}
-            />
-            <span>{apiConnected ? `Engine: Ready (v${apiVersion})` : "Engine: Initializing..."}</span>
-          </button>
+          <span className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-2.5 py-0.5 text-[11px] font-semibold text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
+            <span className="h-1.5 w-1.5 rounded-full bg-black dark:bg-white animate-pulse" />
+            <span>Sample Mode</span>
+          </span>
 
           {/* Active Generation ID badge */}
-          {generationId && (
-            <span className="rounded-full border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 font-mono">
-              ID: {generationId.slice(0, 12)}...
+          {generationId && isChat && (
+            <span className="rounded-full border border-neutral-300 bg-neutral-100 px-2.5 py-0.5 text-[11px] font-semibold text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 font-mono">
+              ID: {generationId.slice(0, 8)}...
             </span>
           )}
         </div>
       </div>
 
       {/* Right controls */}
-      <div className="flex items-center gap-2.5">
-        {/* Load Demo Graphics / Test Button */}
+      <div className="flex items-center gap-3">
+        {/* Load Demo Graphics / Test Button on Chat */}
         {isChat && (
           <button
             onClick={() => {
               useAppStore.getState().loadDemoData();
             }}
             title="Load Sample Outputs & Test Graphics"
-            className="flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 transition-all shadow-sm"
+            className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1.5 text-xs font-bold text-neutral-900 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-xs"
           >
-            <Zap className="h-3.5 w-3.5 text-indigo-500 animate-pulse" />
+            <Zap className="h-3.5 w-3.5 text-neutral-900 dark:text-neutral-100 animate-pulse" />
             <span>Load Demo Outputs</span>
           </button>
         )}
@@ -113,11 +144,22 @@ export default function Navbar() {
           <button
             onClick={resetGenerationSession}
             title="Reset Architecture Session"
-            className="flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="flex items-center gap-1 rounded-full border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-300 dark:hover:border-white dark:hover:text-white transition-colors"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">New Session</span>
           </button>
+        )}
+
+        {/* Fast link to Studio from outside */}
+        {!isChat && (
+          <Link
+            href="/chat"
+            className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-900 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 transition-all"
+          >
+            <span>Studio</span>
+            <ArrowUpRight className="h-3 w-3" />
+          </Link>
         )}
 
         <ThemeToggle />
@@ -126,9 +168,9 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <Link
               href="/chat"
-              className="flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-medium text-black transition-colors hover:border-black dark:border-neutral-700 dark:bg-black dark:text-white dark:hover:border-white"
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-xs font-bold text-white shadow-sm">
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black text-[10px] font-bold shadow-sm">
                 {userInitial}
               </div>
               <span className="hidden sm:inline max-w-[120px] truncate">{displayName}</span>
@@ -137,7 +179,7 @@ export default function Navbar() {
               onClick={handleSignOut}
               title="Sign Out"
               aria-label="Sign Out"
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-500 dark:hover:bg-gray-800"
+              className="rounded-full p-1.5 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
             >
               <LogOut className="h-4 w-4" />
             </button>
@@ -146,15 +188,15 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <Link
               href="/signin"
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:text-black dark:text-neutral-300 dark:hover:text-white"
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-3.5 py-1.5 text-sm font-medium text-white shadow-sm transition-opacity hover:opacity-90"
+              className="rounded-full bg-black px-4 py-1.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 hover:-translate-y-0.5 active:translate-y-0"
             >
-              Sign Up
+              Get Started
             </Link>
           </div>
         )}

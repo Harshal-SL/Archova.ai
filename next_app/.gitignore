@@ -37,6 +37,7 @@ yarn-error.log*
 # IDE, MCP configs, and temporary files
 .vscode/
 vscode/
+.gemini/
 supabase/.temp/
 
 # vercel

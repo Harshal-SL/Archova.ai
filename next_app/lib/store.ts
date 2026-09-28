@@ -30,6 +30,20 @@ export type PipelineStep = 1 | 2 | 3 | 4;
 // 3: High-Level Design (HLD)
 // 4: Low-Level Designs (5 LLDs: Backend, Frontend, Database, Security, Cloud)
 
+export interface ActiveAgentInfo {
+  id: string;
+  name: string;
+  role: string;
+  icon: "brain" | "mic" | "cpu" | "network" | "sparkles";
+  task: string;
+  status: "thinking" | "working" | "completed" | "idle";
+  stage: "REE" | "INTERVIEW" | "SAE" | "HLD" | "READY" | string;
+  progressPercent?: number;
+  thought?: string;
+}
+
+export type WorkspaceView = "chat" | "hld" | "split";
+
 interface AppState {
   // ── Auth ──
   user: User | null;
@@ -48,6 +62,14 @@ interface AppState {
   // ── Sidebar ──
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+
+  // ── Active Workspace View (ChatGPT style) ──
+  activeView: WorkspaceView;
+  setActiveView: (v: WorkspaceView) => void;
+
+  // ── Active Agent Telemetry ──
+  activeAgent: ActiveAgentInfo | null;
+  setActiveAgent: (agent: ActiveAgentInfo | null) => void;
 
   // ── API & Engine Status ──
   apiConnected: boolean;
@@ -74,6 +96,7 @@ interface AppState {
 
   // ── Specifications & Diagrams ──
   arsrsData: Record<string, unknown> | null;
+  setArsrsData: (data: Record<string, unknown> | null) => void;
   hldData: Record<string, unknown> | null;
   hldNodes: Node[];
   hldEdges: Edge[];
@@ -116,30 +139,34 @@ interface AppState {
   closeExplain: () => void;
 }
 
-import { hldNodes as initialHldNodes, hldEdges as initialHldEdges, dummyHldData, dummyAllLldData } from "./mock-data";
+import {
+  hldNodes as initialHldNodes,
+  hldEdges as initialHldEdges,
+  dummyHldData,
+  dummyAllLldData,
+  dummyArsrs,
+  sampleInterviewQuestions,
+} from "./mock-data";
 
 const initialLldStatus: Record<LldType, LldStatusType> = {
-  backend: "NOT_STARTED",
-  frontend: "NOT_STARTED",
-  database: "NOT_STARTED",
-  security: "NOT_STARTED",
-  cloud: "NOT_STARTED",
+  backend: "READY",
+  frontend: "READY",
+  database: "READY",
+  security: "READY",
+  cloud: "READY",
 };
 
-const initialLldData: Record<LldType, Record<string, unknown> | null> = {
-  backend: null,
-  frontend: null,
-  database: null,
-  security: null,
-  cloud: null,
-};
+const initialLldData: Record<LldType, Record<string, unknown> | null> = dummyAllLldData as Record<
+  LldType,
+  Record<string, unknown> | null
+>;
 
 const initialLldMessages: Record<LldType, string | null> = {
-  backend: null,
-  frontend: null,
-  database: null,
-  security: null,
-  cloud: null,
+  backend: "Sample Backend LLD blueprint loaded",
+  frontend: "Sample Frontend LLD blueprint loaded",
+  database: "Sample Database LLD blueprint loaded",
+  security: "Sample Security LLD blueprint loaded",
+  cloud: "Sample Cloud LLD blueprint loaded",
 };
 
 let sessionCounter = 0;
@@ -247,13 +274,30 @@ export const useAppStore = create<AppState>((set, get) => ({
   sidebarOpen: true,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
 
-  // API Health
-  apiConnected: false,
-  apiVersion: "2.0.0",
+  // Active Workspace View
+  activeView: "chat",
+  setActiveView: (view) => set({ activeView: view }),
+
+  // Active Agent Telemetry
+  activeAgent: {
+    id: "agent-ree",
+    name: "Requirements Engineering Agent",
+    role: "Input Understanding & Scope Extraction",
+    icon: "brain",
+    task: "Ready to analyze software requirements statement",
+    status: "idle",
+    stage: "READY",
+    progressPercent: 0,
+    thought: "Awaiting architectural requirements prompt to begin multi-agent pipeline.",
+  },
+  setActiveAgent: (agent) => set({ activeAgent: agent }),
+
+  // API Health — Standalone Frontend Mode
+  apiConnected: true,
+  apiVersion: "2.5.0-client",
   checkApiHealth: async () => {
-    const res = await aiEngineApi.checkHealth();
-    set({ apiConnected: res.ok, apiVersion: res.version || "2.0.0" });
-    return res.ok;
+    set({ apiConnected: true, apiVersion: "2.5.0-client" });
+    return true;
   },
 
   // Step-by-Step / Slider Pipeline Navigation
@@ -272,22 +316,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Generation Pipeline
+  // Generation Pipeline — Clean initial state
   generationId: null,
   generationStatus: "IDLE",
   currentQuestion: null,
   interviewCompleted: false,
   activeProcess: null,
 
-  // Specs & Diagrams
+  // Specs & Diagrams — Clean initial state
   arsrsData: null,
+  setArsrsData: (data) => set({ arsrsData: data }),
   hldData: null,
   hldNodes: [],
   hldEdges: [],
   selectedNode: null,
   setSelectedNode: (id) => set({ selectedNode: id }),
 
-  // LLDs
+  // LLDs — Preloaded with Sample Data
   lldStatus: initialLldStatus,
   lldData: initialLldData,
   lldMessages: initialLldMessages,
@@ -331,7 +376,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setLogs: (logs) => set({ logs }),
   clearLogs: () => set({ logs: [] }),
 
-  // Reset Session
+  // Reset Session — Resets to clean new state
   resetGenerationSession: () => {
     set({
       activePipelineStep: 1,
@@ -349,10 +394,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       lldData: initialLldData,
       lldMessages: initialLldMessages,
       logs: [],
+      activeSessionId: null,
     });
   },
 
-  // Chat sessions
   sessions: [],
   activeSessionId: null,
 
@@ -377,10 +422,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       }));
 
       set({ sessions: loadedSessions });
-
-      if (loadedSessions.length > 0 && !get().activeSessionId) {
-        await get().setActiveSession(loadedSessions[0].id);
-      }
     } catch {
       // Fallback
     }

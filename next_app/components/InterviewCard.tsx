@@ -20,7 +20,6 @@ interface Props {
 export default function InterviewCard({ onArchitectureGenerated }: Props) {
   const {
     generationId,
-    generationStatus,
     currentQuestion,
     interviewCompleted,
     addLogEntry,
@@ -101,39 +100,36 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       setError("Please select or enter an answer before submitting.");
       return;
     }
-    if (!generationId || !currentQuestion) {
-      setError("No active session found.");
-      return;
-    }
 
-    setError(null);
+    if (!generationId) return;
+
     setSubmitting(true);
+    setError(null);
 
     const now = new Date().toTimeString().split(" ")[0];
     addLogEntry({
       timestamp: now,
       stage: "INTERVIEW",
-      message: `Submitted answer for '${currentQuestion.question_id}': "${answer.slice(0, 60)}..."`,
+      message: `Answer submitted: "${answer.slice(0, 40)}${answer.length > 40 ? "..." : ""}"`,
       level: "INFO",
     });
 
     try {
-      const response = await aiEngineApi.submitAnswer(
-        generationId,
-        currentQuestion.question_id,
-        answer
-      );
+      const qId = currentQuestion?.question_id || "q1";
+      const response = await aiEngineApi.submitAnswer(generationId, qId, answer);
 
-      if (response.status === "INTERVIEW_IN_PROGRESS" && response.next_question) {
-        useAppStore.setState({
-          currentQuestion: response.next_question,
-          interviewCompleted: false,
-        });
-      } else {
-        useAppStore.setState({
-          currentQuestion: null,
-          interviewCompleted: true,
-          generationStatus: "INTERVIEW_COMPLETED",
+      useAppStore.setState({
+        interviewCompleted: response.status === "INTERVIEW_COMPLETED",
+        currentQuestion: response.next_question || null,
+        generationStatus: response.status,
+      });
+
+      if (response.status === "INTERVIEW_COMPLETED") {
+        addLogEntry({
+          timestamp: new Date().toTimeString().split(" ")[0],
+          stage: "INTERVIEW",
+          message: "✓ All clarifying questions answered. Ready to generate architecture!",
+          level: "INFO",
         });
       }
     } catch (err) {
@@ -142,7 +138,7 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
         stage: "CLIENT",
-        message: `❌ Submit error: ${msg}`,
+        message: `❌ Submit failed: ${msg}`,
         level: "ERROR",
       });
     } finally {
@@ -153,31 +149,26 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
   const handleGenerateArchitecture = async () => {
     if (!generationId) return;
 
-    setError(null);
     setGeneratingArch(true);
+    setError(null);
 
     const now = new Date().toTimeString().split(" ")[0];
     addLogEntry({
       timestamp: now,
-      stage: "CLIENT",
-      message: "⚙️ Triggering Architecture Generation (ARSRS + HLD)...",
+      stage: "SAE",
+      message: "🚀 Starting full architecture synthesis (ARSRS + HLD)...",
       level: "INFO",
     });
 
     try {
-      useAppStore.setState({ generationStatus: "GENERATING_ARCH" });
       const response = await aiEngineApi.generateArchitecture(generationId);
 
-      // Parse HLD to ReactFlow graph
-      const { nodes, edges } = await import("@/lib/graph-parser").then((m) =>
-        m.parseHldToReactFlow(response.hld)
-      );
-
+      const hldObj = response.hld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
       useAppStore.setState({
-        arsrsData: response.arsrs || {},
-        hldData: response.hld || {},
-        hldNodes: nodes,
-        hldEdges: edges,
+        arsrsData: response.arsrs || null,
+        hldData: response.hld || null,
+        hldNodes: (hldObj?.nodes as any) || [],
+        hldEdges: (hldObj?.edges as any) || [],
         generationStatus: "COMPLETED",
         activePipelineStep: 2,
       });
@@ -211,41 +202,40 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
   // Render interview completed state
   if (interviewCompleted) {
     return (
-      <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 backdrop-blur-md dark:border-emerald-500/20 dark:bg-emerald-950/20">
+      <div className="rounded-3xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900 p-7 shadow-lg backdrop-blur-xl">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="h-6 w-6" />
+          <div className="mb-3.5 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-md">
+            <CheckCircle2 className="h-7 w-7" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-            Interview Completed!
+          <h3 className="font-heading text-xl font-extrabold text-black dark:text-white">
+            Requirement Clarification Completed
           </h3>
-          <p className="mt-1 max-w-md text-xs text-gray-600 dark:text-gray-300">
-            All clarifying requirements have been captured. You are ready to generate
-            the formal ARSRS specification and High-Level Design (HLD).
+          <p className="mt-1.5 max-w-md text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
+            All system boundaries and non-functional requirements have been analyzed. You can now synthesize the formal ARSRS specification and High-Level Design (HLD).
           </p>
 
           {error && (
-            <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-1.5 text-xs text-red-600 dark:text-red-400">
+            <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
               {error}
             </p>
           )}
 
-          <div className="mt-5 flex gap-3">
+          <div className="mt-6 flex gap-3">
             <button
               onClick={handleGenerateArchitecture}
               disabled={generatingArch}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-all hover:opacity-95 hover:shadow-xl disabled:opacity-60"
+              className="flex items-center gap-2.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-7 py-3 text-xs sm:text-sm font-bold shadow-md transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-50"
             >
               {generatingArch ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating ARSRS + HLD...
+                  Synthesizing ARSRS + HLD...
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4" />
                   Generate Architecture (ARSRS + HLD)
-                  <CornerDownLeft className="h-3.5 w-3.5 opacity-70" />
+                  <CornerDownLeft className="h-3.5 w-3.5 opacity-75" />
                 </>
               )}
             </button>
@@ -274,55 +264,43 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
     );
   });
 
-  const priorityColor =
-    currentQuestion.priority === "high"
-      ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30"
-      : currentQuestion.priority === "low"
-      ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30"
-      : "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30";
-
   return (
-    <div className="rounded-2xl border border-indigo-500/30 bg-white/90 p-5 shadow-lg backdrop-blur-md dark:border-indigo-500/20 dark:bg-gray-900/90">
+    <div className="relative rounded-3xl border border-neutral-300 border-t-4 border-t-black bg-white p-6 sm:p-7 shadow-xl dark:border-neutral-800 dark:border-t-white dark:bg-[#0a0a0a] backdrop-blur-xl">
       {/* Header with question badges */}
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1 rounded-lg bg-indigo-500/10 px-2.5 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+          <span className="flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-bold text-black shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
             <HelpCircle className="h-3.5 w-3.5" />
             {currentQuestion.question_id || "Requirement Clarification"}
           </span>
-          <span
-            className={clsx(
-              "rounded-lg border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider",
-              priorityColor
-            )}
-          >
+          <span className="rounded-lg border border-neutral-300 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black dark:text-white">
             {(currentQuestion.priority || "Medium").toUpperCase()} Priority
           </span>
         </div>
-        <span className="text-[11px] text-gray-400 font-mono">
-          Press 1-5 to pick option ↵ Enter to submit
+        <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500">
+          Keys 1-5 to select • ↵ Enter to submit
         </span>
       </div>
 
       {/* Question Text */}
-      <h3 className="text-base font-semibold leading-snug text-gray-900 dark:text-white">
+      <h3 className="font-heading text-lg font-bold leading-snug text-black dark:text-white">
         {currentQuestion.question}
       </h3>
 
       {/* Rationale */}
       {currentQuestion.rationale && (
-        <p className="mt-1 text-xs italic text-gray-500 dark:text-gray-400">
+        <p className="mt-1.5 text-xs italic text-neutral-500 dark:text-neutral-400">
           Context: {currentQuestion.rationale}
         </p>
       )}
 
       {/* Options List */}
       {validOptions.length > 0 && (
-        <div className="mt-4 space-y-1.5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-            Suggested Options:
+        <div className="mt-5 space-y-2">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+            Suggested Architectural Options:
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2.5">
             {validOptions.map((opt, idx) => {
               const isSelected = selectedOption === opt;
               return (
@@ -334,18 +312,18 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
                     setCustomAnswer(opt);
                   }}
                   className={clsx(
-                    "group flex items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs transition-all",
+                    "group flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left text-xs font-semibold transition-all duration-200",
                     isSelected
-                      ? "border-indigo-500 bg-indigo-500/15 font-semibold text-indigo-600 shadow-sm dark:border-indigo-400 dark:bg-indigo-950/50 dark:text-indigo-300"
-                      : "border-gray-200 bg-gray-50 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50/50 dark:border-gray-800 dark:bg-gray-800/60 dark:text-gray-300 dark:hover:border-indigo-800 dark:hover:bg-gray-800"
+                      ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black shadow-sm"
+                      : "border-neutral-300 bg-white text-neutral-800 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
                   )}
                 >
                   <span
                     className={clsx(
                       "flex h-4 w-4 shrink-0 items-center justify-center rounded font-mono text-[10px] font-bold",
                       isSelected
-                        ? "bg-indigo-500 text-white"
-                        : "bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900"
+                        ? "bg-white text-black dark:bg-black dark:text-white"
+                        : "bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
                     )}
                   >
                     {idx + 1}
@@ -358,25 +336,25 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
         </div>
       )}
 
-      {/* Custom Answer input */}
-      <div className="mt-4">
-        <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+      {/* Custom Answer input with monochrome focus */}
+      <div className="mt-5">
+        <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
           Your Answer:
         </label>
-        <div className="flex items-center rounded-xl border border-gray-300 bg-white px-3 transition-colors focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-center rounded-xl border border-neutral-300 bg-white px-3 shadow-xs transition-all duration-200 focus-within:border-black focus-within:ring-2 focus-within:ring-black/10 dark:border-neutral-800 dark:bg-black dark:focus-within:border-white dark:focus-within:ring-white/10">
           <input
             type="text"
             value={customAnswer}
             onChange={(e) => setCustomAnswer(e.target.value)}
-            placeholder="Select an option above or type your custom answer..."
+            placeholder="Select an option above or type your custom specification..."
             disabled={submitting}
-            className="w-full bg-transparent py-2.5 text-xs outline-none placeholder:text-gray-400 dark:text-white"
+            className="w-full bg-transparent py-2.5 text-xs text-black placeholder:text-neutral-400 outline-none dark:text-white dark:placeholder:text-neutral-500"
           />
           <button
             type="button"
             onClick={handleSubmit}
             disabled={submitting || !customAnswer.trim()}
-            className="flex items-center gap-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-95 disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-lg bg-black text-white dark:bg-white dark:text-black px-3.5 py-1.5 text-xs font-bold shadow-sm transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200 disabled:opacity-40"
           >
             {submitting ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -391,7 +369,7 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       </div>
 
       {error && (
-        <p className="mt-2 text-xs font-medium text-red-600 dark:text-red-400">
+        <p className="mt-2.5 text-xs font-semibold text-red-600 dark:text-red-400">
           {error}
         </p>
       )}

@@ -65,19 +65,19 @@ export default function AuthCallbackPage() {
   }, [router, setUser, setSession]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 dark:bg-black">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-xl dark:border-gray-800 dark:bg-gray-900">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/25">
-          <Cpu className="h-7 w-7 text-white" />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-black dark:bg-black dark:text-white">
+      <div className="w-full max-w-md rounded-2xl border border-neutral-300 bg-white p-8 text-center shadow-xl dark:border-neutral-800 dark:bg-black">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-md">
+          <Cpu className="h-7 w-7" />
         </div>
 
         {status === "loading" && (
           <div>
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-indigo-500" />
-            <h2 className="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-black dark:text-white" />
+            <h2 className="font-heading mt-4 text-lg font-bold tracking-tight text-black dark:text-white">
               Confirming your email...
             </h2>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               Verifying your authentication credentials with Supabase.
             </p>
           </div>
@@ -85,11 +85,11 @@ export default function AuthCallbackPage() {
 
         {status === "success" && (
           <div>
-            <CheckCircle2 className="mx-auto h-8 w-8 text-emerald-500" />
-            <h2 className="mt-4 text-lg font-bold text-gray-900 dark:text-white">
+            <CheckCircle2 className="mx-auto h-8 w-8 text-black dark:text-white" />
+            <h2 className="font-heading mt-4 text-lg font-bold tracking-tight text-black dark:text-white">
               Email Verified Successfully!
             </h2>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               Redirecting you to the Architecture Studio...
             </p>
           </div>
@@ -97,16 +97,16 @@ export default function AuthCallbackPage() {
 
         {status === "error" && (
           <div>
-            <AlertCircle className="mx-auto h-8 w-8 text-red-500" />
-            <h2 className="mt-4 text-lg font-bold text-red-600 dark:text-red-400">
+            <AlertCircle className="mx-auto h-8 w-8 text-neutral-800 dark:text-neutral-200" />
+            <h2 className="font-heading mt-4 text-lg font-bold tracking-tight text-black dark:text-white">
               Verification Issue
             </h2>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               {errorMessage || "Unable to confirm email. You may sign in directly."}
             </p>
             <button
               onClick={() => router.push("/signin")}
-              className="mt-6 w-full rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 py-2.5 text-xs font-semibold text-white shadow-md transition-opacity hover:opacity-90"
+              className="font-heading mt-6 w-full rounded-xl bg-black py-3 text-xs font-semibold text-white shadow-xs transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
             >
               Go to Sign In
             </button>

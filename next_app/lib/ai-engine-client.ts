@@ -1,11 +1,14 @@
 /**
- * AI Architecture Engine API Client
- * Connects the Next.js frontend to the native Next.js Architecture Engine (REE + SAE pipeline).
+ * AI Architecture Engine Client — Frontend Standalone Mode
+ * Provides instant, rich sample data for all architecture stages without requiring a backend server.
  */
 
-export const API_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "").trim().replace(/\/+$/, "");
-export const API_BASE_URL = `${API_HOST}/api/v1/generations`;
-export const HEALTH_URL = `${API_HOST}/api/v1/health`;
+import {
+  dummyHldData,
+  dummyAllLldData,
+  dummyArsrs,
+  sampleInterviewQuestions,
+} from "./mock-data";
 
 export type LldType = "backend" | "frontend" | "database" | "security" | "cloud";
 export type LldStatusType = "NOT_STARTED" | "GENERATING" | "READY" | "FAILED";
@@ -73,109 +76,121 @@ export interface StatusResponse {
   llds?: Record<LldType, LldStatusType>;
 }
 
+// In-memory question tracker for frontend simulation
+const answerCounts: Record<string, number> = {};
+
 export const aiEngineApi = {
-  // 1. Health check
+  // 1. Health check — Frontend Standalone Mode
   async checkHealth(): Promise<{ ok: boolean; version?: string }> {
-    try {
-      const rootUrl = API_HOST || "";
-      const res = await fetch(`${rootUrl}/`, { cache: "no-store" });
-      if (res.ok) {
-        const data = await res.json().catch(() => ({}));
-        return { ok: true, version: data?.version || "2.0.0" };
-      }
-      const altRes = await fetch(HEALTH_URL, { cache: "no-store" });
-      if (altRes.ok) {
-        const data = await altRes.json().catch(() => ({}));
-        return { ok: true, version: data?.version || "2.0.0" };
-      }
-      return { ok: false };
-    } catch {
-      return { ok: false };
-    }
+    return { ok: true, version: "2.5.0-client" };
   },
 
-  // 2. Start generation
+  // 2. Start generation with sample interview questions
   async startGeneration(prompt: string): Promise<StartGenerationResponse> {
-    const res = await fetch(API_BASE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || `Server error (${res.status})`);
-    }
-    return data;
+    const genId = `gen-frontend-${Date.now()}`;
+    answerCounts[genId] = 0;
+
+    return {
+      generation_id: genId,
+      status: "INTERVIEW_IN_PROGRESS",
+      current_question: sampleInterviewQuestions[0],
+      message: "Frontend simulation: Requirements Engineering Engine initialized.",
+    };
   },
 
   // 3. Submit interview answer
   async submitAnswer(
     generationId: string,
     questionId: string,
-    answer: string
+    _answer: string
   ): Promise<SubmitAnswerResponse> {
-    const res = await fetch(`${API_BASE_URL}/${generationId}/answers`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        question_id: questionId,
-        answer,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || `Server error (${res.status})`);
+    const currentCount = answerCounts[generationId] || 0;
+    const nextIdx = currentCount + 1;
+    answerCounts[generationId] = nextIdx;
+
+    if (nextIdx < sampleInterviewQuestions.length) {
+      return {
+        generation_id: generationId,
+        status: "INTERVIEW_IN_PROGRESS",
+        next_question: sampleInterviewQuestions[nextIdx],
+        message: `Answer recorded for ${questionId}. Proceeding to question ${nextIdx + 1}.`,
+      };
     }
-    return data;
+
+    return {
+      generation_id: generationId,
+      status: "INTERVIEW_COMPLETED",
+      message: "Stakeholder requirements clarified. Ready to synthesize ARSRS and Visual HLD.",
+    };
   },
 
-  // 4. Generate ARSRS + HLD
+  // 4. Generate ARSRS + HLD with sample architecture
   async generateArchitecture(
     generationId: string
   ): Promise<GenerateArchitectureResponse> {
-    const res = await fetch(`${API_BASE_URL}/${generationId}/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || `Server error (${res.status})`);
-    }
-    return data;
+    return {
+      generation_id: generationId,
+      status: "COMPLETED",
+      arsrs: dummyArsrs as Record<string, unknown>,
+      hld: dummyHldData as Record<string, unknown>,
+    };
   },
 
-  // 5. Get specific LLD
-  async getLLD(generationId: string, lldType: LldType): Promise<LldResponse> {
-    const res = await fetch(`${API_BASE_URL}/${generationId}/lld/${lldType}`);
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || `Failed to fetch ${lldType} LLD (${res.status})`);
-    }
-    return data;
+  // 5. Get specific LLD with rich sample data
+  async getLLD(_generationId: string, lldType: LldType): Promise<LldResponse> {
+    const data = dummyAllLldData[lldType] || dummyAllLldData.backend;
+    return {
+      status: "READY",
+      data: data as Record<string, unknown>,
+      message: `${lldType.toUpperCase()} Low-Level Design blueprint loaded successfully.`,
+    };
   },
 
   // 6. Get logs history
   async getLogs(generationId: string): Promise<LogsResponse> {
-    const res = await fetch(`${API_BASE_URL}/${generationId}/logs`);
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || `Failed to fetch logs (${res.status})`);
-    }
-    return data;
+    const now = new Date().toTimeString().split(" ")[0];
+    return {
+      generation_id: generationId,
+      logs: [
+        {
+          timestamp: now,
+          stage: "REE",
+          message: "✓ Stakeholder requirements validated & ARSRS synthesized.",
+          level: "INFO",
+        },
+        {
+          timestamp: now,
+          stage: "SAE",
+          message: "✓ High-Level Architecture topology generated with 9 microservices.",
+          level: "INFO",
+        },
+        {
+          timestamp: now,
+          stage: "LLD",
+          message: "✓ Parallel synthesis completed across 5 domains (Backend, Frontend, DB, Security, Cloud).",
+          level: "INFO",
+        },
+      ],
+    };
   },
 
-  // 7. Get SSE logs stream URL
+  // 7. Stream URL dummy fallback
   getLogsStreamUrl(generationId: string): string {
-    return `${API_BASE_URL}/${generationId}/logs/stream`;
+    return `/api/v1/generations/${generationId}/logs/stream`;
   },
 
-  // 8. Get generation status
+  // 8. Get status
   async getStatus(generationId: string): Promise<StatusResponse> {
-    const res = await fetch(`${API_BASE_URL}/${generationId}/status`);
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.detail || `Failed to fetch status (${res.status})`);
-    }
-    return data;
+    return {
+      generation_id: generationId,
+      status: "COMPLETED",
+      llds: {
+        backend: "READY",
+        frontend: "READY",
+        database: "READY",
+        security: "READY",
+        cloud: "READY",
+      },
+    };
   },
 };
