@@ -7,6 +7,7 @@ import {
   getSmoothStepPath,
   type EdgeProps,
 } from "@xyflow/react";
+import { getEdgeTheme } from "@/lib/flow-colors";
 
 export interface CustomEdgeData {
   label?: string;
@@ -19,6 +20,8 @@ export interface CustomEdgeData {
 export const AnimatedFlowEdge = memo(
   ({
     id,
+    source,
+    target,
     sourceX,
     sourceY,
     targetX,
@@ -43,7 +46,10 @@ export const AnimatedFlowEdge = memo(
     const edgeData = (data || {}) as CustomEdgeData;
     const label = edgeData.label || "";
     const isAnimated = edgeData.animated !== false;
-    const strokeColor = (style.stroke as string) || (selected ? "#000000" : "#737373");
+
+    // Resolve the connection color - identical to the originating component!
+    const theme = getEdgeTheme(source, target, edgeData.strokeColor || (style.stroke as string));
+    const strokeColor = (style.stroke as string) || edgeData.strokeColor || theme.primary;
 
     const customMarkerId = `arrowhead-${id}`;
     const effectiveMarkerEnd = markerEnd || `url(#${customMarkerId})`;
@@ -70,7 +76,7 @@ export const AnimatedFlowEdge = memo(
           </marker>
         </defs>
 
-        {/* Base Stroke Layer */}
+        {/* Base Stroke Layer with component-matching color */}
         <BaseEdge
           id={id}
           path={edgePath}
@@ -78,13 +84,14 @@ export const AnimatedFlowEdge = memo(
           style={{
             ...style,
             stroke: strokeColor,
-            strokeWidth: selected ? 2.5 : 1.5,
+            strokeWidth: selected ? 3.4 : (style.strokeWidth || 2.4),
             strokeDasharray: isAnimated ? "6 6" : undefined,
             animation: isAnimated ? "dashFlow 20s linear infinite" : undefined,
+            filter: selected ? `drop-shadow(0 0 6px ${strokeColor})` : undefined,
           }}
         />
 
-        {/* Interactive Protocol / Event Label in Pure Monochrome */}
+        {/* Interactive Protocol / Event Label colored with component theme */}
         {label && (
           <EdgeLabelRenderer>
             <div
@@ -92,13 +99,23 @@ export const AnimatedFlowEdge = memo(
                 position: "absolute",
                 transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
                 pointerEvents: "all",
+                borderColor: strokeColor,
+                borderWidth: 1.5,
+                boxShadow: `0 2px 10px -2px ${strokeColor}44`,
+                zIndex: 25,
               }}
-              className={`nodrag nopan flex items-center gap-1 rounded-md border border-neutral-300 bg-white px-2 py-0.5 text-[9.5px] font-mono font-bold text-black shadow-xs backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900 dark:text-white transition-all duration-200 ${
-                selected ? "ring-2 ring-black dark:ring-white" : ""
+              className={`nodrag nopan flex items-center gap-1.5 rounded-lg border bg-white px-2.5 py-1 text-[10px] font-mono font-bold shadow-sm backdrop-blur-md dark:bg-neutral-950/98 transition-all duration-200 ${
+                selected ? "ring-2 ring-offset-1 scale-105" : ""
               }`}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-black dark:bg-white" />
-              <span>{label}</span>
+              <span
+                className="h-2 w-2 rounded-full animate-pulse shrink-0"
+                style={{
+                  backgroundColor: strokeColor,
+                  boxShadow: `0 0 6px ${strokeColor}`,
+                }}
+              />
+              <span className="truncate max-w-[200px] font-bold" style={{ color: strokeColor }}>{label}</span>
             </div>
           </EdgeLabelRenderer>
         )}

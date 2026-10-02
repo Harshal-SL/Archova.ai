@@ -2,31 +2,30 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "@/lib/store";
 import {
   Cpu,
   Sparkles,
   Network,
-  Boxes,
-  Terminal,
   ShieldCheck,
   Server,
   Cloud,
   Database,
   ArrowRight,
+  ArrowDownRight,
+  ArrowDownLeft,
+  ArrowDown,
   Zap,
   CheckCircle2,
-  Code2,
-  Lock,
   Layers,
-  Send,
   MessageSquare,
   ChevronRight,
-  ExternalLink,
-  Sliders,
   Check,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import BubbleBg from "@/components/BubbleBg";
+import { AnimatedContainer } from "@/components/ui/footer-section";
 
 const lldBadges = [
   { name: "Backend LLD", icon: Server },
@@ -45,6 +44,7 @@ const metrics = [
 
 const services = [
   {
+    step: "01",
     icon: MessageSquare,
     title: "Stakeholder Clarification Interview (REE)",
     badge: "Requirements Engine",
@@ -54,8 +54,15 @@ const services = [
       "Quantitative SLA, RTO, and RPO calculation",
       "Automated ambiguity resolution from natural language",
     ],
+    pinColor: "#f97316",
+    numberColor: "text-amber-500 dark:text-amber-400",
+    badgeBg: "bg-amber-100/90 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200/80 dark:border-amber-800/50",
+    innerBg: "bg-[#fff8f0] dark:bg-[#1a140b]",
+    innerBorder: "border-amber-200/80 dark:border-amber-900/40",
+    rotation: "md:-rotate-2",
   },
   {
+    step: "02",
     icon: Sparkles,
     title: "Formal ARSRS Specification Document",
     badge: "Specification Synthesis",
@@ -65,8 +72,15 @@ const services = [
       "Executive summary & architectural constraints",
       "One-click JSON and Markdown specification export",
     ],
+    pinColor: "#2563eb",
+    numberColor: "text-blue-600 dark:text-blue-400",
+    badgeBg: "bg-blue-100/90 text-blue-900 dark:bg-blue-950/60 dark:text-blue-300 border-blue-200/80 dark:border-blue-800/50",
+    innerBg: "bg-[#f0f6ff] dark:bg-[#0b1424]",
+    innerBorder: "border-blue-200/80 dark:border-blue-900/40",
+    rotation: "md:rotate-2",
   },
   {
+    step: "03",
     icon: Network,
     title: "Interactive High-Level Design (HLD)",
     badge: "Visual Topology",
@@ -76,8 +90,15 @@ const services = [
       "Layer filtering: Client, Gateway, Services, Storage, Infra",
       "Animated protocol flows (REST, gRPC, WebSocket, Kafka)",
     ],
+    pinColor: "#9333ea",
+    numberColor: "text-purple-600 dark:text-purple-400",
+    badgeBg: "bg-purple-100/90 text-purple-900 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/50",
+    innerBg: "bg-[#faf5ff] dark:bg-[#180e26]",
+    innerBorder: "border-purple-200/80 dark:border-purple-900/40",
+    rotation: "md:-rotate-1.5",
   },
   {
+    step: "04",
     icon: Server,
     title: "Backend & Microservices LLD",
     badge: "Execution Architecture",
@@ -87,8 +108,15 @@ const services = [
       "Event-driven Kafka & RabbitMQ choreography",
       "Service isolation, circuit breakers & idempotency rules",
     ],
+    pinColor: "#ea580c",
+    numberColor: "text-orange-500 dark:text-orange-400",
+    badgeBg: "bg-orange-100/90 text-orange-900 dark:bg-orange-950/60 dark:text-orange-300 border-orange-200/80 dark:border-orange-800/50",
+    innerBg: "bg-[#fff7ed] dark:bg-[#1a1109]",
+    innerBorder: "border-orange-200/80 dark:border-orange-900/40",
+    rotation: "md:rotate-2",
   },
   {
+    step: "05",
     icon: Database,
     title: "Database, Schemas & Sharding LLD",
     badge: "Data Layer",
@@ -98,8 +126,15 @@ const services = [
       "Read/Write replica topology & Redis cache invalidation",
       "ACID vs BASE consistency models & sharding keys",
     ],
+    pinColor: "#0284c7",
+    numberColor: "text-sky-600 dark:text-sky-400",
+    badgeBg: "bg-sky-100/90 text-sky-900 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200/80 dark:border-sky-800/50",
+    innerBg: "bg-[#f0f9ff] dark:bg-[#0a1622]",
+    innerBorder: "border-sky-200/80 dark:border-sky-900/40",
+    rotation: "md:-rotate-2",
   },
   {
+    step: "06",
     icon: ShieldCheck,
     title: "Security, Cloud & Multi-Region LLD",
     badge: "Zero Trust & Infra",
@@ -109,26 +144,134 @@ const services = [
       "Kubernetes pod topology & Terraform IaC blueprints",
       "Multi-region failover, DNS routing & automated backups",
     ],
+    pinColor: "#4f46e5",
+    numberColor: "text-indigo-600 dark:text-indigo-400",
+    badgeBg: "bg-indigo-100/90 text-indigo-900 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800/50",
+    innerBg: "bg-[#eef2ff] dark:bg-[#11112b]",
+    innerBorder: "border-indigo-200/80 dark:border-indigo-900/40",
+    rotation: "md:rotate-1.5",
   },
 ];
 
-export default function LandingPage() {
-  const [activePreviewTab, setActivePreviewTab] = useState<"topology" | "terminal" | "arsrs">("topology");
-  
-  // Contact Form State
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [contactForm, setContactForm] = useState({
-    name: "",
-    email: "",
-    scope: "Enterprise Microservices",
-    cloud: "AWS",
-    message: "",
-  });
+const stepTransitions = [
+  {
+    from: "01",
+    to: "02",
+    top: "15.5%",
+    direction: "down-right" as const,
+    color: "#2563eb",
+  },
+  {
+    from: "02",
+    to: "03",
+    top: "32.5%",
+    direction: "down-left" as const,
+    color: "#9333ea",
+  },
+  {
+    from: "03",
+    to: "04",
+    top: "49.5%",
+    direction: "down-right" as const,
+    color: "#ea580c",
+  },
+  {
+    from: "04",
+    to: "05",
+    top: "66.5%",
+    direction: "down-left" as const,
+    color: "#0284c7",
+  },
+  {
+    from: "05",
+    to: "06",
+    top: "83.5%",
+    direction: "down-right" as const,
+    color: "#4f46e5",
+  },
+];
 
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormSubmitted(true);
+function PushPin({ color = "#f97316" }: { color?: string }) {
+  return (
+    <div className="relative flex items-center justify-center pointer-events-none select-none">
+      {/* Puncture hole dot */}
+      <div className="absolute top-[20px] left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-black/40 blur-[0.5px]" />
+
+      {/* Soft shadow cast by the pin on the paper */}
+      <div className="absolute top-[18px] left-[calc(50%+3px)] w-4 h-2 rounded-full bg-black/25 blur-[1.5px] -rotate-12" />
+
+      {/* 3D Push Pin SVG */}
+      <svg
+        width="26"
+        height="30"
+        viewBox="0 0 26 30"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="relative z-10 transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5 filter drop-shadow-[0_2px_3px_rgba(0,0,0,0.18)]"
+      >
+        {/* Steel needle with highlight */}
+        <line
+          x1="13"
+          y1="17"
+          x2="13"
+          y2="25"
+          stroke="#94a3b8"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <line
+          x1="13.5"
+          y1="18"
+          x2="13.5"
+          y2="24"
+          stroke="#cbd5e1"
+          strokeWidth="0.8"
+        />
+
+        {/* Lower rim base */}
+        <ellipse cx="13" cy="17" rx="5.5" ry="2.2" fill={color} />
+        <ellipse cx="13" cy="16.5" rx="4.8" ry="1.8" fill="#ffffff" fillOpacity="0.25" />
+
+        {/* Tapered Pin Body / Waist */}
+        <path
+          d="M9.5 8 C9.5 12, 8.5 15, 7.5 17 L18.5 17 C17.5 15, 16.5 12, 16.5 8 Z"
+          fill={color}
+        />
+        {/* Shading on right side of body */}
+        <path
+          d="M13 8 C14 12, 16 14, 18.5 17 C17.5 15, 16.5 12, 16.5 8 Z"
+          fill="#000000"
+          fillOpacity="0.18"
+        />
+        {/* Highlight on left side of body */}
+        <path
+          d="M9.5 8 C9.5 12, 8.5 15, 7.5 17 C8.5 16, 11 13, 11 8 Z"
+          fill="#ffffff"
+          fillOpacity="0.25"
+        />
+
+        {/* Upper Rim */}
+        <ellipse cx="13" cy="8" rx="6.5" ry="2.4" fill={color} />
+        <ellipse cx="13" cy="7.5" rx="5.8" ry="1.8" fill="#ffffff" fillOpacity="0.25" />
+
+        {/* Top Dome Cap */}
+        <ellipse cx="13" cy="4.8" rx="5.2" ry="3.2" fill={color} />
+        {/* 3D Specular Highlight */}
+        <ellipse cx="11.5" cy="3.8" rx="2.4" ry="1.3" fill="#ffffff" fillOpacity="0.65" />
+      </svg>
+    </div>
+  );
+}
+
+export default function LandingPage() {
+  const router = useRouter();
+  const [activePreviewTab, setActivePreviewTab] = useState<"topology" | "terminal" | "arsrs">("topology");
+
+  const handleLoadTemplate = () => {
+    useAppStore.getState().loadDemoData();
+    router.push("/chat");
   };
+
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-white text-black dark:bg-black dark:text-white selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors">
@@ -187,6 +330,14 @@ export default function LandingPage() {
                 <span>Launch Architecture Studio</span>
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
+              <button
+                type="button"
+                onClick={handleLoadTemplate}
+                className="group flex items-center gap-2.5 rounded-full border border-blue-500/40 bg-blue-50/90 px-7 py-4 text-sm font-bold text-blue-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-blue-100 hover:border-blue-600 dark:border-blue-400/30 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60 dark:hover:border-blue-400 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+              >
+                <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400 transition-transform duration-200 group-hover:scale-110" />
+                <span>Load Basic HLD & LLD Template</span>
+              </button>
               <a
                 href="#services"
                 className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-7 py-4 text-sm font-bold text-neutral-800 backdrop-blur-sm transition-all duration-200 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
@@ -212,31 +363,28 @@ export default function LandingPage() {
                 <div className="flex items-center gap-1 rounded-lg bg-neutral-100 dark:bg-neutral-900 p-1 text-xs font-semibold">
                   <button
                     onClick={() => setActivePreviewTab("topology")}
-                    className={`rounded-md px-3 py-1 transition-all ${
-                      activePreviewTab === "topology"
+                    className={`rounded-md px-3 py-1 transition-all ${activePreviewTab === "topology"
                         ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     HLD Topology Map
                   </button>
                   <button
                     onClick={() => setActivePreviewTab("terminal")}
-                    className={`rounded-md px-3 py-1 transition-all ${
-                      activePreviewTab === "terminal"
+                    className={`rounded-md px-3 py-1 transition-all ${activePreviewTab === "terminal"
                         ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     SSE Execution Log
                   </button>
                   <button
                     onClick={() => setActivePreviewTab("arsrs")}
-                    className={`rounded-md px-3 py-1 transition-all ${
-                      activePreviewTab === "arsrs"
+                    className={`rounded-md px-3 py-1 transition-all ${activePreviewTab === "arsrs"
                         ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
                         : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
-                    }`}
+                      }`}
                   >
                     ARSRS Spec
                   </button>
@@ -451,275 +599,193 @@ export default function LandingPage() {
         </section>
 
         {/* ════════════════════════════════════════════════════════════════════════════════════════════
-            SECTION 3: SERVICES
+            SECTION 3: SERVICES (ROADMAP PIPELINE)
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <section id="services" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800">
+        <section id="services" className="relative py-20 md:py-32 border-t border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3">
+            <div className="text-center mb-16 md:mb-20">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3 shadow-2xs">
                 <Zap className="h-3.5 w-3.5" />
-                <span>Our Capabilities</span>
+                <span>Our Capabilities • 6 Continuous Stages</span>
               </div>
               <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
-                Full-Lifecycle Architecture Services
+                Full-Lifecycle Architecture Pipeline
               </h2>
               <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
                 From interactive requirement clarification to production-ready low-level architecture modules across every engineering layer.
               </p>
             </div>
 
-            {/* 6 Services Bento Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map((s, idx) => {
-                const Icon = s.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="monochrome-card rounded-2xl p-7 flex flex-col justify-between group backdrop-blur-md"
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-5">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <span className="rounded-full border border-neutral-300 bg-neutral-100 px-2.5 py-0.5 text-[11px] font-bold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
-                          {s.badge}
-                        </span>
-                      </div>
+            {/* Zigzag Pinned Cards Pipeline Container */}
+            <div className="relative max-w-5xl mx-auto px-2 sm:px-4">
+              {/* Dashed Zigzag Connector Line for Desktop */}
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none hidden md:block z-0"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <path
+                  d="M 27 6 L 73 23 L 27 41 L 73 59 L 27 77 L 73 94"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-neutral-400 dark:text-neutral-700"
+                  strokeWidth="2"
+                  strokeDasharray="2.5 2.5"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
 
-                      <h3 className="font-heading text-lg font-bold text-neutral-900 dark:text-white">
-                        {s.title}
-                      </h3>
-                      <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                        {s.desc}
-                      </p>
+              {/* Step Transition Arrow Indicators (Desktop) */}
+              {stepTransitions.map((trans, tIdx) => (
+                <div
+                  key={tIdx}
+                  className="hidden md:flex absolute left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 items-center justify-center pointer-events-none"
+                  style={{ top: trans.top }}
+                >
+                  <div className="flex items-center gap-1.5 px-3 py-1 rounded-full border border-neutral-300 dark:border-neutral-800 bg-white/95 dark:bg-[#0c0c0c]/95 shadow-md backdrop-blur-md">
+                    <span className="font-mono text-[10px] font-bold text-neutral-500 dark:text-neutral-400">
+                      Step {trans.from}
+                    </span>
+                    <div
+                      className="flex items-center justify-center w-5 h-5 rounded-full bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 shadow-2xs"
+                      style={{ color: trans.color }}
+                    >
+                      {trans.direction === "down-right" ? (
+                        <ArrowDownRight className="h-3.5 w-3.5" />
+                      ) : (
+                        <ArrowDownLeft className="h-3.5 w-3.5" />
+                      )}
+                    </div>
+                    <span className="font-mono text-[10px] font-bold" style={{ color: trans.color }}>
+                      Step {trans.to}
+                    </span>
+                  </div>
+                </div>
+              ))}
 
-                      <div className="mt-5 space-y-2 border-t border-neutral-200 dark:border-neutral-800 pt-4">
-                        {s.features.map((feat, fidx) => (
-                          <div key={fidx} className="flex items-start gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                            <Check className="h-3.5 w-3.5 text-black dark:text-white shrink-0 mt-0.5" />
-                            <span>{feat}</span>
+              {/* Vertical Dashed Line for Mobile Background */}
+              <div className="absolute left-1/2 -translate-x-1/2 top-10 bottom-10 w-0.5 border-l-2 border-dashed border-neutral-300 dark:border-neutral-700 md:hidden z-0" />
+
+              {/* Cards Flow */}
+              <div className="relative z-10 flex flex-col gap-6 md:gap-0">
+                {services.map((s, idx) => {
+                  const Icon = s.icon;
+                  const isEven = idx % 2 === 0;
+
+                  return (
+                    <div key={idx} className="w-full flex flex-col">
+                      <div
+                        className={`relative z-10 w-full md:w-[420px] lg:w-[450px] transition-all duration-300 group ${
+                          isEven
+                            ? "md:self-start md:ml-4 lg:ml-10"
+                            : "md:self-end md:mr-4 lg:mr-10"
+                        } ${idx > 0 ? "md:-mt-20 lg:-mt-24" : ""}`}
+                      >
+                        <div
+                          className={`transform transition-all duration-300 ease-out ${s.rotation} group-hover:rotate-0 group-hover:scale-[1.02] group-hover:z-20`}
+                        >
+                          {/* Card outer paper */}
+                          <div className="relative rounded-[28px] bg-white dark:bg-[#141414] p-3 sm:p-4 border border-neutral-200/85 dark:border-neutral-800 shadow-[0_15px_35px_-5px_rgba(0,0,0,0.08),0_5px_15px_rgba(0,0,0,0.04)] dark:shadow-[0_15px_35px_-5px_rgba(0,0,0,0.6),0_0_1px_1px_rgba(255,255,255,0.08)]">
+                            {/* Push Pin pinned at top center */}
+                            <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30">
+                              <PushPin color={s.pinColor} />
+                            </div>
+
+                            {/* Inner tinted paper surface */}
+                            <div
+                              className={`rounded-2xl p-6 sm:p-7 border ${s.innerBg} ${s.innerBorder} transition-colors`}
+                            >
+                              {/* Top row: Step number and Domain Badge */}
+                              <div className="flex items-center justify-between mb-4">
+                                <span
+                                  className={`font-heading text-3xl sm:text-4xl font-extrabold tracking-tight ${s.numberColor}`}
+                                >
+                                  {s.step}
+                                </span>
+                                <div
+                                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold border shadow-2xs ${s.badgeBg}`}
+                                >
+                                  <Icon className="h-3.5 w-3.5" />
+                                  <span>{s.badge}</span>
+                                </div>
+                              </div>
+
+                              {/* Title */}
+                              <h3 className="font-heading text-lg sm:text-xl font-extrabold text-neutral-900 dark:text-neutral-100 tracking-tight leading-snug">
+                                {s.title}
+                              </h3>
+
+                              {/* Description */}
+                              <p className="mt-2.5 text-xs sm:text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                                {s.desc}
+                              </p>
+
+                              {/* Feature Bullets */}
+                              <div className="mt-5 space-y-2 border-t border-neutral-200/70 dark:border-neutral-800/80 pt-4">
+                                {s.features.map((feat, fidx) => (
+                                  <div
+                                    key={fidx}
+                                    className="flex items-start gap-2.5 text-xs font-medium text-neutral-700 dark:text-neutral-300"
+                                  >
+                                    <Check
+                                      className="h-3.5 w-3.5 shrink-0 mt-0.5"
+                                      style={{ color: s.pinColor }}
+                                    />
+                                    <span>{feat}</span>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Bottom Action Footer */}
+                              <div className="mt-5 pt-3.5 border-t border-neutral-200/70 dark:border-neutral-800/80 flex items-center justify-between">
+                                <Link
+                                  href="/chat"
+                                  className="inline-flex items-center gap-1.5 text-xs font-bold text-neutral-900 dark:text-white hover:underline group/link"
+                                >
+                                  <span>Generate in Studio</span>
+                                  <ArrowRight
+                                    className="h-3.5 w-3.5 transition-transform duration-200 group-hover/link:translate-x-1"
+                                    style={{ color: s.pinColor }}
+                                  />
+                                </Link>
+                                <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 dark:text-neutral-500 font-semibold">
+                                  Step {s.step} / 06
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-                      <Link
-                        href="/chat"
-                        className="inline-flex items-center gap-1 text-xs font-bold text-black dark:text-white hover:underline"
-                      >
-                        <span>Generate in Studio</span>
-                        <ArrowRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ════════════════════════════════════════════════════════════════════════════════════════════
-            SECTION 4: CONTACT & CONSULTATION
-        ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <section id="contact" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800">
-          <div className="mx-auto max-w-6xl px-4">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3">
-                <Send className="h-3.5 w-3.5" />
-                <span>Contact & Consultation</span>
-              </div>
-              <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
-                Consult With Our Systems Architects
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-                Have custom compliance, high-throughput SLAs, or enterprise on-premises deployment needs? Our team is ready to assist.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-              {/* Contact Information Column */}
-              <div className="lg:col-span-5 space-y-6">
-                <div className="monochrome-card rounded-3xl p-8 backdrop-blur-md">
-                  <h3 className="font-heading text-xl font-bold">
-                    Direct Engineering Channels
-                  </h3>
-                  <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                    Reach out for dedicated enterprise POCs, custom LLM fine-tuning on proprietary architecture patterns, or security evaluations.
-                  </p>
-
-                  <div className="mt-6 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white border border-neutral-300 dark:border-neutral-800">
-                        <Terminal className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-neutral-900 dark:text-white">Architecture Advisory</p>
-                        <p className="text-xs text-neutral-500">architects@archai.engine</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white border border-neutral-300 dark:border-neutral-800">
-                        <ShieldCheck className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-neutral-900 dark:text-white">Security & Compliance</p>
-                        <p className="text-xs text-neutral-500">compliance@archai.engine</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 dark:bg-neutral-900 text-black dark:text-white border border-neutral-300 dark:border-neutral-800">
-                        <ExternalLink className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-neutral-900 dark:text-white">GitHub Community</p>
-                        <p className="text-xs text-neutral-500">github.com/archai-project</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-8 rounded-2xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100/70 dark:bg-neutral-900/50 p-4">
-                    <p className="text-xs font-bold text-black dark:text-white">
-                      ⚡ 24/7 Enterprise Availability
-                    </p>
-                    <p className="mt-1 text-[11px] text-neutral-600 dark:text-neutral-400">
-                      Enterprise tier includes custom private VPC deployments, strict SOC 2 Type II compliance, and dedicated architecture reviews.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Interactive Inquiry Form */}
-              <div className="lg:col-span-7">
-                <div className="monochrome-card rounded-3xl p-8 lg:p-10 backdrop-blur-md">
-                  {formSubmitted ? (
-                    <div className="py-12 text-center space-y-4">
-                      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-black text-white dark:bg-white dark:text-black shadow-lg">
-                        <CheckCircle2 className="h-8 w-8" />
-                      </div>
-                      <h3 className="font-heading text-2xl font-bold">
-                        Inquiry Received
-                      </h3>
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-                        Thank you, <strong>{contactForm.name}</strong>. A principal systems architect has been assigned to your brief and will respond within 24 hours.
-                      </p>
-                      <button
-                        onClick={() => setFormSubmitted(false)}
-                        className="mt-4 rounded-full border border-neutral-300 dark:border-neutral-700 px-6 py-2 text-xs font-semibold text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-900"
-                      >
-                        Submit Another Inquiry
-                      </button>
-                    </div>
-                  ) : (
-                    <form onSubmit={handleContactSubmit} className="space-y-4">
-                      <h3 className="font-heading text-xl font-bold mb-4">
-                        Schedule an Architecture Review
-                      </h3>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                            Your Name *
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={contactForm.name}
-                            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
-                            placeholder="Alex Morgan"
-                            className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:focus:border-white dark:focus:ring-white/10"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                            Work Email *
-                          </label>
-                          <input
-                            type="email"
-                            required
-                            value={contactForm.email}
-                            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
-                            placeholder="alex@company.com"
-                            className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:focus:border-white dark:focus:ring-white/10"
-                          />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                            Architecture Scope
-                          </label>
-                          <select
-                            value={contactForm.scope}
-                            onChange={(e) => setContactForm({ ...contactForm, scope: e.target.value })}
-                            className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs text-neutral-900 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:focus:border-white"
-                          >
-                            <option>Enterprise Microservices</option>
-                            <option>High-Throughput Fintech / Banking</option>
-                            <option>Real-Time IoT & Streaming</option>
-                            <option>AI / LLM Multi-Agent System</option>
-                            <option>Legacy Monolith Cloud Migration</option>
-                          </select>
+                      {/* Mobile Connector with Arrow Mark between steps */}
+                      {idx < services.length - 1 && (
+                        <div className="flex md:hidden flex-col items-center justify-center py-2 z-10">
+                          <div className="w-0.5 h-4 border-l-2 border-dashed border-neutral-300 dark:border-neutral-700" />
+                          <div className="flex items-center gap-1.5 px-3 py-1 my-1 rounded-full border border-neutral-300 dark:border-neutral-800 bg-white dark:bg-[#0c0c0c] shadow-xs text-xs font-bold">
+                            <span className="font-mono text-[10px] text-neutral-400">Step {s.step}</span>
+                            <ArrowDown className="h-3 w-3 text-neutral-700 dark:text-neutral-300 animate-bounce" />
+                            <span className="font-mono text-[10px] text-neutral-400">Step {services[idx + 1].step}</span>
+                          </div>
+                          <div className="w-0.5 h-4 border-l-2 border-dashed border-neutral-300 dark:border-neutral-700" />
                         </div>
-
-                        <div>
-                          <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                            Primary Cloud Target
-                          </label>
-                          <select
-                            value={contactForm.cloud}
-                            onChange={(e) => setContactForm({ ...contactForm, cloud: e.target.value })}
-                            className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs text-neutral-900 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:focus:border-white"
-                          >
-                            <option>Amazon Web Services (AWS)</option>
-                            <option>Google Cloud Platform (GCP)</option>
-                            <option>Microsoft Azure</option>
-                            <option>Bare-Metal / Hybrid Kubernetes</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                          Project Brief & Concurrency Constraints *
-                        </label>
-                        <textarea
-                          rows={4}
-                          required
-                          value={contactForm.message}
-                          onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
-                          placeholder="Describe the system, target peak QPS, consistency needs (ACID vs Eventual), or regulatory requirements..."
-                          className="w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10 dark:border-neutral-800 dark:bg-neutral-950 dark:text-white dark:focus:border-white resize-none"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="w-full flex items-center justify-center gap-2 rounded-xl bg-black text-white dark:bg-white dark:text-black py-3 text-xs font-bold shadow-md transition-all hover:bg-neutral-800 dark:hover:bg-neutral-200"
-                      >
-                        <Send className="h-4 w-4" />
-                        <span>Submit Architecture Consultation Request</span>
-                      </button>
-                    </form>
-                  )}
-                </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
+
+
         {/* ════════════════════════════════════════════════════════════════════════════════════════════
-            FOOTER
+            FOOTER (WITH ANIMATED BLUR IN VIEW CONTAINER)
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <footer className="border-t border-neutral-200 dark:border-neutral-800 py-12 bg-neutral-50/50 dark:bg-neutral-950/50 backdrop-blur-md">
-          <div className="mx-auto max-w-6xl px-4">
+        <footer className="relative w-full border-t border-neutral-200 dark:border-neutral-800 py-12 lg:py-16 overflow-hidden">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-              <div className="space-y-3">
+              <AnimatedContainer delay={0.1} className="space-y-4">
                 <div className="flex items-center gap-2.5">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black shadow-sm">
                     <Cpu className="h-4 w-4" />
@@ -735,9 +801,9 @@ export default function LandingPage() {
                   <span className="h-2 w-2 rounded-full bg-black dark:bg-white animate-pulse" />
                   <span>All Systems Operational</span>
                 </div>
-              </div>
+              </AnimatedContainer>
 
-              <div>
+              <AnimatedContainer delay={0.2} className="space-y-3">
                 <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white mb-3">
                   Architecture Engines
                 </h4>
@@ -747,9 +813,9 @@ export default function LandingPage() {
                   <li><a href="#services" className="hover:text-black dark:hover:text-white transition-colors">5 Domain LLD Blueprints</a></li>
                   <li><a href="#services" className="hover:text-black dark:hover:text-white transition-colors">ARSRS Specification Synthesis</a></li>
                 </ul>
-              </div>
+              </AnimatedContainer>
 
-              <div>
+              <AnimatedContainer delay={0.3} className="space-y-3">
                 <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white mb-3">
                   Navigation
                 </h4>
@@ -757,12 +823,11 @@ export default function LandingPage() {
                   <li><a href="#home" className="hover:text-black dark:hover:text-white transition-colors">Home</a></li>
                   <li><a href="#about" className="hover:text-black dark:hover:text-white transition-colors">About</a></li>
                   <li><a href="#services" className="hover:text-black dark:hover:text-white transition-colors">Services</a></li>
-                  <li><a href="#contact" className="hover:text-black dark:hover:text-white transition-colors">Contact</a></li>
                   <li><Link href="/chat" className="hover:text-black dark:hover:text-white transition-colors">Studio App</Link></li>
                 </ul>
-              </div>
+              </AnimatedContainer>
 
-              <div>
+              <AnimatedContainer delay={0.4} className="space-y-3">
                 <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-white mb-3">
                   Security & Standards
                 </h4>
@@ -772,13 +837,13 @@ export default function LandingPage() {
                   <li>OpenAPI 3.1 & AsyncAPI</li>
                   <li>Strict Cloud IaC Standards</li>
                 </ul>
-              </div>
+              </AnimatedContainer>
             </div>
 
-            <div className="border-t border-neutral-200 dark:border-neutral-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500">
+            <AnimatedContainer delay={0.5} className="border-t border-neutral-200 dark:border-neutral-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500">
               <p>&copy; 2026 ArchAI Architecture Engine. All rights reserved.</p>
               <p className="mt-2 sm:mt-0 font-mono text-[11px]">Designed with UI-UX Pro Max • Pure Black & White Architecture</p>
-            </div>
+            </AnimatedContainer>
           </div>
         </footer>
       </div>

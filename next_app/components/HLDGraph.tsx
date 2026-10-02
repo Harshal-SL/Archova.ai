@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef } from "react";
 import {
   ReactFlow,
   Background,
@@ -24,29 +24,126 @@ import {
   ShieldCheck,
   Globe,
   Radio,
+  ChevronDown,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { architectureNodeTypes } from "./flow/ArchitectureNodes";
 import { architectureEdgeTypes } from "./flow/AnimatedFlowEdge";
+import { getEdgeTheme, getComponentTheme } from "@/lib/flow-colors";
+import { parseHldToReactFlow } from "@/lib/graph-parser";
+import { dummyHldData } from "@/lib/mock-data";
 
-export default function HLDGraph() {
+export function getComponentLldType(
+  node: Node | null | undefined
+): "backend" | "frontend" | "database" | "security" | "cloud" {
+  if (!node) return "backend";
+  const division = (node.data?.division as string)?.toLowerCase();
+  const type = (node.type || "").toLowerCase();
+  const id = (node.id || "").toLowerCase();
+  const label = String(node.data?.label || "").toLowerCase();
+  const role = String(node.data?.role || "").toLowerCase();
+
+  // 1. Frontend Division (Actors, Web App, Gateway)
+  if (
+    division === "frontend" ||
+    type === "frontend" ||
+    type === "actor" ||
+    id.includes("front") ||
+    id.includes("actor") ||
+    id.includes("gateway") ||
+    label.includes("web app") ||
+    label.includes("next.js") ||
+    label.includes("react") ||
+    label.includes("student") ||
+    label.includes("admin") ||
+    label.includes("gateway")
+  ) {
+    return "frontend";
+  }
+
+  // 2. Database Division (Postgres, Cache, Storage)
+  if (
+    division === "database" ||
+    type === "database" ||
+    type === "cache" ||
+    id.includes("db") ||
+    id.includes("database") ||
+    id.includes("cache") ||
+    id.includes("redis") ||
+    id.includes("postgres") ||
+    label.includes("database") ||
+    label.includes("postgres") ||
+    label.includes("cache") ||
+    label.includes("redis")
+  ) {
+    return "database";
+  }
+
+  // 3. Deployment / Cloud Division (Kubernetes, CI/CD, Observability)
+  if (
+    division === "deployment" ||
+    type === "devops" ||
+    id.includes("k8s") ||
+    id.includes("cicd") ||
+    id.includes("cloud") ||
+    id.includes("deploy") ||
+    id.includes("monitor") ||
+    label.includes("kubernetes") ||
+    label.includes("docker") ||
+    label.includes("aws") ||
+    label.includes("prometheus") ||
+    label.includes("ci/cd") ||
+    role.includes("pipeline")
+  ) {
+    return "cloud";
+  }
+
+  // 4. Security Division
+  if (
+    division === "security" ||
+    type === "security" ||
+    id.includes("waf") ||
+    id.includes("security") ||
+    id.includes("guard") ||
+    label.includes("waf") ||
+    label.includes("security")
+  ) {
+    return "security";
+  }
+
+  // 5. Backend Division (Microservices, Domain Services, Event Bus Queue)
+  return "backend";
+}
+
+interface HLDGraphProps {
+  onSelectLld?: (type: "backend" | "frontend" | "database" | "security" | "cloud") => void;
+}
+
+export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
   const {
     hldNodes: dynamicNodes,
     hldEdges: dynamicEdges,
     setSelectedNode,
     setActivePipelineStep,
     setActiveLldType,
+    jumpToLld,
     openExplain,
     theme,
   } = useAppStore();
 
   const isDark = theme === "dark";
 
-  const initialNodes = dynamicNodes || [];
-  const initialEdges = dynamicEdges || [];
+  // Use dynamicNodes or fallback to parsed dummyHldData
+  const initialData = useMemo(() => {
+    if (dynamicNodes && dynamicNodes.length > 0) {
+      return { nodes: dynamicNodes, edges: dynamicEdges || [] };
+    }
+    return parseHldToReactFlow(dummyHldData);
+  }, [dynamicNodes, dynamicEdges]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialData.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialData.edges);
 
   // Inspector Drawer state
   const [selectedNodeData, setSelectedNodeData] = useState<Node | null>(null);
@@ -57,24 +154,69 @@ export default function HLDGraph() {
   const [selectedLayer, setSelectedLayer] = useState<string>("all");
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [divisionDropdownOpen, setDivisionDropdownOpen] = useState(false);
+  const divisionDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        divisionDropdownRef.current &&
+        !divisionDropdownRef.current.contains(e.target as unknown as HTMLElement)
+      ) {
+        setDivisionDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const divisionOptions = useMemo(
+    () => [
+      { id: "all", label: "All Divisions", count: 16 },
+      { id: "frontend", label: "Frontend", count: 4 },
+      { id: "backend", label: "Backend", count: 7 },
+      { id: "database", label: "Database", count: 2 },
+      { id: "deployment", label: "Deployment", count: 3 },
+    ],
+    []
+  );
+
+  const activeDivision =
+    divisionOptions.find((d) => d.id === selectedLayer) || divisionOptions[0];
 
   // Sync state when dynamic nodes/edges from backend are updated
   useEffect(() => {
-    setNodes(dynamicNodes || []);
-    setEdges(dynamicEdges || []);
+    if (dynamicNodes && dynamicNodes.length > 0) {
+      setNodes(dynamicNodes);
+      setEdges(dynamicEdges || []);
+    } else {
+      const fallback = parseHldToReactFlow(dummyHldData);
+      setNodes(fallback.nodes);
+      setEdges(fallback.edges);
+    }
   }, [dynamicNodes, dynamicEdges, setNodes, setEdges]);
 
-  // Node Click: Open rich inspector drawer
+  // Jump to corresponding LLD tab
+  const handleJumpToLld = useCallback(
+    (type: "backend" | "frontend" | "database" | "security" | "cloud") => {
+      setActiveLldType(type);
+      jumpToLld(type);
+      if (onSelectLld) {
+        onSelectLld(type);
+      }
+    },
+    [setActiveLldType, jumpToLld, onSelectLld]
+  );
+
+  // Node Click: On clicking specific component, navigate directly to corresponding LLD design
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
-      // Don't open drawer on layer group backgrounds
-      if (node.type === "layerGroup") return;
-
       setSelectedNode(node.id);
       setSelectedNodeData(node);
-      setInspectorOpen(true);
+      const targetLld = getComponentLldType(node);
+      handleJumpToLld(targetLld);
     },
-    [setSelectedNode]
+    [setSelectedNode, handleJumpToLld]
   );
 
   // Hover highlighting for interactive connection tracking
@@ -122,14 +264,26 @@ export default function HLDGraph() {
         opacity = 0.25;
       }
 
-      // Filter by layer category
+      // Filter by architecture division (Frontend, Backend, Database, Deployment)
       if (selectedLayer !== "all") {
-        if (selectedLayer === "frontend" && !["actor", "frontend"].includes(n.type || "")) opacity = 0.15;
-        if (selectedLayer === "gateway" && n.type !== "gateway") opacity = 0.15;
-        if (selectedLayer === "services" && n.type !== "service") opacity = 0.15;
-        if (selectedLayer === "data" && !["database", "cache"].includes(n.type || "")) opacity = 0.15;
-        if (selectedLayer === "queue" && n.type !== "queue") opacity = 0.15;
-        if (selectedLayer === "devops" && n.type !== "devops") opacity = 0.15;
+        if (n.type === "layerGroup") {
+          const groupId = n.id.toLowerCase();
+          const isTargetGroup = groupId.includes(selectedLayer);
+          if (!isTargetGroup) {
+            opacity = 0.2;
+          }
+        } else {
+          const nodeDivision = (n.data?.division as string) || (
+            ["actor", "frontend", "gateway"].includes(n.type || "") ? "frontend" :
+              ["service", "queue"].includes(n.type || "") ? "backend" :
+                ["database", "cache"].includes(n.type || "") ? "database" :
+                  n.type === "devops" ? "deployment" : ""
+          );
+
+          if (nodeDivision !== selectedLayer) {
+            opacity = 0.12;
+          }
+        }
       }
 
       // Filter by search query
@@ -155,80 +309,139 @@ export default function HLDGraph() {
     return edges.map((e) => {
       const isConnected = connectedEdgesSet ? connectedEdgesSet.has(e.id) : true;
       const isDimmed = connectedEdgesSet && !isConnected;
-      const strokeColor = isDark
-        ? (isConnected && hoveredNodeId !== null ? "#ffffff" : "#737373")
-        : (isConnected && hoveredNodeId !== null ? "#000000" : "#525252");
+
+      // Check division filtering for edges
+      let divisionDimmed = false;
+      if (selectedLayer !== "all") {
+        const sNode = nodes.find((n) => n.id === e.source);
+        const tNode = nodes.find((n) => n.id === e.target);
+        const sDiv = (sNode?.data?.division as string) || (
+          ["actor", "frontend", "gateway"].includes(sNode?.type || "") ? "frontend" :
+            ["service", "queue"].includes(sNode?.type || "") ? "backend" :
+              ["database", "cache"].includes(sNode?.type || "") ? "database" :
+                sNode?.type === "devops" ? "deployment" : ""
+        );
+        const tDiv = (tNode?.data?.division as string) || (
+          ["actor", "frontend", "gateway"].includes(tNode?.type || "") ? "frontend" :
+            ["service", "queue"].includes(tNode?.type || "") ? "backend" :
+              ["database", "cache"].includes(tNode?.type || "") ? "database" :
+                tNode?.type === "devops" ? "deployment" : ""
+        );
+        if (sDiv !== selectedLayer && tDiv !== selectedLayer) {
+          divisionDimmed = true;
+        }
+      }
+
+      // Connection uses the exact same color as its originating component
+      const edgeTheme = getEdgeTheme(e.source, e.target, (e.data?.strokeColor as string) || (e.style?.stroke as string));
+      const strokeColor = isDark ? edgeTheme.darkColor : edgeTheme.lightColor;
+      const isHovered = isConnected && hoveredNodeId !== null;
 
       return {
         ...e,
         animated: animationsEnabled,
-        selected: isConnected && hoveredNodeId !== null,
+        selected: isHovered,
         markerEnd: {
           type: MarkerType.ArrowClosed,
-          width: 16,
-          height: 16,
+          width: 18,
+          height: 18,
           color: strokeColor,
+        },
+        data: {
+          ...((e.data || {}) as Record<string, unknown>),
+          strokeColor,
         },
         style: {
           ...e.style,
-          opacity: isDimmed ? 0.15 : 1,
+          opacity: isDimmed ? 0.12 : divisionDimmed ? 0.08 : 1,
           stroke: strokeColor,
-          strokeWidth: isConnected && hoveredNodeId !== null ? 2.5 : 1.5,
-          transition: "opacity 0.2s ease, stroke 0.2s ease",
+          strokeWidth: isHovered ? 3.4 : (isDark ? 2.0 : 2.4),
+          filter: isHovered
+            ? (isDark ? `drop-shadow(0 0 8px ${strokeColor})` : `drop-shadow(0 0 6px ${strokeColor}aa)`)
+            : undefined,
+          transition: "opacity 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease",
         },
       };
     });
-  }, [edges, connectedEdgesSet, hoveredNodeId, animationsEnabled, isDark]);
-
-  // Jump to corresponding LLD tab from drawer
-  const handleJumpToLld = (type: "backend" | "frontend" | "database" | "security" | "cloud") => {
-    setActiveLldType(type);
-    setActivePipelineStep(4);
-  };
+  }, [edges, nodes, connectedEdgesSet, hoveredNodeId, selectedLayer, animationsEnabled, isDark]);
 
   return (
-    <div className={`relative h-full w-full bg-white text-black dark:bg-black dark:text-white ${isFullscreen ? "fixed inset-0 z-50" : ""}`}>
+    <div className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}>
       {/* ── Top Floating Control Panel Monochrome ── */}
-      <div className="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-2">
-        {/* Layer Filters */}
-        <div className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white/95 p-1 shadow-sm backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95">
-          {[
-            { id: "all", label: "All Layers" },
-            { id: "frontend", label: "Frontend" },
-            { id: "gateway", label: "Gateway" },
-            { id: "services", label: "Microservices" },
-            { id: "data", label: "Data & Cache" },
-            { id: "queue", label: "Async Queue" },
-            { id: "devops", label: "DevOps & Obs" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setSelectedLayer(tab.id)}
-              className={`rounded-md px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 ${
-                selectedLayer === tab.id
-                  ? "bg-black text-white dark:bg-white dark:text-black"
-                  : "text-neutral-600 hover:text-black hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* ── Top-Right Floating Controls (Positioned Below Home Button) ── */}
+      <div className="absolute top-3.5 right-4 z-20 flex items-center gap-2 pointer-events-none">
+        {/* Architecture Division Dropdown */}
+        <div ref={divisionDropdownRef} className="relative pointer-events-auto">
+          <button
+            type="button"
+            onClick={() => setDivisionDropdownOpen((prev) => !prev)}
+            className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white/95 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white cursor-pointer transition-all"
+            title="Filter by architecture division"
+          >
+            <Layers className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
+            <span>{activeDivision.label}</span>
+            <span className="rounded-full bg-neutral-200 px-1.5 py-0.2 text-[9px] font-mono text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
+              {activeDivision.count}
+            </span>
+            <ChevronDown
+              className={cn(
+                "h-3.5 w-3.5 text-neutral-400 transition-transform duration-200",
+                divisionDropdownOpen && "rotate-180"
+              )}
+            />
+          </button>
+
+          {divisionDropdownOpen && (
+            <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl border border-neutral-200 bg-white/98 p-1.5 shadow-xl backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/98 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                Filter Divisions
+              </div>
+              {divisionOptions.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedLayer(tab.id);
+                    setDivisionDropdownOpen(false);
+                  }}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer",
+                    selectedLayer === tab.id
+                      ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-xs"
+                      : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white"
+                  )}
+                >
+                  <span>{tab.label}</span>
+                  <span
+                    className={cn(
+                      "rounded-full px-1.5 py-0.2 text-[9px] font-mono",
+                      selectedLayer === tab.id
+                        ? "bg-white/20 text-white dark:bg-black/20 dark:text-black"
+                        : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+                    )}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Search / Filter Input */}
-        <div className="relative flex items-center">
+        <div className="relative flex items-center pointer-events-auto">
           <Search className="absolute left-2.5 h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
           <input
             type="text"
             placeholder="Filter components..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 w-44 rounded-lg border border-neutral-300 bg-white/95 pl-8 pr-3 text-xs text-black placeholder:text-neutral-400 backdrop-blur-md focus:border-black focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-white"
+            className="h-8 w-44 rounded-xl border border-neutral-300 bg-white/95 pl-8 pr-3 text-xs text-black placeholder:text-neutral-400 backdrop-blur-md focus:border-black focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-white shadow-2xs"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 text-neutral-400 hover:text-black dark:hover:text-white"
+              className="absolute right-2 text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer"
             >
               <X className="h-3 w-3" />
             </button>
@@ -238,11 +451,10 @@ export default function HLDGraph() {
         {/* Flow Animation Toggle */}
         <button
           onClick={() => setAnimationsEnabled(!animationsEnabled)}
-          className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 ${
-            animationsEnabled
-              ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
-              : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
-          }`}
+          className={`pointer-events-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 cursor-pointer shadow-2xs ${animationsEnabled
+            ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+            : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
+            }`}
           title="Toggle data flow animation"
         >
           <Zap className="h-3.5 w-3.5" />
@@ -252,7 +464,7 @@ export default function HLDGraph() {
         {/* Fullscreen Toggle */}
         <button
           onClick={() => setIsFullscreen(!isFullscreen)}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
+          className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-2xs cursor-pointer transition-colors"
           title="Toggle Fullscreen"
         >
           {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -287,7 +499,7 @@ export default function HLDGraph() {
           maxZoom={2.5}
           proOptions={{ hideAttribution: true }}
         >
-          <Background gap={24} size={1} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.06)"} />
+          <Background gap={24} size={1.2} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(100, 116, 139, 0.22)"} />
           <Controls className="!border-neutral-300 !bg-white !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-neutral-700 dark:!bg-neutral-900 dark:!text-white dark:[&>button]:!border-neutral-800 dark:[&>button]:!bg-neutral-900 dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-neutral-800 dark:[&>button:hover]:!text-white" />
         </ReactFlow>
       )}
@@ -312,9 +524,16 @@ export default function HLDGraph() {
                 )}
               </div>
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                  {String(selectedNodeData.data?.code || selectedNodeData.type || "Component")}
-                </span>
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    {String(selectedNodeData.data?.code || selectedNodeData.type || "Component")}
+                  </span>
+                  {Boolean(selectedNodeData.data?.division) && (
+                    <span className="rounded-sm border border-neutral-300 bg-neutral-100 px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                      {String(selectedNodeData.data?.division)} Division
+                    </span>
+                  )}
+                </div>
                 <h3 className="font-heading text-sm font-bold text-black dark:text-white leading-tight">
                   {String(selectedNodeData.data?.label || selectedNodeData.id)}
                 </h3>
@@ -337,7 +556,7 @@ export default function HLDGraph() {
               <p className="mt-1 text-neutral-700 dark:text-neutral-300 leading-relaxed font-normal">
                 {String(
                   selectedNodeData.data?.description ||
-                    `${selectedNodeData.data?.label} architectural component in High-Level Design.`
+                  `${selectedNodeData.data?.label} architectural component in High-Level Design.`
                 )}
               </p>
             </div>
@@ -371,19 +590,30 @@ export default function HLDGraph() {
                     const isSource = e.source === selectedNodeData.id;
                     const otherNodeId = isSource ? e.target : e.source;
                     const otherNode = nodes.find((n) => n.id === otherNodeId);
+                    const connTheme = getComponentTheme(e.source);
+                    const connColor = isDark ? connTheme.darkColor : connTheme.lightColor;
+
                     return (
                       <div
                         key={e.id}
-                        className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white px-3 py-2 text-[11px] dark:border-neutral-800 dark:bg-neutral-900"
+                        className="flex items-center justify-between rounded-lg border border-neutral-200 bg-white p-2 text-[11px] dark:border-neutral-800 dark:bg-neutral-900"
+                        style={{ borderLeftColor: connColor, borderLeftWidth: 3 }}
                       >
-                        <span className="font-bold text-black dark:text-white">
+                        <span className="font-bold shrink-0 text-[10px]" style={{ color: connColor }}>
                           {isSource ? "Outflow ➔" : "Inflow ⬅"}
                         </span>
-                        <span className="font-medium text-neutral-800 dark:text-neutral-200">
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate mx-2">
                           {String(otherNode?.data?.label || otherNodeId)}
                         </span>
                         {Boolean((e.data as Record<string, unknown> | undefined)?.label) ? (
-                          <span className="rounded border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-[9px] font-mono text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+                          <span
+                            className="rounded border px-1.5 py-0.5 text-[9px] font-mono shrink-0"
+                            style={{
+                              borderColor: `${connColor}55`,
+                              color: connColor,
+                              backgroundColor: `${connColor}15`,
+                            }}
+                          >
                             {String((e.data as Record<string, unknown>).label)}
                           </span>
                         ) : null}
@@ -398,18 +628,34 @@ export default function HLDGraph() {
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
             <button
               onClick={() => {
+                const targetLld = getComponentLldType(selectedNodeData);
+                handleJumpToLld(targetLld);
+              }}
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-black py-2.5 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
+            >
+              <span>Explore {getComponentLldType(selectedNodeData).toUpperCase()} LLD Blueprint</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+
+            <button
+              onClick={() => {
                 const label = String(selectedNodeData.data?.label || selectedNodeData.id);
                 const desc = String(selectedNodeData.data?.description || `High-Level Design component: ${label}`);
                 openExplain(selectedNodeData.id, `${label} — Architecture Specification`, desc);
               }}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-black py-2.5 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-300 bg-white py-2 text-xs font-semibold text-neutral-800 transition-all hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white cursor-pointer shadow-2xs"
             >
               <span>View Full Component Specification</span>
-              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
       )}
+
+      {/* Floating Guidance Banner */}
+      <div className="absolute bottom-4 left-4 z-20 hidden md:flex items-center gap-2 rounded-xl border border-neutral-300 bg-white/95 px-3.5 py-1.5 text-xs text-neutral-800 shadow-sm backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/95 dark:text-neutral-200 pointer-events-none">
+        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        <span>Click any component (Frontend, Backend, Database, Cloud) to display its LLD design</span>
+      </div>
     </div>
   );
 }

@@ -15,7 +15,6 @@ import { useAppStore, generateMsgId } from "@/lib/store";
 import { aiEngineApi } from "@/lib/ai-engine-client";
 import PromptInput from "./PromptInput";
 import InterviewPopup from "./InterviewPopup";
-import ActiveAgentBanner from "./ActiveAgentBanner";
 import { AiLoader } from "@/components/ui/ai-loader";
 import { AnimatedAIChat } from "@/components/ui/animated-ai-chat";
 import { cn } from "@/lib/utils";
@@ -58,6 +57,7 @@ export default function ChatWindow() {
     setActiveView,
     hldData,
     user,
+    loadDemoData,
   } = useAppStore();
 
   const [starting, setStarting] = useState(false);
@@ -172,10 +172,7 @@ export default function ChatWindow() {
   const isEmpty = !activeSessionId || messages.length === 0;
 
   return (
-    <div className="flex h-full w-full flex-col justify-between overflow-hidden bg-white text-neutral-900 dark:bg-black dark:text-white transition-colors">
-      {/* ── Active Agent Working Indicator Banner (shown once a session or generation starts) ── */}
-      {!isEmpty && <ActiveAgentBanner />}
-
+    <div className="flex h-full w-full flex-col justify-between overflow-hidden bg-transparent text-neutral-900 dark:text-white transition-colors">
       {/* ── Main Area ── */}
       <div className="flex-1 overflow-y-auto px-4 py-4 min-h-0">
         {/* ══ State A: Initial Chat — Animated AI Chat Design in Pure Black ══ */}
@@ -186,10 +183,22 @@ export default function ChatWindow() {
               onSend={handleStartGeneration}
               disabled={starting}
             />
+            {/* Quick Load Basic HLD & LLD Template Button */}
+            <div className="mt-3 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => loadDemoData()}
+                className="group flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-all cursor-pointer shadow-xs"
+              >
+                <Layers className="h-3.5 w-3.5 text-blue-500 transition-transform group-hover:scale-110" />
+                <span>Or load the basic HLD & LLD architecture template</span>
+                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+              </button>
+            </div>
           </div>
         ) : (
           /* ══ State B: Active Conversation Stream ══ */
-          <div className="mx-auto max-w-3xl space-y-4 py-4">
+          <div className="mx-auto max-w-[920px] space-y-4 py-4">
             {messages.map((m) => {
               const isUser = m.role === "user";
               return (

@@ -58,7 +58,7 @@ export default function PipelineStepper() {
   ];
 
   return (
-    <div className="shrink-0 flex items-center justify-between border-b border-neutral-200 bg-white/90 px-4 py-2 backdrop-blur-md dark:border-neutral-800 dark:bg-black/90">
+    <div className="shrink-0 flex items-center justify-between border-b border-neutral-200/70 bg-white/70 px-4 py-2 backdrop-blur-2xl backdrop-saturate-150 shadow-xs dark:border-white/10 dark:bg-black/60">
       <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-0.5">
         {steps.map(({ step, title, icon: Icon, isAvailable, isCompleted }, idx) => {
           const isActive = activePipelineStep === step;
@@ -74,9 +74,9 @@ export default function PipelineStepper() {
                 className={clsx(
                   "group flex items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all whitespace-nowrap",
                   isActive
-                    ? "bg-black text-white dark:bg-white dark:text-black shadow-sm"
+                    ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
                     : isAvailable
-                    ? "text-neutral-700 hover:bg-neutral-100 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white"
+                    ? "text-neutral-700 hover:bg-black/5 hover:text-black dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white"
                     : "cursor-not-allowed text-neutral-400 opacity-40 dark:text-neutral-600"
                 )}
               >

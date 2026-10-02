@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Cpu, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAppStore } from "@/lib/store";
+import BubbleBg from "@/components/BubbleBg";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -65,8 +66,9 @@ export default function AuthCallbackPage() {
   }, [router, setUser, setSession]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-black dark:bg-black dark:text-white">
-      <div className="w-full max-w-md rounded-2xl border border-neutral-300 bg-white p-8 text-center shadow-xl dark:border-neutral-800 dark:bg-black">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-white px-4 text-black dark:bg-black dark:text-white overflow-hidden">
+      <BubbleBg opacity="opacity-80 dark:opacity-90" />
+      <div className="relative z-10 w-full max-w-md rounded-2xl border border-neutral-300 bg-white/95 p-8 text-center shadow-xl dark:border-neutral-800 dark:bg-black/95 backdrop-blur-xl">
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-md">
           <Cpu className="h-7 w-7" />
         </div>

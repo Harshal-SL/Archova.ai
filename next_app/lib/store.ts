@@ -102,6 +102,8 @@ interface AppState {
   hldEdges: Edge[];
   selectedNode: string | null;
   setSelectedNode: (id: string | null) => void;
+  hldWorkspaceTab: "hld" | "lld";
+  setHldWorkspaceTab: (tab: "hld" | "lld") => void;
 
   // ── 5 LLDs Concurrency ──
   lldStatus: Record<LldType, LldStatusType>;
@@ -109,6 +111,7 @@ interface AppState {
   lldMessages: Record<LldType, string | null>;
   activeLldType: LldType;
   setActiveLldType: (type: LldType) => void;
+  jumpToLld: (type: LldType) => void;
 
   // ── Real-time Terminal Logs ──
   logs: LogEntry[];
@@ -326,11 +329,13 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Specs & Diagrams — Clean initial state
   arsrsData: null,
   setArsrsData: (data) => set({ arsrsData: data }),
-  hldData: null,
-  hldNodes: [],
-  hldEdges: [],
+  hldData: dummyHldData,
+  hldNodes: initialHldNodes,
+  hldEdges: initialHldEdges,
   selectedNode: null,
   setSelectedNode: (id) => set({ selectedNode: id }),
+  hldWorkspaceTab: "hld",
+  setHldWorkspaceTab: (tab) => set({ hldWorkspaceTab: tab }),
 
   // LLDs — Preloaded with Sample Data
   lldStatus: initialLldStatus,
@@ -338,6 +343,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   lldMessages: initialLldMessages,
   activeLldType: "backend",
   setActiveLldType: (type) => set({ activeLldType: type }),
+  jumpToLld: (type) =>
+    set({
+      activeLldType: type,
+      hldWorkspaceTab: "lld",
+      activePipelineStep: 4,
+    }),
 
   // Logs
   logs: [],
@@ -487,6 +498,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   setActiveSession: async (id: string) => {
     set({
       activeSessionId: id,
+      activeView: "chat",
     });
 
     const session = get().sessions.find((s) => s.id === id);
@@ -549,9 +561,52 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Demo & Offline Testing
+  // Demo & Offline Testing: Load basic HLD & LLD Template
   loadDemoData: () => {
+    const demoGenId = "demo-template-arch-01";
+    let activeSid = get().activeSessionId;
+    let currentSessions = get().sessions;
+
+    const demoMessages: ChatMessage[] = [
+      {
+        id: "msg-demo-user",
+        role: "user",
+        content: "Build a College Library Management System with catalog search, inventory circulation, student borrowing, and automated overdue calculation.",
+      },
+      {
+        id: "msg-demo-ai",
+        role: "ai",
+        content: `Loaded the **College Library Management System** architecture template!\n\n• **High-Level Design (HLD)**: Microservices topology with 8 interconnected nodes.\n• **5 Low-Level Designs (LLDs)**: Backend, Frontend, Database, Security, and Cloud blueprints.`,
+      },
+    ];
+
+    if (!activeSid) {
+      activeSid = `demo-session-${Date.now()}`;
+      const demoSession: ChatSession = {
+        id: activeSid,
+        title: "College Library System (Template)",
+        messages: demoMessages,
+        hasArchitecture: true,
+      };
+      currentSessions = [demoSession, ...currentSessions];
+    } else {
+      currentSessions = currentSessions.map((ses) =>
+        ses.id === activeSid
+          ? {
+              ...ses,
+              title: ses.title === "New Architecture" ? "College Library System (Template)" : ses.title,
+              hasArchitecture: true,
+              messages: ses.messages.length === 0 ? demoMessages : ses.messages,
+            }
+          : ses
+      );
+    }
+
     set({
+      sessions: currentSessions,
+      activeSessionId: activeSid,
+      generationId: demoGenId,
+      arsrsData: dummyArsrs,
       hldData: dummyHldData as Record<string, unknown>,
       hldNodes: initialHldNodes,
       hldEdges: initialHldEdges,
@@ -565,6 +620,19 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
       generationStatus: "COMPLETED",
       activePipelineStep: 3,
+      activeView: "hld",
+      interviewCompleted: true,
+      activeAgent: {
+        id: "agent-sae-system-architect",
+        name: "Systems Architect & Microservices Synthesizer",
+        role: "Architecture Generation & Microservices Topology Synthesis",
+        icon: "cpu",
+        task: "Synthesized production-ready HLD topology and 5 LLD domain specifications.",
+        status: "completed",
+        stage: "HLD",
+        progressPercent: 100,
+        thought: "Interactive HLD & 5 LLD microservices templates loaded successfully.",
+      },
     });
   },
 

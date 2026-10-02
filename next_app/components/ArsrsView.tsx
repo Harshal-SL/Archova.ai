@@ -107,10 +107,10 @@ export default function ArsrsView() {
       </div>
 
       {/* Bottom Slider Footer */}
-      <div className="flex items-center justify-between border-t border-neutral-200 bg-white/90 px-6 py-3 backdrop-blur-md dark:border-neutral-800 dark:bg-black/90">
+      <div className="flex items-center justify-between border-t border-neutral-200/70 bg-white/70 px-6 py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg">
         <button
           onClick={() => setActivePipelineStep(1)}
-          className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-800 transition-colors hover:border-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white"
+          className="flex items-center gap-1.5 rounded-full border border-neutral-200/80 bg-white/80 px-4 py-2 text-xs font-semibold text-neutral-800 backdrop-blur-md transition-colors hover:border-black dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-200 dark:hover:border-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Prompt & Interview</span>

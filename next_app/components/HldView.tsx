@@ -91,10 +91,10 @@ export default function HldView() {
       </div>
 
       {/* Bottom Slider Footer */}
-      <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-6 py-3 dark:border-neutral-800 dark:bg-black">
+      <div className="flex items-center justify-between border-t border-neutral-200/70 bg-white/70 px-6 py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg">
         <button
           onClick={() => setActivePipelineStep(2)}
-          className="flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition-colors hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
+          className="flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white/80 px-4 py-2 text-xs font-semibold text-neutral-700 backdrop-blur-md transition-colors hover:border-black hover:text-black dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-300 dark:hover:border-white dark:hover:text-white cursor-pointer"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to ARSRS Document</span>

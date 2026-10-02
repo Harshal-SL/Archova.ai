@@ -14,7 +14,11 @@
   --primary-btn-fg: #ffffff;
   --primary-btn-hover: #262626;
   --muted-text: #666666;
-  --grid-line: rgba(0, 0, 0, 0.05);
+  --grid-line: rgba(0, 0, 0, 0.08);
+  --shooting-star-head: rgba(0, 0, 0, 0.22);
+  --shooting-star-body: rgba(0, 0, 0, 0.85);
+  --shooting-star-core: #000000;
+  --shooting-star-shadow: 0 0 16px rgba(0, 0, 0, 0.35), 0 0 28px rgba(0, 0, 0, 0.18);
 }
 
 .dark {
@@ -28,6 +32,10 @@
   --primary-btn-hover: #e5e5e5;
   --muted-text: #a1a1aa;
   --grid-line: rgba(255, 255, 255, 0.06);
+  --shooting-star-head: rgba(255, 255, 255, 0.15);
+  --shooting-star-body: rgba(255, 255, 255, 0.88);
+  --shooting-star-core: #ffffff;
+  --shooting-star-shadow: 0 0 16px rgba(255, 255, 255, 0.5), 0 0 28px rgba(255, 255, 255, 0.25);
 }
 
 @theme inline {
@@ -250,5 +258,14 @@ nextjs-portal,
 @keyframes ripple {
   0% { transform: scale(0.5); opacity: 0.6; }
   100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes dashFlow {
+  from {
+    stroke-dashoffset: 48;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 

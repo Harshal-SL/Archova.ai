@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { aiEngineApi } from "@/lib/ai-engine-client";
+import { parseHldToReactFlow } from "@/lib/graph-parser";
 import clsx from "clsx";
 
 interface Props {
@@ -164,11 +165,15 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       const response = await aiEngineApi.generateArchitecture(generationId);
 
       const hldObj = response.hld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
+      const parsedHld = response.hld ? parseHldToReactFlow(response.hld as Record<string, unknown>) : { nodes: [], edges: [] };
+      const finalNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? hldObj.nodes : parsedHld.nodes;
+      const finalEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? hldObj.edges : parsedHld.edges;
+
       useAppStore.setState({
         arsrsData: response.arsrs || null,
         hldData: response.hld || null,
-        hldNodes: (hldObj?.nodes as any) || [],
-        hldEdges: (hldObj?.edges as any) || [],
+        hldNodes: finalNodes as any,
+        hldEdges: finalEdges as any,
         generationStatus: "COMPLETED",
         activePipelineStep: 2,
       });

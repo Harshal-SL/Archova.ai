@@ -9,6 +9,7 @@ import {
   RotateCcw,
   Zap,
   ArrowUpRight,
+  Layers,
 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useAppStore, type PipelineStep } from "@/lib/store";
@@ -51,7 +52,6 @@ export default function Navbar() {
     { label: "Home", href: isLanding ? "#home" : "/#home" },
     { label: "About", href: isLanding ? "#about" : "/#about" },
     { label: "Services", href: isLanding ? "#services" : "/#services" },
-    { label: "Contact", href: isLanding ? "#contact" : "/#contact" },
   ];
 
   return (
@@ -125,17 +125,17 @@ export default function Navbar() {
 
       {/* Right controls */}
       <div className="flex items-center gap-3">
-        {/* Load Demo Graphics / Test Button on Chat */}
+        {/* Load Basic HLD & LLD Template Button on Chat */}
         {isChat && (
           <button
             onClick={() => {
               useAppStore.getState().loadDemoData();
             }}
-            title="Load Sample Outputs & Test Graphics"
-            className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1.5 text-xs font-bold text-neutral-900 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 transition-all shadow-xs"
+            title="Load Basic HLD & LLD Architecture Template"
+            className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-all shadow-xs cursor-pointer"
           >
-            <Zap className="h-3.5 w-3.5 text-neutral-900 dark:text-neutral-100 animate-pulse" />
-            <span>Load Demo Outputs</span>
+            <Layers className="h-3.5 w-3.5 text-blue-500" />
+            <span>Load Basic Template</span>
           </button>
         )}
 
@@ -144,22 +144,35 @@ export default function Navbar() {
           <button
             onClick={resetGenerationSession}
             title="Reset Architecture Session"
-            className="flex items-center gap-1 rounded-full border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-300 dark:hover:border-white dark:hover:text-white transition-colors"
+            className="flex items-center gap-1 rounded-full border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-300 dark:hover:border-white dark:hover:text-white transition-colors cursor-pointer"
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">New Session</span>
           </button>
         )}
 
-        {/* Fast link to Studio from outside */}
+        {/* Fast links from outside Chat */}
         {!isChat && (
-          <Link
-            href="/chat"
-            className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-900 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 transition-all"
-          >
-            <span>Studio</span>
-            <ArrowUpRight className="h-3 w-3" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                useAppStore.getState().loadDemoData();
+                router.push("/chat");
+              }}
+              title="Load Basic HLD & LLD Architecture Template"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-all cursor-pointer shadow-xs"
+            >
+              <Layers className="h-3.5 w-3.5 text-blue-500" />
+              <span>Load Template</span>
+            </button>
+            <Link
+              href="/chat"
+              className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-900 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 transition-all"
+            >
+              <span>Studio</span>
+              <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </div>
         )}
 
         <ThemeToggle />

@@ -7,13 +7,8 @@ import {
   Database,
   ShieldCheck,
   Cloud,
-  Copy,
-  Check,
-  RefreshCw,
   Loader2,
   AlertCircle,
-  Network,
-  Code2,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { aiEngineApi, type LldType, type LldStatusType } from "@/lib/ai-engine-client";
@@ -39,14 +34,9 @@ export default function LLDDashboard() {
     activeProcess,
   } = useAppStore();
 
-  const [copied, setCopied] = useState(false);
-  const [loadingLld, setLoadingLld] = useState(false);
-  const [viewMode, setViewMode] = useState<"diagram" | "json">("diagram");
-
   const fetchSpecificLld = useCallback(
     async (type: LldType) => {
       if (!generationId) return;
-      setLoadingLld(true);
       try {
         const response = await aiEngineApi.getLLD(generationId, type);
         useAppStore.setState((s) => ({
@@ -56,8 +46,6 @@ export default function LLDDashboard() {
         }));
       } catch (err) {
         console.error(`Failed to fetch ${type} LLD:`, err);
-      } finally {
-        setLoadingLld(false);
       }
     },
     [generationId]
@@ -68,14 +56,6 @@ export default function LLDDashboard() {
       fetchSpecificLld(activeLldType);
     }
   }, [generationId, activeLldType, lldData, fetchSpecificLld]);
-
-  const handleCopyJson = () => {
-    const data = lldData[activeLldType];
-    if (!data) return;
-    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const getStatusPill = (status: LldStatusType) => {
     switch (status) {
@@ -96,56 +76,7 @@ export default function LLDDashboard() {
 
   return (
     <div className="flex h-full flex-col bg-white text-black dark:bg-black dark:text-white transition-colors">
-      {/* Top Concurrency Summary Grid */}
-      <div className="border-b border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-black">
-        <div className="mb-2.5 flex items-center justify-between">
-          <span className="font-heading text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            Background Parallel Concurrency Status
-          </span>
-          <div className="flex items-center gap-1.5 text-xs text-black dark:text-white font-semibold">
-            <span className="h-2 w-2 rounded-full bg-black dark:bg-white animate-pulse" />
-            <span className="font-heading text-xs">Multi-Agent Synthesis</span>
-          </div>
-        </div>
 
-        {/* 5 LLDs Status Grid */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {LLD_TABS.map(({ type, icon: Icon }) => {
-            const status = lldStatus[type] || "NOT_STARTED";
-            const isActive = activeLldType === type;
-            return (
-              <button
-                key={type}
-                onClick={() => {
-                  setActiveLldType(type);
-                  fetchSpecificLld(type);
-                }}
-                className={clsx(
-                  "flex flex-col items-start gap-1 rounded-lg border p-2.5 text-left transition-all",
-                  isActive
-                    ? "border-black bg-neutral-100 dark:border-white dark:bg-neutral-900"
-                    : "border-neutral-200 bg-white hover:border-black dark:border-neutral-800 dark:bg-black dark:hover:border-white"
-                )}
-              >
-                <div className="flex w-full items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-black dark:text-white font-heading">
-                    <Icon className="h-3.5 w-3.5" />
-                    <span className="tracking-tight">{type.toUpperCase()}</span>
-                  </div>
-                  <span
-                    className={clsx(
-                      "rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase",
-                      getStatusPill(status)
-                    )}
-                  >
-                    {status.replace("_", " ")}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       {/* Active Process Banner if running */}
       {activeProcess && (
@@ -181,55 +112,6 @@ export default function LLDDashboard() {
               {label}
             </button>
           ))}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* View mode toggle: Diagram vs JSON */}
-          <div className="flex items-center rounded-lg border border-neutral-300 bg-white p-0.5 dark:border-neutral-700 dark:bg-neutral-900">
-            <button
-              onClick={() => setViewMode("diagram")}
-              className={clsx(
-                "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
-                viewMode === "diagram"
-                  ? "bg-black text-white dark:bg-white dark:text-black"
-                  : "text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
-              )}
-            >
-              <Network className="h-3 w-3" />
-              <span>Diagram</span>
-            </button>
-            <button
-              onClick={() => setViewMode("json")}
-              className={clsx(
-                "flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors",
-                viewMode === "json"
-                  ? "bg-black text-white dark:bg-white dark:text-black"
-                  : "text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
-              )}
-            >
-              <Code2 className="h-3 w-3" />
-              <span>JSON</span>
-            </button>
-          </div>
-
-          <button
-            onClick={() => fetchSpecificLld(activeLldType)}
-            disabled={loadingLld}
-            title="Refresh LLD"
-            className="rounded-lg border border-neutral-300 p-1.5 text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-xs transition-colors"
-          >
-            <RefreshCw className={clsx("h-3.5 w-3.5", loadingLld && "animate-spin")} />
-          </button>
-
-          {currentData && (
-            <button
-              onClick={handleCopyJson}
-              className="flex items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-xs transition-colors"
-            >
-              {copied ? <Check className="h-3.5 w-3.5 text-black dark:text-white" /> : <Copy className="h-3.5 w-3.5" />}
-              <span>{copied ? "Copied" : "Copy"}</span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -273,17 +155,7 @@ export default function LLDDashboard() {
         )}
 
         {currentStatus === "READY" && currentData && (
-          <>
-            {viewMode === "diagram" ? (
-              <LLDGraph customLldType={activeLldType} customLldData={currentData} />
-            ) : (
-              <div className="h-full overflow-y-auto p-6 font-mono text-xs text-black dark:text-white">
-                <pre className="rounded-xl border border-neutral-300 bg-white p-6 shadow-xs dark:border-neutral-800 dark:bg-neutral-900">
-                  {JSON.stringify(currentData, null, 2)}
-                </pre>
-              </div>
-            )}
-          </>
+          <LLDGraph customLldType={activeLldType} customLldData={currentData} />
         )}
       </div>
     </div>
