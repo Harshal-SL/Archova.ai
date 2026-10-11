@@ -134,7 +134,11 @@ class DecisionProvenanceService:
             )
 
         # 4. Decision: Authentication & Authorization Standard
-        auth_type = sec_lld.get("authentication", {}).get("mechanism") or "OAuth2 with Authorization Code Flow & PKCE (JWT RS256)"
+        raw_auth = sec_lld.get("authentication", {})
+        if isinstance(raw_auth, dict):
+            auth_type = raw_auth.get("mechanism") or "OAuth2 with Authorization Code Flow & PKCE (JWT RS256)"
+        else:
+            auth_type = str(raw_auth) or "OAuth2 with Authorization Code Flow & PKCE (JWT RS256)"
         sec_has_findings = any("security" in k or "auth" in k for k in component_issues)
         provenance_items.append(
             DecisionProvenanceItem(
@@ -161,7 +165,11 @@ class DecisionProvenanceService:
         )
 
         # 5. Decision: Cloud Infrastructure & Compute Platform
-        compute_type = cloud_lld.get("compute", {}).get("service") or "AWS ECS Fargate (Multi-AZ)"
+        raw_comp = cloud_lld.get("compute", {})
+        if isinstance(raw_comp, dict):
+            compute_type = raw_comp.get("service") or "AWS ECS Fargate (Multi-AZ)"
+        else:
+            compute_type = str(raw_comp) or "AWS ECS Fargate (Multi-AZ)"
         cloud_has_findings = any("cloud" in k or "compute" in k or "spof" in k for k in component_issues)
         provenance_items.append(
             DecisionProvenanceItem(

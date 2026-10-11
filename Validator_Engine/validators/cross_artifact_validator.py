@@ -176,9 +176,18 @@ class CrossArtifactValidator:
                     )
 
         # 5. Technology Alignment: Database Engine in HLD vs DB LLD vs Cloud LLD
-        hld_db = str(hld.get("data_strategy", {}).get("primary_database", "") if isinstance(hld, dict) else "").lower()
-        lld_db = str(db_data.get("database_type", "")).lower()
-        cloud_db = str(cloud_data.get("database", {}).get("service", "") if isinstance(cloud_data, dict) else "").lower()
+        strat = hld.get("data_strategy", {}) if isinstance(hld, dict) else {}
+        if isinstance(strat, dict):
+            hld_db = str(strat.get("primary_database", "")).lower()
+        else:
+            hld_db = str(strat).lower()
+
+        lld_db = str(db_data.get("database_type") or db_data.get("engine") or "").lower()
+        c_db = cloud_data.get("database", {}) if isinstance(cloud_data, dict) else {}
+        if isinstance(c_db, dict):
+            cloud_db = str(c_db.get("service") or c_db.get("engine") or "").lower()
+        else:
+            cloud_db = str(c_db).lower()
 
         if hld_db and lld_db:
             if "postgres" in hld_db and "postgres" not in lld_db:
@@ -200,7 +209,10 @@ class CrossArtifactValidator:
                 )
 
         # 6. Technology Alignment: Caching in HLD vs DB LLD vs Cloud
-        hld_cache = str(hld.get("data_strategy", {}).get("caching_tier", "") if isinstance(hld, dict) else "").lower()
+        if isinstance(strat, dict):
+            hld_cache = str(strat.get("caching_tier", "")).lower()
+        else:
+            hld_cache = str(strat).lower()
         db_cache_strat = json.dumps(db_data.get("caching_strategy", {})).lower()
         cloud_cache = json.dumps(cloud_data.get("caching", {})).lower()
 
