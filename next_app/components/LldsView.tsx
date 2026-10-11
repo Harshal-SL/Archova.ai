@@ -44,6 +44,9 @@ export default function LldsView({ onBackToHld }: Props = {}) {
     activeLldType,
     setActiveLldType,
     setActivePipelineStep,
+    setHldWorkspaceTab,
+    isValidating,
+    runCorrectionWorkflow,
   } = useAppStore();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -227,6 +230,21 @@ export default function LldsView({ onBackToHld }: Props = {}) {
                   dropdownOpen && "rotate-180"
                 )}
               />
+            </button>
+
+            {/* Validation & AI Correction Action Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setHldWorkspaceTab("validation");
+                runCorrectionWorkflow(2);
+              }}
+              disabled={isValidating}
+              className="flex items-center gap-1.5 rounded-lg border border-indigo-500/40 bg-indigo-50/90 px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 hover:border-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/80 cursor-pointer transition-all disabled:opacity-50"
+              title="Run Independent Validator Engine & Automated AI Correction Workflow"
+            >
+              <ShieldCheck className={clsx("h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400", isValidating && "animate-spin")} />
+              <span>{isValidating ? "Validating & Correcting..." : "Validate & Auto-Correct →"}</span>
             </button>
           </div>
         </div>

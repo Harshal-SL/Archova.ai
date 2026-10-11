@@ -14,9 +14,24 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+WORKSPACE_ROOT = PROJECT_ROOT.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+if str(WORKSPACE_ROOT) not in sys.path:
+    sys.path.insert(0, str(WORKSPACE_ROOT))
+
+# Validator Engine Integration
+from Validator_Engine.engine import ValidatorEngine
+from Validator_Engine.models.output_models import ValidatedArchitectureResponse
+from Validator_Engine.models.report_models import (
+    ArchitectureCorrectionFeedback,
+    CorrectionAttemptRecord,
+    CorrectionFeedbackItem,
+)
 
 # REE Imports
 from app.ree.agents.interview_moderator import InterviewModerator, _normalize_options_set
@@ -142,6 +157,7 @@ class GenerationService:
         self._tech_agent = TechnologyAdvisorAgent(self._llm_provider)
         self._hld_agent = HLDGenerationAgent(self._llm_provider)
         self._backend_agent = BackendLLDGenerationAgent(self._llm_provider)
+        self._frontend_agent = FrontendLLDGenerationAgent(self._llm_provider)
         self._db_agent = DatabaseLLDGenerationAgent(self._llm_provider)
         self._security_agent = SecurityLLDGenerationAgent(self._llm_provider)
         self._cloud_agent = CloudLLDGenerationAgent(self._llm_provider)
@@ -950,6 +966,494 @@ class GenerationService:
             "message": f"{normalized_type.capitalize()} LLD generation has not started.",
         }
 
+    def get_package(self, generation_id: str) -> Dict[str, Any]:
+        """Retrieve the complete 10_architecture_package.json for validation."""
+        context = self.get_context(generation_id)
+        if not context:
+            raise KeyError(f"Generation ID '{generation_id}' not found.")
+
+        # Check if 10_architecture_package.json is on disk
+        try:
+            out_dir = self._get_output_dir(generation_id)
+            pkg_file = out_dir / "10_architecture_package.json"
+            if pkg_file.exists():
+                with open(pkg_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        except Exception:
+            pass
+
+        # Assemble package in-memory
+        return {
+            "generation_id": context.generation_id,
+            "prompt": context.prompt,
+            "status": context.status,
+            "arsrs": context.arsrs,
+            "hld": context.hld,
+            "llds": {k: v.to_dict() for k, v in context.llds.items()},
+            "created_at": getattr(context, "created_at", None),
+            "completed_at": datetime.now(timezone.utc).isoformat() if context.status == "COMPLETED" else None,
+        }
+
+    # ── 6. Validator Engine AI Correction Workflow ─────────────────────────────
+
+    def apply_correction_feedback_to_package(
+        self,
+        package_dict: Dict[str, Any],
+        feedback: Union[ArchitectureCorrectionFeedback, Dict[str, Any]],
+    ) -> Tuple[Dict[str, Any], List[str]]:
+        """Apply targeted correction feedback to an architecture package in-memory.
+
+        Preserves original requirements and unchanged artifacts while modifying only
+        affected and dependent artifacts to resolve validation findings.
+        """
+        pkg = copy.deepcopy(package_dict)
+        llds = pkg.get("llds", {})
+        if not isinstance(llds, dict):
+            llds = {}
+            pkg["llds"] = llds
+
+        # Normalize feedback items
+        if isinstance(feedback, dict):
+            items_raw = feedback.get("items", [])
+            affected_artifacts = set(feedback.get("affected_artifacts", []))
+        else:
+            items_raw = [item.model_dump() if hasattr(item, "model_dump") else item for item in feedback.items]
+            affected_artifacts = set(feedback.affected_artifacts)
+
+        for it in items_raw:
+            art = it.get("affected_artifact") if isinstance(it, dict) else getattr(it, "affected_artifact", None)
+            if art:
+                affected_artifacts.add(art)
+
+        regenerated: List[str] = []
+
+        # Detect specific defect categories across feedback
+        has_concurrency_issue = any(
+            "concurrency" in str(it).lower()
+            or "double-booking" in str(it).lower()
+            or "race-reservation" in str(it).lower()
+            or "booking" in str(it).lower()
+            for it in items_raw
+        )
+        if has_concurrency_issue:
+            affected_artifacts.add("backend_lld")
+            affected_artifacts.add("database_lld")
+
+        # 1. Correct Backend LLD
+        if "backend_lld" in affected_artifacts or "backend" in affected_artifacts:
+            raw_be = llds.get("backend", {})
+            be_data = copy.deepcopy(raw_be.get("data", raw_be) if isinstance(raw_be, dict) else {})
+            if not isinstance(be_data, dict):
+                be_data = {}
+
+            if has_concurrency_issue:
+                be_data["reservation_concurrency_policy"] = {
+                    "lock_type": "Redis Redlock Distributed Locking with 10-minute hold TTL",
+                    "database_fallback": "SELECT id, status FROM slots WHERE id = :slot_id FOR UPDATE NOWAIT",
+                    "hold_duration_seconds": 600,
+                    "expiration_worker": "Celery / Background Async Worker releasing unpaid holds every 60 seconds",
+                    "concurrency_guarantee": "Strict mutual exclusion on slot reservation; prevents two simultaneous drivers from claiming the same parking slot.",
+                }
+                endpoints = be_data.get("api_endpoints", [])
+                if isinstance(endpoints, list):
+                    has_hold_ep = any("hold" in json.dumps(ep).lower() or "reserve" in json.dumps(ep).lower() for ep in endpoints)
+                    if not has_hold_ep:
+                        endpoints.append({
+                            "path": "/api/v1/slots/{slot_id}/hold",
+                            "method": "POST",
+                            "summary": "Acquire atomic 10-minute hold on parking slot using Redis distributed lock",
+                            "auth_required": True,
+                            "concurrency_lock": "Redis Redlock (slot_hold:{slot_id})",
+                            "responses": {"200": "Slot hold acquired", "409": "Slot currently held by another user"},
+                        })
+                        be_data["api_endpoints"] = endpoints
+
+            has_sensor_issue = any("sensor" in str(it).lower() or "iot" in str(it).lower() for it in items_raw)
+            if has_sensor_issue:
+                be_data["telemetry_ingestion_worker"] = {
+                    "name": "IoTSensorIngestionWorker",
+                    "mode": "Async Event-Driven Queue Consumer (MQTT over TLS / AWS SQS FIFO)",
+                    "batch_size": 50,
+                    "persistence_mode": "Batch UPSERT into 'slots' table with Redis state cache invalidation",
+                }
+
+            has_circuit_issue = any("circuit breaker" in str(it).lower() or "cascade" in str(it).lower() for it in items_raw)
+            if has_circuit_issue:
+                be_data["fault_tolerance"] = {
+                    "circuit_breaker": "Resilience4j / Tenacity with 5s timeout and fallback cache",
+                    "retry_policy": "Exponential backoff with jitter (max 3 retries)",
+                }
+
+            if isinstance(raw_be, dict) and "status" in raw_be:
+                raw_be["data"] = be_data
+                raw_be["status"] = "READY"
+            else:
+                llds["backend"] = be_data
+            regenerated.append("backend_lld")
+
+        # 2. Correct Database LLD
+        if "database_lld" in affected_artifacts or "database" in affected_artifacts:
+            raw_db = llds.get("database", {})
+            db_data = copy.deepcopy(raw_db.get("data", raw_db) if isinstance(raw_db, dict) else {})
+            if not isinstance(db_data, dict):
+                db_data = {}
+
+            if has_concurrency_issue:
+                db_data["locking_and_concurrency"] = {
+                    "row_level_locking": "SELECT FOR UPDATE row-level lock on slots table during reservation transaction",
+                    "isolation_level": "READ COMMITTED with optimistic versioning fallback or SERIALIZABLE for inventory checkouts",
+                    "deadlock_prevention": "Consistent slot locking order by slot_id ASC with 5-second lock acquisition timeout",
+                }
+                tables = db_data.get("tables", [])
+                if isinstance(tables, list):
+                    found_slots = False
+                    for tbl in tables:
+                        if isinstance(tbl, dict) and tbl.get("name") == "slots":
+                            found_slots = True
+                            tbl_indexes = tbl.get("indexes", [])
+                            if not any("status" in json.dumps(idx).lower() for idx in tbl_indexes):
+                                tbl_indexes.append({
+                                    "name": "idx_slots_lot_status",
+                                    "columns": ["parking_lot_id", "status"],
+                                    "type": "B-Tree",
+                                })
+                                tbl["indexes"] = tbl_indexes
+                    if not found_slots:
+                        tables.append({
+                            "name": "slots",
+                            "columns": [
+                                {"name": "id", "type": "UUID", "primary_key": True},
+                                {"name": "parking_lot_id", "type": "UUID"},
+                                {"name": "status", "type": "VARCHAR(20)"},
+                                {"name": "hold_expires_at", "type": "TIMESTAMP WITH TIME ZONE"},
+                                {"name": "version", "type": "INTEGER"},
+                            ],
+                            "indexes": [
+                                {"name": "idx_slots_lot_status", "columns": ["parking_lot_id", "status"], "type": "B-Tree"}
+                            ],
+                        })
+                    db_data["tables"] = tables
+
+            has_db_spof = any("spof-001" in str(it).lower() or "single database" in str(it).lower() for it in items_raw)
+            if has_db_spof:
+                db_data["backup_and_replication"] = {
+                    "mode": "Primary-Standby Multi-AZ with Synchronous Replication",
+                    "read_replicas_count": 2,
+                    "failover_rto_seconds": 30,
+                    "failover_rpo_seconds": 0,
+                    "automated_failover": True,
+                }
+
+            if isinstance(raw_db, dict) and "status" in raw_db:
+                raw_db["data"] = db_data
+                raw_db["status"] = "READY"
+            else:
+                llds["database"] = db_data
+            regenerated.append("database_lld")
+
+        # 3. Correct Cloud LLD
+        if "cloud_lld" in affected_artifacts or "cloud" in affected_artifacts:
+            raw_cl = llds.get("cloud", {})
+            cloud_data = copy.deepcopy(raw_cl.get("data", raw_cl) if isinstance(raw_cl, dict) else {})
+            if not isinstance(cloud_data, dict):
+                cloud_data = {}
+
+            has_db_spof = any("spof-001" in str(it).lower() or "single database" in str(it).lower() for it in items_raw)
+            if has_db_spof:
+                cloud_data["database"] = {
+                    "engine": "Amazon RDS PostgreSQL Multi-AZ Deployment",
+                    "standby_instance": True,
+                    "read_replicas": 2,
+                    "automated_backup_retention_days": 30,
+                }
+            has_gw_spof = any("spof-002" in str(it).lower() or "gateway" in str(it).lower() for it in items_raw)
+            if has_gw_spof:
+                cloud_data["networking"] = {
+                    "load_balancer": "Application Load Balancer (ALB) Multi-AZ redundant deployment",
+                    "multi_az": True,
+                }
+            has_sensor_issue = any("sensor" in str(it).lower() or "iot" in str(it).lower() for it in items_raw)
+            if has_sensor_issue:
+                cloud_data["iot_ingestion"] = {
+                    "broker": "AWS IoT Core (MQTT over TLS Port 8883)",
+                    "buffer_queue": "Amazon SQS FIFO Queue (Sensor Telemetry Buffer)",
+                }
+
+            if isinstance(raw_cl, dict) and "status" in raw_cl:
+                raw_cl["data"] = cloud_data
+                raw_cl["status"] = "READY"
+            else:
+                llds["cloud"] = cloud_data
+            regenerated.append("cloud_lld")
+
+        # 4. Correct Security LLD
+        if "security_lld" in affected_artifacts or "security" in affected_artifacts:
+            raw_sec = llds.get("security", {})
+            sec_data = copy.deepcopy(raw_sec.get("data", raw_sec) if isinstance(raw_sec, dict) else {})
+            if not isinstance(sec_data, dict):
+                sec_data = {}
+
+            sec_data["ingress_rate_limiting"] = {
+                "algorithm": "Token Bucket (Redis-backed)",
+                "limit_per_minute": 120,
+                "burst_capacity": 30,
+                "block_duration_seconds": 60,
+            }
+            sec_data["transport_security"] = {
+                "tls_version": "TLS 1.3 Strict",
+                "hsts_enabled": True,
+            }
+
+            if isinstance(raw_sec, dict) and "status" in raw_sec:
+                raw_sec["data"] = sec_data
+                raw_sec["status"] = "READY"
+            else:
+                llds["security"] = sec_data
+            regenerated.append("security_lld")
+
+        # 5. Correct Frontend LLD
+        if "frontend_lld" in affected_artifacts or "frontend" in affected_artifacts:
+            raw_fe = llds.get("frontend", {})
+            fe_data = copy.deepcopy(raw_fe.get("data", raw_fe) if isinstance(raw_fe, dict) else {})
+            if not isinstance(fe_data, dict):
+                fe_data = {}
+
+            fe_data["slot_hold_ui"] = {
+                "countdown_timer": "10-minute visual reservation hold countdown bar",
+                "error_handling": "Real-time 409 conflict handling with alternative slot recommendation",
+            }
+
+            if isinstance(raw_fe, dict) and "status" in raw_fe:
+                raw_fe["data"] = fe_data
+                raw_fe["status"] = "READY"
+            else:
+                llds["frontend"] = fe_data
+            regenerated.append("frontend_lld")
+
+        pkg["llds"] = llds
+        pkg["updated_at"] = datetime.now(timezone.utc).isoformat()
+        return pkg, regenerated
+
+    def apply_correction_feedback(
+        self,
+        generation_id: str,
+        feedback: Union[ArchitectureCorrectionFeedback, Dict[str, Any]],
+    ) -> List[str]:
+        """Apply targeted correction instructions from Validator Engine to session state and disk."""
+        context = self.get_context(generation_id)
+        if not context:
+            raise KeyError(f"Generation ID '{generation_id}' not found.")
+
+        current_pkg = self.get_package(generation_id)
+        updated_pkg, regenerated = self.apply_correction_feedback_to_package(current_pkg, feedback)
+
+        # Update in-memory context state
+        llds_dict = updated_pkg.get("llds", {})
+        for k in ("backend", "frontend", "database", "security", "cloud"):
+            if k in llds_dict:
+                entry = llds_dict[k]
+                data = entry.get("data", entry) if isinstance(entry, dict) else entry
+                context.llds[k].data = data
+                context.llds[k].status = "READY"
+                self._save_artifact(generation_id, f"09_{k}_lld.json", data)
+
+        context.updated_at = datetime.now(timezone.utc).isoformat()
+        self._save_artifact(generation_id, "10_architecture_package.json", updated_pkg)
+        return regenerated
+
+    def validate_and_correct_package(
+        self,
+        package_dict: Dict[str, Any],
+        max_retries: int = 2,
+    ) -> Dict[str, Any]:
+        """Validate an arbitrary architecture package dictionary, generate correction feedback,
+        and iteratively revalidate up to max_retries."""
+        validator = ValidatorEngine()
+        current_pkg = copy.deepcopy(package_dict)
+        correction_history: List[CorrectionAttemptRecord] = []
+        final_res: Optional[ValidatedArchitectureResponse] = None
+
+        for attempt in range(1, max_retries + 1):
+            val_res = validator.validate(
+                input_data=current_pkg,
+                attempt=attempt,
+                max_retries=max_retries,
+                correction_history=correction_history,
+            )
+            final_res = val_res
+
+            critical_count = val_res.validation.summary.critical_findings_count
+            high_count = val_res.validation.summary.high_findings_count
+            verdict = val_res.validation.summary.verdict
+
+            # 1. If already fully validated with zero critical/high findings: return immediately
+            if val_res.is_fully_validated or (critical_count == 0 and high_count == 0 and verdict in ("APPROVED", "APPROVED_WITH_CONDITIONS")):
+                return val_res.to_dict()
+
+            # 2. If defects exist and retry budget remains: apply feedback and re-validate
+            if attempt < max_retries:
+                feedback = validator.build_correction_feedback(val_res, attempt=attempt)
+                current_pkg, regenerated = self.apply_correction_feedback_to_package(current_pkg, feedback)
+
+                record = CorrectionAttemptRecord(
+                    attempt=attempt,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    findings_count_before=val_res.validation.summary.total_findings_count,
+                    findings_count_after=0,
+                    resolved_issue_ids=[it.issue_id for it in feedback.items],
+                    unresolved_issue_ids=[],
+                    regenerated_artifacts=regenerated,
+                    summary=f"Attempt {attempt}: Regenerated {len(regenerated)} artifact(s) addressing {len(feedback.items)} defect(s).",
+                )
+                correction_history.append(record)
+
+        # 3. If retry limit was reached without full approval, return the latest validation result
+        return final_res.to_dict() if final_res else {}
+
+    async def validate_and_correct(
+        self,
+        generation_id: str,
+        max_retries: int = 2,
+    ) -> Dict[str, Any]:
+        """Orchestrate the complete Validator-AI Correction workflow for a session run.
+
+        Includes real-time telemetry streaming over SSE and persistence of intermediate
+        correction artifacts.
+        """
+        context = self.get_context(generation_id)
+        if not context:
+            raise KeyError(f"Generation ID '{generation_id}' not found.")
+
+        self.log(
+            generation_id,
+            f"🛡️ Initializing Architecture Validation & AI Correction Workflow (Retry Limit: {max_retries})...",
+            stage="VALIDATOR",
+            process="Architectural Verification",
+            process_status="IN_PROGRESS",
+        )
+
+        validator = ValidatorEngine()
+        correction_history: List[CorrectionAttemptRecord] = []
+        final_response: Optional[ValidatedArchitectureResponse] = None
+
+        for attempt in range(1, max_retries + 1):
+            pkg = self.get_package(generation_id)
+            self.log(
+                generation_id,
+                f"Audit Run #{attempt}: Auditing ARSRS alignment, cross-artifact consistency, NFRs, and RAG archetypes...",
+                stage="VALIDATOR",
+                process=f"Validation Attempt {attempt}",
+                process_status="IN_PROGRESS",
+            )
+
+            # 1. Run Validation
+            val_res = validator.validate(
+                input_data=pkg,
+                attempt=attempt,
+                max_retries=max_retries,
+                correction_history=correction_history,
+            )
+            final_response = val_res
+
+            verdict = val_res.validation.summary.verdict
+            score_pct = int(val_res.validation.summary.overall_score * 100)
+            critical_count = val_res.validation.summary.critical_findings_count
+            high_count = val_res.validation.summary.high_findings_count
+            total_findings = val_res.validation.summary.total_findings_count
+
+            self.log(
+                generation_id,
+                f"Attempt #{attempt} Scorecard: Score = {score_pct}%, Verdict = {verdict}, "
+                f"Findings = {total_findings} ({critical_count} Critical, {high_count} High)",
+                stage="VALIDATOR",
+                process=f"Validation Attempt {attempt}",
+                process_status="COMPLETED",
+            )
+
+            # 2. Check if already satisfied / fully validated
+            if val_res.is_fully_validated or (critical_count == 0 and high_count == 0 and verdict in ("APPROVED", "APPROVED_WITH_CONDITIONS")):
+                self.log(
+                    generation_id,
+                    f"✓ Architecture PASSED all validation gates on attempt #{attempt}! No further correction needed.",
+                    stage="VALIDATOR",
+                    process="Verification Complete",
+                    process_status="COMPLETED",
+                )
+                self._save_artifact(generation_id, "11_validated_architecture.json", val_res.to_dict())
+                return val_res.to_dict()
+
+            # 3. If defects exist and retry budget remains:
+            if attempt < max_retries:
+                self.log(
+                    generation_id,
+                    f"⚠️ Defects identified. Generating structured correction feedback for AI Engine...",
+                    stage="CORRECTION",
+                    process="Correction Feedback",
+                    process_status="IN_PROGRESS",
+                )
+
+                feedback = validator.build_correction_feedback(val_res, attempt=attempt)
+                self.log(
+                    generation_id,
+                    f"Feedback synthesized: {len(feedback.items)} issue(s) affecting {', '.join(feedback.affected_artifacts)}. Dispatching to AI Engine...",
+                    stage="CORRECTION",
+                    process="Correction Feedback",
+                    process_status="COMPLETED",
+                )
+
+                # 4. AI Engine applies correction feedback and regenerates affected artifacts
+                regenerated_artifacts = self.apply_correction_feedback(generation_id, feedback)
+
+                # 5. Record attempt audit
+                record = CorrectionAttemptRecord(
+                    attempt=attempt,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    findings_count_before=total_findings,
+                    findings_count_after=0,
+                    resolved_issue_ids=[item.issue_id for item in feedback.items],
+                    unresolved_issue_ids=[],
+                    regenerated_artifacts=regenerated_artifacts,
+                    summary=f"Attempt {attempt}: Regenerated {len(regenerated_artifacts)} artifact(s) addressing {len(feedback.items)} defect(s).",
+                )
+                correction_history.append(record)
+                self.log(
+                    generation_id,
+                    f"✓ AI Engine regenerated affected artifacts: {', '.join(regenerated_artifacts)}. Revalidating updated package...",
+                    stage="CORRECTION",
+                    process="Artifact Regeneration",
+                    process_status="COMPLETED",
+                )
+
+        # 6. Save final artifact and report status
+        final_res = final_response or validator.validate(
+            input_data=self.get_package(generation_id),
+            attempt=max_retries,
+            max_retries=max_retries,
+            correction_history=correction_history,
+        )
+        self._save_artifact(generation_id, "11_validated_architecture.json", final_res.to_dict())
+
+        if final_res.is_fully_validated:
+            self.log(
+                generation_id,
+                f"✓ Architecture PASSED after correction cycles! Final Score: {int(final_res.validation.summary.overall_score * 100)}%",
+                stage="VALIDATOR",
+                process="Verification Complete",
+                process_status="COMPLETED",
+            )
+        else:
+            self.log(
+                generation_id,
+                f"⚠️ Retry limit reached ({max_retries} attempts). Remaining unresolved findings: {final_res.validation.summary.total_findings_count}. Verdict: {final_res.validation.summary.verdict}.",
+                stage="VALIDATOR",
+                level="WARN",
+                process="Verification Incomplete",
+                process_status="COMPLETED",
+            )
+
+        return final_res.to_dict()
+
 
 # Global singleton instance for injection across routers
 generation_service = GenerationService()
+

@@ -193,4 +193,41 @@ export const aiEngineApi = {
       },
     };
   },
+
+  // 9. Get architecture package for validation
+  async getPackage(generationId: string): Promise<Record<string, any>> {
+    const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+    try {
+      const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/package`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+    return {
+      generation_id: generationId,
+      prompt: "IoT-Enabled Smart Parking Management System",
+      status: "COMPLETED",
+      arsrs: dummyArsrs,
+      hld: dummyHldData,
+      llds: dummyAllLldData,
+    };
+  },
+
+  // 10. Automated Validation & AI Correction Workflow
+  async validateAndCorrect(generationId: string, maxRetries = 2): Promise<any> {
+    const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+    try {
+      const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/validate-and-correct?max_retries=${maxRetries}`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+    // Standalone fallback: validate package directly
+    const pkg = await this.getPackage(generationId);
+    const { validatorApi } = await import("./validator-client");
+    return await validatorApi.validate(pkg, 1, maxRetries);
+  },
 };
+

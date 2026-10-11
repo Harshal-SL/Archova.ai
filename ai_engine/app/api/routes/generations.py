@@ -370,3 +370,92 @@ async def stream_generation_logs(generation_id: str):
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ── 9. Get Complete Architecture Package ──────────────────────────────────────
+
+
+@router.get(
+    "/{generation_id}/package",
+    status_code=status.HTTP_200_OK,
+    summary="Retrieve complete 10_architecture_package.json for validation",
+)
+async def get_architecture_package(generation_id: str) -> Dict[str, Any]:
+    """Retrieve the full architecture package containing ARSRS, HLD, and all 5 LLDs."""
+    try:
+        return generation_service.get_package(generation_id)
+    except KeyError as k_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(k_err).strip("'"),
+        ) from k_err
+    except Exception as exc:
+        logger.exception("Error in get_architecture_package: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch architecture package: {str(exc)}",
+        ) from exc
+
+
+# ── 10. Automated Validation & AI Correction Workflow ─────────────────────────
+
+
+@router.post(
+    "/{generation_id}/validate-and-correct",
+    status_code=status.HTTP_200_OK,
+    summary="Execute automated Validator Engine evaluation, AI correction feedback, and revalidation loop",
+)
+async def validate_and_correct_generation(
+    generation_id: str,
+    max_retries: int = 2,
+) -> Dict[str, Any]:
+    """Executes the closed-loop Validator-AI correction workflow on the active generation package.
+
+    Checks ARSRS alignment, HLD-LLD consistency, missing components, NFRs, and RAG archetypes.
+    When defects are found, generates structured feedback and iteratively regenerates affected
+    artifacts up to the configurable retry limit (default: 2 retries).
+    """
+    try:
+        return await generation_service.validate_and_correct(
+            generation_id=generation_id,
+            max_retries=max_retries,
+        )
+    except KeyError as k_err:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(k_err).strip("'"),
+        ) from k_err
+    except Exception as exc:
+        logger.exception("Error in validate_and_correct_generation: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Validation & Correction workflow failed: {str(exc)}",
+        ) from exc
+
+
+@router.post(
+    "/validate-and-correct-package",
+    status_code=status.HTTP_200_OK,
+    summary="Execute automated validation and AI correction workflow on arbitrary architecture package JSON",
+)
+async def validate_and_correct_arbitrary_package(
+    payload: Dict[str, Any],
+    max_retries: int = 2,
+) -> Dict[str, Any]:
+    """Validates an uploaded or external architecture package payload and runs the AI correction
+    feedback loop up to max_retries."""
+    if not payload:
+        raise HTTPException(status_code=400, detail="Empty architecture package payload provided.")
+    try:
+        return generation_service.validate_and_correct_package(
+            package_dict=payload,
+            max_retries=max_retries,
+        )
+    except Exception as exc:
+        logger.exception("Error in validate_and_correct_arbitrary_package: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Package validation and correction failed: {str(exc)}",
+        ) from exc
+
+

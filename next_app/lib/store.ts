@@ -9,6 +9,10 @@ import {
   type InterviewQuestion,
   type LogEntry,
 } from "./ai-engine-client";
+import {
+  validatorApi,
+  type ValidatedArchitectureResponse,
+} from "./validator-client";
 
 export interface ChatMessage {
   id: string;
@@ -24,11 +28,12 @@ export interface ChatSession {
   hasArchitecture: boolean;
 }
 
-export type PipelineStep = 1 | 2 | 3 | 4;
+export type PipelineStep = 1 | 2 | 3 | 4 | 5;
 // 1: Prompt & Interview
 // 2: ARSRS Document
 // 3: High-Level Design (HLD)
 // 4: Low-Level Designs (5 LLDs: Backend, Frontend, Database, Security, Cloud)
+// 5: Validation & Quality Scorecard (Standalone Validator Engine + AI Correction Workflow)
 
 export interface ActiveAgentInfo {
   id: string;
@@ -102,8 +107,8 @@ interface AppState {
   hldEdges: Edge[];
   selectedNode: string | null;
   setSelectedNode: (id: string | null) => void;
-  hldWorkspaceTab: "hld" | "lld";
-  setHldWorkspaceTab: (tab: "hld" | "lld") => void;
+  hldWorkspaceTab: "hld" | "lld" | "validation";
+  setHldWorkspaceTab: (tab: "hld" | "lld" | "validation") => void;
 
   // ── 5 LLDs Concurrency ──
   lldStatus: Record<LldType, LldStatusType>;
@@ -112,6 +117,17 @@ interface AppState {
   activeLldType: LldType;
   setActiveLldType: (type: LldType) => void;
   jumpToLld: (type: LldType) => void;
+
+  // ── Standalone Validator Engine & Correction Workflow ──
+  validatorConnected: boolean;
+  validatorVersion: string;
+  checkValidatorHealth: () => Promise<boolean>;
+  validationData: ValidatedArchitectureResponse | null;
+  isValidating: boolean;
+  validationError: string | null;
+  setValidationData: (data: ValidatedArchitectureResponse | null) => void;
+  validateArchitecture: (pkg?: Record<string, any>) => Promise<ValidatedArchitectureResponse | null>;
+  runCorrectionWorkflow: (maxRetries?: number) => Promise<ValidatedArchitectureResponse | null>;
 
   // ── Real-time Terminal Logs ──
   logs: LogEntry[];
@@ -349,6 +365,147 @@ export const useAppStore = create<AppState>((set, get) => ({
       hldWorkspaceTab: "lld",
       activePipelineStep: 4,
     }),
+
+  // Validator Engine Health & Results
+  validatorConnected: false,
+  validatorVersion: "1.0.0",
+  checkValidatorHealth: async () => {
+    const res = await validatorApi.checkHealth();
+    set({ validatorConnected: res.ok, validatorVersion: res.version || "1.0.0" });
+    return res.ok;
+  },
+  validationData: null,
+  isValidating: false,
+  validationError: null,
+  setValidationData: (data) => set({ validationData: data }),
+
+  validateArchitecture: async (pkg?: Record<string, any>) => {
+    const { generationId, arsrsData, hldData, lldData, addLogEntry } = get();
+    set({ isValidating: true, validationError: null });
+
+    const now = new Date().toTimeString().split(" ")[0];
+    addLogEntry({
+      timestamp: now,
+      stage: "VALIDATOR",
+      message: "🛡️ Activating Standalone Validator Engine (Port 8001)...",
+      level: "INFO",
+    });
+
+    try {
+      let packagePayload = pkg;
+      if (!packagePayload && generationId) {
+        try {
+          packagePayload = await aiEngineApi.getPackage(generationId);
+        } catch {
+          packagePayload = {
+            generation_id: generationId,
+            prompt: "IoT-Enabled Smart Parking Management System",
+            status: "COMPLETED",
+            arsrs: arsrsData,
+            hld: hldData,
+            llds: lldData,
+          };
+        }
+      } else if (!packagePayload) {
+        packagePayload = {
+          generation_id: "demo-package",
+          prompt: "IoT-Enabled Smart Parking Management System",
+          status: "COMPLETED",
+          arsrs: arsrsData,
+          hld: hldData,
+          llds: lldData,
+        };
+      }
+
+      const result = await validatorApi.validate(packagePayload);
+      set({
+        validationData: result,
+        isValidating: false,
+        validationError: null,
+        activePipelineStep: 5,
+        hldWorkspaceTab: "validation",
+      });
+
+      const scorePercent = Math.round((result.validation?.summary?.overall_score || 0) * 100);
+      const verdict = result.validation?.summary?.verdict || "APPROVED";
+      const findingsCount = result.validation?.summary?.total_findings_count || 0;
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "VALIDATOR",
+        message: `✓ Architecture validated! Composite Score: ${scorePercent}% | Verdict: ${verdict} | Findings: ${findingsCount}`,
+        level: "INFO",
+      });
+
+      return result;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Validation failed.";
+      set({ isValidating: false, validationError: msg });
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "VALIDATOR",
+        message: `❌ Validator Engine error: ${msg}`,
+        level: "ERROR",
+      });
+      return null;
+    }
+  },
+
+  runCorrectionWorkflow: async (maxRetries = 2) => {
+    const { generationId, validateArchitecture, addLogEntry } = get();
+    set({ isValidating: true, validationError: null });
+
+    const now = new Date().toTimeString().split(" ")[0];
+    addLogEntry({
+      timestamp: now,
+      stage: "CORRECTION",
+      message: `🔄 Starting automated Validator-AI Correction workflow (Max retries: ${maxRetries})...`,
+      level: "INFO",
+    });
+
+    try {
+      let result: ValidatedArchitectureResponse | null = null;
+      if (generationId) {
+        result = await aiEngineApi.validateAndCorrect(generationId, maxRetries);
+      } else {
+        result = await validateArchitecture();
+      }
+
+      if (result) {
+        set({
+          validationData: result,
+          isValidating: false,
+          validationError: null,
+          activePipelineStep: 5,
+          hldWorkspaceTab: "validation",
+        });
+
+        if (result.architecture?.llds) {
+          set({ lldData: result.architecture.llds as any });
+        }
+
+        const scorePercent = Math.round((result.validation?.summary?.overall_score || 0) * 100);
+        const verdict = result.validation?.summary?.verdict || "APPROVED";
+        addLogEntry({
+          timestamp: new Date().toTimeString().split(" ")[0],
+          stage: "CORRECTION",
+          message: `✓ AI Correction Cycle finished! Final Score: ${scorePercent}% | Status: ${verdict} | Fully Validated: ${result.is_fully_validated ? "YES" : "NO"}`,
+          level: "INFO",
+        });
+      }
+      return result;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Correction workflow failed.";
+      set({ isValidating: false, validationError: msg });
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION",
+        message: `❌ AI Correction workflow error: ${msg}`,
+        level: "ERROR",
+      });
+      return null;
+    }
+  },
 
   // Logs
   logs: [],
