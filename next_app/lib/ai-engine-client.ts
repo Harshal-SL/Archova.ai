@@ -223,7 +223,15 @@ export const aiEngineApi = {
       if (res.ok) {
         return await res.json();
       }
-    } catch {}
+      const errData = await res.json().catch(() => null);
+      if (res.status !== 404 && errData?.detail) {
+        throw new Error(errData.detail);
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
+    }
     // Standalone fallback: validate package directly
     const pkg = await this.getPackage(generationId);
     const { validatorApi } = await import("./validator-client");

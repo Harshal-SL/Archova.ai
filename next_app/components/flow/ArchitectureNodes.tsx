@@ -41,6 +41,42 @@ const getCardShadow = (
     ? `0 4px 16px -4px ${glow}`
     : `0 4px 16px -2px rgba(15, 23, 42, 0.12), 0 0 0 1px ${lightColor}45`;
 
+// Helper for bidirectional connection handles (prevents React Flow #008 handle errors)
+interface DualHandleProps {
+  id: string;
+  position: Position;
+  color: string;
+  isDark: boolean;
+  className?: string;
+}
+
+const DualHandle = ({ id, position, color, isDark, className }: DualHandleProps) => (
+  <>
+    <Handle
+      type="target"
+      position={position}
+      id={id}
+      className={`!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125 ${className || ""}`}
+      style={{
+        backgroundColor: color,
+        borderColor: isDark ? "#000000" : "#ffffff",
+        boxShadow: `0 0 6px ${color}`,
+      }}
+    />
+    <Handle
+      type="source"
+      position={position}
+      id={id}
+      className={`!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125 ${className || ""}`}
+      style={{
+        backgroundColor: color,
+        borderColor: isDark ? "#000000" : "#ffffff",
+        boxShadow: `0 0 6px ${color}`,
+      }}
+    />
+  </>
+);
+
 // ── 1. Layer Group Node (Container / Bounding Box) ──
 export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
   const { theme: appTheme, jumpToLld } = useAppStore();
@@ -190,17 +226,8 @@ export const ActorNode = memo(({ id, data, selected }: NodeProps) => {
           : `0 3px 12px -2px rgba(15, 23, 42, 0.12), 0 0 0 1px ${theme.lightColor}45`,
       }}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="act-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="act-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="act-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border shadow-xs transition-all"
         style={{
@@ -218,17 +245,8 @@ export const ActorNode = memo(({ id, data, selected }: NodeProps) => {
           <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400">{role}</span>
         )}
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="act-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="act-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="act-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -265,28 +283,8 @@ export const FrontendNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="fe-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="fe-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="fe-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="fe-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div className="flex items-center gap-2.5">
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
@@ -310,28 +308,8 @@ export const FrontendNode = memo(({ id, data, selected }: NodeProps) => {
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[220px] font-medium">{tech}</span>
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="fe-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="fe-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="fe-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="fe-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -368,28 +346,8 @@ export const GatewayNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="gw-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="gw-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="gw-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="gw-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div className="flex items-center gap-2.5">
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
@@ -413,28 +371,8 @@ export const GatewayNode = memo(({ id, data, selected }: NodeProps) => {
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[240px] font-medium">{tech}</span>
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="gw-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="gw-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="gw-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="gw-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -473,28 +411,8 @@ export const ServiceNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="svc-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="svc-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="svc-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="svc-left" position={Position.Left} color={accentColor} isDark={isDark} />
 
       {/* Header with Service Code Badge */}
       <div className="flex items-center justify-between pb-1.5 pt-0.5">
@@ -536,28 +454,8 @@ export const ServiceNode = memo(({ id, data, selected }: NodeProps) => {
         <span className="mt-1 line-clamp-1 text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">{tech}</span>
       )}
 
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="svc-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="svc-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="svc-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="svc-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -595,28 +493,8 @@ export const DatabaseNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="db-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="db-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="db-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="db-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div className="flex items-center gap-2.5">
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
@@ -644,28 +522,8 @@ export const DatabaseNode = memo(({ id, data, selected }: NodeProps) => {
           )}
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="db-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="db-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="db-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="db-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -702,28 +560,8 @@ export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="cache-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="cache-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="cache-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="cache-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div className="flex items-center gap-2">
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
@@ -747,28 +585,8 @@ export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[190px] font-medium">{subtitle}</span>
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="cache-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="cache-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="cache-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="cache-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -805,28 +623,8 @@ export const QueueNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="q-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="q-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="q-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="q-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div className="flex items-center gap-2.5">
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
@@ -850,28 +648,8 @@ export const QueueNode = memo(({ id, data, selected }: NodeProps) => {
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[200px] font-medium">{subtitle}</span>
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="q-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="q-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="q-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="q-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });
@@ -918,28 +696,8 @@ export const DevOpsNode = memo(({ id, data, selected }: NodeProps) => {
         style={{ backgroundColor: accentColor }}
       />
 
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="dev-top"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="dev-left"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="dev-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="dev-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <div className="flex items-center gap-2">
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
@@ -965,28 +723,8 @@ export const DevOpsNode = memo(({ id, data, selected }: NodeProps) => {
           )}
         </div>
       </div>
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="dev-bottom"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="dev-right"
-        className="!h-2.5 !w-2.5 !border-2 transition-transform duration-150 hover:scale-125"
-        style={{
-          backgroundColor: accentColor,
-          borderColor: isDark ? "#000000" : "#ffffff",
-          boxShadow: `0 0 6px ${accentColor}`,
-        }}
-      />
+      <DualHandle id="dev-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
+      <DualHandle id="dev-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
   );
 });

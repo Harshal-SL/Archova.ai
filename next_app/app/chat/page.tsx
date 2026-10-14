@@ -88,20 +88,8 @@ export default function ChatPage() {
 
 
 
-          {/* Right: Load Template, New Session, Theme */}
+          {/* Right: New Session, Theme */}
           <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                loadDemoData();
-              }}
-              title="Load Basic HLD & LLD Architecture Template"
-              className="flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 backdrop-blur-md transition-all cursor-pointer shadow-2xs"
-            >
-              <Layers className="h-3.5 w-3.5 text-blue-500" />
-              <span className="hidden sm:inline">Load Basic Template</span>
-              <span className="sm:hidden">Template</span>
-            </button>
 
             <button
               type="button"

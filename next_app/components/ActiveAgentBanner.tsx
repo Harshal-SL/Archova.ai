@@ -13,6 +13,7 @@ import {
   Activity,
   CheckCircle2,
   Terminal,
+  ShieldCheck,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { AiLoader } from "@/components/ui/ai-loader";
@@ -38,6 +39,8 @@ export default function ActiveAgentBanner() {
         return <Cpu className="h-4 w-4" />;
       case "network":
         return <Network className="h-4 w-4" />;
+      case "shield":
+        return <ShieldCheck className="h-4 w-4" />;
       default:
         return <Sparkles className="h-4 w-4" />;
     }

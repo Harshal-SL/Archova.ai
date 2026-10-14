@@ -13,6 +13,7 @@ import {
   validatorApi,
   type ValidatedArchitectureResponse,
 } from "./validator-client";
+import { parseHldToReactFlow } from "./graph-parser";
 
 export interface ChatMessage {
   id: string;
@@ -39,7 +40,7 @@ export interface ActiveAgentInfo {
   id: string;
   name: string;
   role: string;
-  icon: "brain" | "mic" | "cpu" | "network" | "sparkles";
+  icon: "brain" | "mic" | "cpu" | "network" | "sparkles" | "shield";
   task: string;
   status: "thinking" | "working" | "completed" | "idle";
   stage: "REE" | "INTERVIEW" | "SAE" | "HLD" | "READY" | string;
@@ -56,6 +57,7 @@ interface AppState {
   authLoading: boolean;
   setUser: (u: User | null) => void;
   setSession: (s: Session | null) => void;
+  loginAsGuest: (name?: string) => void;
   initAuth: () => Promise<void>;
   signOut: () => Promise<void>;
 
@@ -123,11 +125,12 @@ interface AppState {
   validatorVersion: string;
   checkValidatorHealth: () => Promise<boolean>;
   validationData: ValidatedArchitectureResponse | null;
+  validatedGenerationId: string | null;
   isValidating: boolean;
   validationError: string | null;
   setValidationData: (data: ValidatedArchitectureResponse | null) => void;
   validateArchitecture: (pkg?: Record<string, any>) => Promise<ValidatedArchitectureResponse | null>;
-  runCorrectionWorkflow: (maxRetries?: number) => Promise<ValidatedArchitectureResponse | null>;
+  runCorrectionWorkflow: (maxRetries?: number, force?: boolean) => Promise<ValidatedArchitectureResponse | null>;
 
   // ── Real-time Terminal Logs ──
   logs: LogEntry[];
@@ -205,8 +208,45 @@ export const useAppStore = create<AppState>((set, get) => ({
   setUser: (user) => set({ user }),
   setSession: (session) => set({ session, user: session?.user ?? null }),
 
+  loginAsGuest: (name?: string) => {
+    const guestUser = {
+      id: `guest-${Date.now()}`,
+      email: "guest@archai.local",
+      app_metadata: { provider: "guest" },
+      user_metadata: {
+        name: name || "Guest Architect",
+        full_name: name || "Guest Architect",
+      },
+      aud: "authenticated",
+      created_at: new Date().toISOString(),
+    } as unknown as User;
+
+    set({ user: guestUser, session: null, authLoading: false });
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("archai-guest-user", JSON.stringify(guestUser));
+      } catch {
+        // ignore
+      }
+    }
+  },
+
   initAuth: async () => {
     try {
+      // 1. Check for previously saved guest user in localStorage
+      if (typeof window !== "undefined") {
+        try {
+          const guestRaw = localStorage.getItem("archai-guest-user");
+          if (guestRaw) {
+            const guestUser = JSON.parse(guestRaw);
+            set({ user: guestUser, session: null, authLoading: false });
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // 2. Check Supabase session
       const { data } = await supabase.auth.getSession();
       if (data?.session) {
         set({
@@ -215,17 +255,17 @@ export const useAppStore = create<AppState>((set, get) => ({
           authLoading: false,
         });
         await get().loadSessionsFromSupabase();
-      } else {
+      } else if (!get().user) {
         set({ session: null, user: null, authLoading: false });
       }
 
       supabase.auth.onAuthStateChange(async (_event, session) => {
-        set({
-          session,
-          user: session?.user ?? null,
-          authLoading: false,
-        });
-        if (session?.user) {
+        if (session) {
+          set({
+            session,
+            user: session.user,
+            authLoading: false,
+          });
           await get().loadSessionsFromSupabase();
         }
       });
@@ -248,8 +288,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       });
 
       if (typeof window !== "undefined") {
-        // Clear any leftover supabase auth tokens in localStorage
+        // Clear any leftover supabase auth tokens and guest sessions in localStorage
         try {
+          localStorage.removeItem("archai-guest-user");
           Object.keys(localStorage).forEach((key) => {
             if (key.startsWith("sb-") || key.includes("supabase.auth")) {
               localStorage.removeItem(key);
@@ -375,6 +416,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     return res.ok;
   },
   validationData: null,
+  validatedGenerationId: null,
   isValidating: false,
   validationError: null,
   setValidationData: (data) => set({ validationData: data }),
@@ -393,23 +435,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     try {
       let packagePayload = pkg;
-      if (!packagePayload && generationId) {
-        try {
-          packagePayload = await aiEngineApi.getPackage(generationId);
-        } catch {
-          packagePayload = {
-            generation_id: generationId,
-            prompt: "IoT-Enabled Smart Parking Management System",
-            status: "COMPLETED",
-            arsrs: arsrsData,
-            hld: hldData,
-            llds: lldData,
-          };
-        }
-      } else if (!packagePayload) {
+      if (!packagePayload) {
         packagePayload = {
-          generation_id: "demo-package",
-          prompt: "IoT-Enabled Smart Parking Management System",
+          generation_id: generationId || "custom-package",
+          prompt: "System Architecture",
           status: "COMPLETED",
           arsrs: arsrsData,
           hld: hldData,
@@ -420,10 +449,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       const result = await validatorApi.validate(packagePayload);
       set({
         validationData: result,
+        validatedGenerationId: generationId,
         isValidating: false,
         validationError: null,
         activePipelineStep: 5,
-        hldWorkspaceTab: "validation",
       });
 
       const scorePercent = Math.round((result.validation?.summary?.overall_score || 0) * 100);
@@ -451,8 +480,17 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  runCorrectionWorkflow: async (maxRetries = 2) => {
-    const { generationId, validateArchitecture, addLogEntry } = get();
+  runCorrectionWorkflow: async (maxRetries = 2, force = false) => {
+    const { generationId, isValidating, validatedGenerationId, addLogEntry, hldData, arsrsData, lldData, hldNodes, hldEdges } = get();
+
+    // 1. Guard against duplicate validation requests caused by React effects, component remounts, or repeated generation events
+    if (isValidating) {
+      return null;
+    }
+    if (!force && generationId && validatedGenerationId === generationId && get().validationData) {
+      return get().validationData;
+    }
+
     set({ isValidating: true, validationError: null });
 
     const now = new Date().toTimeString().split(" ")[0];
@@ -468,35 +506,72 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (generationId) {
         result = await aiEngineApi.validateAndCorrect(generationId, maxRetries);
       } else {
-        result = await validateArchitecture();
+        result = await get().validateArchitecture();
       }
 
       if (result) {
-        set({
-          validationData: result,
-          isValidating: false,
-          validationError: null,
-          activePipelineStep: 5,
-          hldWorkspaceTab: "validation",
-        });
+        // Extract architecture from the final validated package
+        const rawArch = (result.architecture || {}) as Record<string, any>;
+        const finalHld = (rawArch.hld || hldData) as Record<string, unknown> | null;
+        const finalArsrs = (rawArch.arsrs || arsrsData) as Record<string, unknown> | null;
 
-        if (result.architecture?.llds) {
-          set({ lldData: result.architecture.llds as any });
+        // Re-parse React Flow nodes & edges strictly from the final corrected HLD
+        let finalNodes = hldNodes;
+        let finalEdges = hldEdges;
+        if (finalHld) {
+          const parsed = parseHldToReactFlow(finalHld);
+          const hldObj = finalHld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
+          finalNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? (hldObj.nodes as any) : parsed.nodes;
+          finalEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? (hldObj.edges as any) : parsed.edges;
         }
+
+        // Extract all five LLDs strictly from the final corrected package
+        const rawLlds = (rawArch.llds || {}) as Record<string, any>;
+        const currentLldData = lldData;
+        const finalLldData: Record<LldType, Record<string, unknown> | null> = {
+          backend: (rawLlds.backend?.data || rawLlds.backend || rawArch.lld_backend || currentLldData.backend) as any,
+          frontend: (rawLlds.frontend?.data || rawLlds.frontend || rawArch.lld_frontend || currentLldData.frontend) as any,
+          database: (rawLlds.database?.data || rawLlds.database || rawArch.lld_database || currentLldData.database) as any,
+          security: (rawLlds.security?.data || rawLlds.security || rawArch.lld_security || currentLldData.security) as any,
+          cloud: (rawLlds.cloud?.data || rawLlds.cloud || rawArch.lld_cloud || currentLldData.cloud) as any,
+        };
 
         const scorePercent = Math.round((result.validation?.summary?.overall_score || 0) * 100);
         const verdict = result.validation?.summary?.verdict || "APPROVED";
+        const isApproved = Boolean(result.is_fully_validated);
+
+        set({
+          validationData: result,
+          validatedGenerationId: generationId,
+          isValidating: false,
+          validationError: null,
+          activePipelineStep: 3,
+          arsrsData: finalArsrs,
+          hldData: finalHld,
+          hldNodes: finalNodes,
+          hldEdges: finalEdges,
+          lldData: finalLldData,
+          generationStatus: "COMPLETED",
+          activeView: "hld", // Render HLD / LLDs as primary content
+          hldWorkspaceTab: "hld",
+        });
+
         addLogEntry({
           timestamp: new Date().toTimeString().split(" ")[0],
           stage: "CORRECTION",
-          message: `✓ AI Correction Cycle finished! Final Score: ${scorePercent}% | Status: ${verdict} | Fully Validated: ${result.is_fully_validated ? "YES" : "NO"}`,
+          message: `✓ AI Correction Cycle finished! Final Score: ${scorePercent}% | Verdict: ${verdict} | Fully Validated: ${isApproved ? "YES" : "NO"}`,
           level: "INFO",
         });
       }
       return result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Correction workflow failed.";
-      set({ isValidating: false, validationError: msg });
+      // Preserve initial generated package, expose error and validation status. Never treat unvalidated as approved.
+      set({
+        isValidating: false,
+        validationError: msg,
+        generationStatus: "COMPLETED",
+      });
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
         stage: "CORRECTION",
@@ -558,6 +633,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       hldNodes: [],
       hldEdges: [],
       selectedNode: null,
+      validationData: null,
+      validatedGenerationId: null,
+      validationError: null,
       lldStatus: initialLldStatus,
       lldData: initialLldData,
       lldMessages: initialLldMessages,
@@ -571,25 +649,27 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadSessionsFromSupabase: async () => {
     const currentUser = get().user;
-    if (!currentUser) return;
+    if (!currentUser || currentUser.app_metadata?.provider === "guest") return;
 
     try {
       const { data: dbSessions } = await supabase
         .from("chat_sessions")
-        .select("id, title, created_at")
+        .select("id, created_at")
         .eq("user_id", currentUser.id)
         .order("created_at", { ascending: false });
 
       if (!dbSessions) return;
 
-      const loadedSessions: ChatSession[] = dbSessions.map((s) => ({
+      const loadedSessions: ChatSession[] = dbSessions.map((s, idx) => ({
         id: s.id,
-        title: s.title || "Architecture Session",
+        title: `Architecture Session ${idx + 1}`,
         messages: [],
         hasArchitecture: false,
       }));
 
-      set({ sessions: loadedSessions });
+      if (loadedSessions.length > 0) {
+        set({ sessions: loadedSessions });
+      }
     } catch {
       // Fallback
     }
@@ -602,14 +682,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     let newId = `session-${Date.now()}`;
 
-    if (currentUser) {
+    if (currentUser && currentUser.app_metadata?.provider !== "guest") {
       try {
         const { data } = await supabase
           .from("chat_sessions")
           .insert([
             {
               user_id: currentUser.id,
-              title: defaultTitle,
             },
           ])
           .select()
@@ -644,6 +723,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       hldNodes: [],
       hldEdges: [],
       selectedNode: null,
+      validationData: null,
+      validatedGenerationId: null,
+      validationError: null,
       lldStatus: initialLldStatus,
       lldData: initialLldData,
       logs: [],
@@ -706,13 +788,21 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     try {
-      await supabase.from("messages").insert([
-        {
-          session_id: sessionId,
-          role: msg.role === "ai" ? "assistant" : "user",
-          content: msg.content,
-        },
-      ]);
+      const currentUser = get().user;
+      if (
+        currentUser &&
+        currentUser.app_metadata?.provider !== "guest" &&
+        sessionId.includes("-") &&
+        !sessionId.startsWith("session-")
+      ) {
+        await supabase.from("messages").insert([
+          {
+            session_id: sessionId,
+            role: msg.role === "ai" ? "assistant" : "user",
+            content: msg.content,
+          },
+        ]);
+      }
     } catch {
       // Continue
     }

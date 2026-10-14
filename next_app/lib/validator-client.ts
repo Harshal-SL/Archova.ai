@@ -14,9 +14,12 @@ export interface Finding {
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | string;
   requirement_id?: string | null;
   affected_component?: string;
+  affected_artifact?: string;
   explanation: string;
   evidence?: string;
   recommendation?: string;
+  status?: string;
+  resolution_status?: string;
 }
 
 export interface HardQualityGates {

@@ -125,20 +125,6 @@ export default function Navbar() {
 
       {/* Right controls */}
       <div className="flex items-center gap-3">
-        {/* Load Basic HLD & LLD Template Button on Chat */}
-        {isChat && (
-          <button
-            onClick={() => {
-              useAppStore.getState().loadDemoData();
-            }}
-            title="Load Basic HLD & LLD Architecture Template"
-            className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-all shadow-xs cursor-pointer"
-          >
-            <Layers className="h-3.5 w-3.5 text-blue-500" />
-            <span>Load Basic Template</span>
-          </button>
-        )}
-
         {/* Reset / New Session */}
         {isChat && generationId && (
           <button
@@ -154,17 +140,6 @@ export default function Navbar() {
         {/* Fast links from outside Chat */}
         {!isChat && (
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                useAppStore.getState().loadDemoData();
-                router.push("/chat");
-              }}
-              title="Load Basic HLD & LLD Architecture Template"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-all cursor-pointer shadow-xs"
-            >
-              <Layers className="h-3.5 w-3.5 text-blue-500" />
-              <span>Load Template</span>
-            </button>
             <Link
               href="/chat"
               className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-900 hover:bg-neutral-200 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800 transition-all"

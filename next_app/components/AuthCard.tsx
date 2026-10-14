@@ -37,7 +37,7 @@ interface AuthCardProps {
 
 export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
   const router = useRouter();
-  const { setUser, setSession } = useAppStore();
+  const { setUser, setSession, loginAsGuest } = useAppStore();
 
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
   const [email, setEmail] = useState("");
@@ -78,6 +78,15 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", nextMode ? "/signup" : "/signin");
     }
+  };
+
+  // Instant Guest login
+  const handleGuestLogin = () => {
+    loginAsGuest(fullName.trim() || email.split("@")[0] || "Guest Architect");
+    setSuccessMessage("Entering ArchAI Architecture Studio as Guest Architect...");
+    setTimeout(() => {
+      router.push("/chat");
+    }, 400);
   };
 
   // Sign In handler
@@ -180,7 +189,7 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
           await supabase.from("users").upsert({
             id: data.user.id,
             email: email.trim(),
-            name: fullName.trim() || email.split("@")[0],
+            full_name: fullName.trim() || email.split("@")[0],
           });
         } catch {
           // Trigger handles automatically
@@ -195,8 +204,27 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
             router.push("/chat");
           }, 800);
         } else {
+          // Attempt automatic login if email verification is not strictly enforced
+          try {
+            const { data: signInData } = await supabase.auth.signInWithPassword({
+              email: email.trim(),
+              password,
+            });
+            if (signInData?.session) {
+              setUser(signInData.user);
+              setSession(signInData.session);
+              setSuccessMessage("Account created and authenticated! Entering ArchAI Studio...");
+              setTimeout(() => {
+                router.push("/chat");
+              }, 800);
+              return;
+            }
+          } catch {
+            // continue
+          }
+
           setSuccessMessage(
-            `Account created! A confirmation email has been sent to ${email}. Please check your inbox & spam folder.`
+            `Account created! A confirmation email has been dispatched to ${email}. If your Supabase instance requires verification, check your inbox, or click "Continue as Guest" below to start immediately.`
           );
         }
       }
@@ -362,21 +390,31 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
                   <AlertDescription>
                     <div className="space-y-2">
                       <p>{errorMessage}</p>
-                      {isEmailUnconfirmed && (
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {isEmailUnconfirmed && (
+                          <button
+                            type="button"
+                            onClick={handleResendConfirmation}
+                            disabled={resending}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-red-900/60 hover:bg-red-800/80 text-red-100 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                          >
+                            {resending ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Send className="h-3.5 w-3.5" />
+                            )}
+                            <span>Resend Confirmation Email</span>
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={handleResendConfirmation}
-                          disabled={resending}
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-red-900/60 hover:bg-red-800/80 text-red-100 px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer"
+                          onClick={handleGuestLogin}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-400/40 bg-white/10 hover:bg-white/20 text-xs font-semibold px-3 py-1.5 transition-colors cursor-pointer"
                         >
-                          {resending ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                          ) : (
-                            <Send className="h-3.5 w-3.5" />
-                          )}
-                          <span>Resend Confirmation Email</span>
+                          <Sparkles className="h-3.5 w-3.5" />
+                          <span>Continue as Guest Instead</span>
                         </button>
-                      )}
+                      </div>
                     </div>
                   </AlertDescription>
                 </Alert>
@@ -591,6 +629,24 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
                   )}
                 </button>
               </div>
+
+              {/* ── Divider & Guest Option ── */}
+              <div className="relative flex items-center justify-center my-2">
+                <div className="border-t border-neutral-200 dark:border-neutral-800 w-full" />
+                <span className="bg-white dark:bg-[#0c0c0c] px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest shrink-0">
+                  Or
+                </span>
+                <div className="border-t border-neutral-200 dark:border-neutral-800 w-full" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleGuestLogin}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/80 text-neutral-800 dark:text-neutral-200 py-2.5 text-xs sm:text-sm font-semibold transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer shadow-2xs"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
+                <span>Continue as Guest (No Registration Required)</span>
+              </button>
 
               {/* Sub-actions & Terms */}
               <p className="text-center text-[11px] text-neutral-500 pt-2">

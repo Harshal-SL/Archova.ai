@@ -183,18 +183,6 @@ export default function ChatWindow() {
               onSend={handleStartGeneration}
               disabled={starting}
             />
-            {/* Quick Load Basic HLD & LLD Template Button */}
-            <div className="mt-3 flex items-center justify-center">
-              <button
-                type="button"
-                onClick={() => loadDemoData()}
-                className="group flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-xs font-semibold text-blue-600 hover:bg-blue-500/20 dark:border-blue-400/30 dark:bg-blue-950/40 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-all cursor-pointer shadow-xs"
-              >
-                <Layers className="h-3.5 w-3.5 text-blue-500 transition-transform group-hover:scale-110" />
-                <span>Or load the basic HLD & LLD architecture template</span>
-                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-              </button>
-            </div>
           </div>
         ) : (
           /* ══ State B: Active Conversation Stream ══ */

@@ -166,30 +166,31 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
 
       const hldObj = response.hld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
       const parsedHld = response.hld ? parseHldToReactFlow(response.hld as Record<string, unknown>) : { nodes: [], edges: [] };
-      const finalNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? hldObj.nodes : parsedHld.nodes;
-      const finalEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? hldObj.edges : parsedHld.edges;
+      const initialNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? hldObj.nodes : parsedHld.nodes;
+      const initialEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? hldObj.edges : parsedHld.edges;
 
       useAppStore.setState({
         arsrsData: response.arsrs || null,
         hldData: response.hld || null,
-        hldNodes: finalNodes as any,
-        hldEdges: finalEdges as any,
-        generationStatus: "COMPLETED",
-        activePipelineStep: 2,
+        hldNodes: initialNodes as any,
+        hldEdges: initialEdges as any,
+        generationStatus: "VALIDATING_ARCH",
       });
 
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
-        stage: "SAE",
-        message: "✓ ARSRS & HLD generated successfully. Visual graph ready.",
+        stage: "VALIDATOR",
+        message: "🛡️ Executing automated Validator-AI correction loop (max 2 retries)...",
         level: "INFO",
       });
+
+      await useAppStore.getState().runCorrectionWorkflow(2);
 
       if (onArchitectureGenerated) {
         onArchitectureGenerated();
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Architecture generation failed.";
+      const msg = err instanceof Error ? err.message : "Architecture generation and validation failed.";
       setError(msg);
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],

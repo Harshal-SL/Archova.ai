@@ -239,38 +239,56 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
     });
 
     try {
+      // 1. Initial AI generation
       const response = await aiEngineApi.generateArchitecture(generationId);
       const hldObj = response.hld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
       const parsedHld = response.hld ? parseHldToReactFlow(response.hld as Record<string, unknown>) : { nodes: [], edges: [] };
-      const finalNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? hldObj.nodes : parsedHld.nodes;
-      const finalEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? hldObj.edges : parsedHld.edges;
+      const initialNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? hldObj.nodes : parsedHld.nodes;
+      const initialEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? hldObj.edges : parsedHld.edges;
 
+      // Keep generation and validation progress distinct - do not mark as COMPLETED yet!
       useAppStore.setState({
         arsrsData: finalArsrs,
         hldData: response.hld || null,
-        hldNodes: finalNodes as any,
-        hldEdges: finalEdges as any,
-        generationStatus: "COMPLETED",
-        activeView: "hld", // Automatically transition to HLD display as requested!
+        hldNodes: initialNodes as any,
+        hldEdges: initialEdges as any,
+        generationStatus: "VALIDATING_ARCH",
       });
 
       setActiveAgent({
-        id: "agent-hld",
-        name: "HLD Topology Engine",
-        role: "Component Layout & Communication Protocols",
-        icon: "network",
-        task: "High-Level Design (HLD) architecture synthesized successfully. Visual diagram active.",
+        id: "agent-validator",
+        name: "Architectural Validator Engine",
+        role: "Automated Verification & AI Correction",
+        icon: "shield",
+        task: "Executing automated Validator Engine verification and AI correction loop (max 2 retries)...",
+        status: "working",
+        stage: "VALIDATOR",
+        progressPercent: 90,
+        thought: "Auditing ARSRS alignment, cross-artifact consistency, and NFR feasibility across all 6 architecture artifacts.",
+      });
+
+      // 2. Automated Validation & AI Correction Workflow (calls POST /api/v1/generations/{id}/validate-and-correct?max_retries=2)
+      const validatedResult = await useAppStore.getState().runCorrectionWorkflow(2);
+
+      setActiveAgent({
+        id: "agent-validator",
+        name: "Architectural Validator Engine",
+        role: "Multi-Artifact Closed-Loop Verification",
+        icon: "shield",
+        task: validatedResult?.is_fully_validated
+          ? "Architecture verified and fully validated! Visual diagram active."
+          : "Architecture generation complete with validation findings.",
         status: "completed",
-        stage: "HLD",
+        stage: "VALIDATOR",
         progressPercent: 100,
-        thought: "Interactive HLD graph ready with microservices, gateway, cache, and database nodes.",
+        thought: "Final validated architecture package loaded into HLD and LLD visualization.",
       });
 
       if (onHldReady) {
         onHldReady();
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to generate HLD architecture.";
+      const msg = err instanceof Error ? err.message : "Failed to generate and validate architecture.";
       setError(msg);
     } finally {
       setGeneratingArch(false);
