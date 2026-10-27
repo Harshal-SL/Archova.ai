@@ -69,14 +69,14 @@ export default function ChatWindow() {
   const session = sessions.find((s) => s.id === activeSessionId);
   const messages = session?.messages ?? [];
 
-  // User display name from account or fallback to "Harshal" as in user's reference image
+  // User display name from account or fallback if authenticated
   const fullName =
     user?.user_metadata?.name ||
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
-    "Harshal";
+    "";
 
-  const firstName = fullName.split(" ")[0] || "Harshal";
+  const firstName = fullName ? (fullName.split(" ")[0] || "") : "";
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

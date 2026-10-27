@@ -43,16 +43,15 @@ export default function Sidebar() {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push("/signin");
   };
 
   const displayName =
     user?.user_metadata?.name ||
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
-    "Harshal";
+    (user ? "Architect" : "Guest Mode");
 
-  const emailDisplay = user?.email || "Guest Architecture Mode";
+  const emailDisplay = user?.email || (user ? "Guest Architecture Mode" : "Sign in to sync history");
   const userInitial = displayName.charAt(0).toUpperCase();
 
   const filteredSessions = sessions.filter((s) =>
@@ -217,16 +216,16 @@ export default function Sidebar() {
         {/* Docked User Profile below the sidebar */}
         <div className="relative z-10 border-t border-neutral-200/40 p-3 dark:border-white/[0.06] shrink-0 bg-white/15 dark:bg-white/[0.01] backdrop-blur-xl">
           {user ? (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/30 p-2.5 shadow-2xs backdrop-blur-md dark:border-white/[0.06] dark:bg-white/[0.02] opacity-75 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/30 p-2.5 shadow-2xs backdrop-blur-md dark:border-white/[0.06] dark:bg-white/[0.02] opacity-85 hover:opacity-100 transition-all duration-200">
               <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black/80 text-white text-xs font-bold dark:bg-white/90 dark:text-black shadow-xs">
                   {userInitial}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-neutral-900/80 dark:text-white/80 leading-tight">
+                  <p className="truncate text-xs font-bold text-neutral-900/90 dark:text-white/90 leading-tight">
                     {displayName}
                   </p>
-                  <p className="truncate text-[10px] text-neutral-500/70 dark:text-neutral-400/60">
+                  <p className="truncate text-[10px] text-neutral-500/80 dark:text-neutral-400/70">
                     {emailDisplay}
                   </p>
                 </div>
@@ -243,19 +242,19 @@ export default function Sidebar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/30 p-2.5 shadow-2xs backdrop-blur-md dark:border-white/[0.06] dark:bg-white/[0.02] opacity-75 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/30 p-2.5 shadow-2xs backdrop-blur-md dark:border-white/[0.06] dark:bg-white/[0.02] opacity-85 hover:opacity-100 transition-all duration-200">
               <Link
                 href="/signin"
                 className="flex min-w-0 items-center gap-2.5 flex-1 hover:opacity-80 transition-opacity"
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black/80 text-white text-xs font-bold dark:bg-white/90 dark:text-black shadow-xs">
-                  {userInitial}
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 text-xs font-bold shadow-xs">
+                  <UserIcon className="h-4 w-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-bold text-neutral-900/80 dark:text-white/80 leading-tight">
-                    {displayName}
+                  <p className="truncate text-xs font-bold text-neutral-900/90 dark:text-white/90 leading-tight">
+                    Guest Mode
                   </p>
-                  <p className="truncate text-[10px] text-blue-500/75 dark:text-blue-400/75 font-medium">
+                  <p className="truncate text-[10px] text-sky-600 dark:text-sky-400 font-medium">
                     Sign in to save history
                   </p>
                 </div>
@@ -265,9 +264,9 @@ export default function Sidebar() {
                 href="/signin"
                 title="Sign in"
                 aria-label="Sign in"
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-red-500/25 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:border-red-500/30 dark:bg-red-950/40 dark:hover:bg-red-900/50 dark:text-red-400 transition-all duration-150 cursor-pointer shadow-2xs group shrink-0"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-sky-500/25 bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:border-sky-500/30 dark:bg-sky-950/40 dark:hover:bg-sky-900/50 dark:text-sky-400 transition-all duration-150 cursor-pointer shadow-2xs group shrink-0"
               >
-                <LogIn className="h-4 w-4 text-red-600 dark:text-red-400 transition-transform duration-150 group-hover:scale-110" />
+                <LogIn className="h-4 w-4 text-sky-600 dark:text-sky-400 transition-transform duration-150 group-hover:scale-110" />
               </Link>
             </div>
           )}

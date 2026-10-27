@@ -130,7 +130,7 @@ export interface AnimatedAIChatProps {
 export function AnimatedAIChat({
   onSend,
   disabled = false,
-  userName = "Harshal",
+  userName = "",
   className,
 }: AnimatedAIChatProps) {
   const { theme, benchmarkModelsConfig } = useAppStore();
@@ -343,7 +343,7 @@ export function AnimatedAIChat({
               className="inline-block"
             >
               <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-neutral-900 dark:text-white pb-1">
-                How can I help, {userName}?
+                {userName ? `How can I help, ${userName}?` : "How can I help you today?"}
               </h1>
               <motion.div
                 className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-white/20 to-transparent mx-auto"

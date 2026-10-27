@@ -255,6 +255,7 @@ export function generateMsgId() {
 }
 
 let agentPollingInterval: ReturnType<typeof setInterval> | null = null;
+let authListenerInitialized = false;
 
 export const useAppStore = create<AppState>((set, get) => ({
   // Auth
@@ -291,12 +292,16 @@ export const useAppStore = create<AppState>((set, get) => ({
   initAuth: async () => {
     try {
       // 1. Check for previously saved guest user in localStorage
+      let hasGuest = false;
       if (typeof window !== "undefined") {
         try {
           const guestRaw = localStorage.getItem("archai-guest-user");
           if (guestRaw) {
             const guestUser = JSON.parse(guestRaw);
-            set({ user: guestUser, session: null, authLoading: false });
+            if (guestUser && guestUser.id) {
+              hasGuest = true;
+              set({ user: guestUser, session: null, authLoading: false });
+            }
           }
         } catch {
           // ignore
@@ -312,52 +317,105 @@ export const useAppStore = create<AppState>((set, get) => ({
           authLoading: false,
         });
         await get().loadSessionsFromSupabase();
-      } else if (!get().user) {
+      } else if (!hasGuest) {
         set({ session: null, user: null, authLoading: false });
+      } else {
+        set({ authLoading: false });
       }
 
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session) {
-          set({
-            session,
-            user: session.user,
-            authLoading: false,
-          });
-          await get().loadSessionsFromSupabase();
-        }
-      });
+      // 3. Attach a single onAuthStateChange listener
+      if (!authListenerInitialized) {
+        authListenerInitialized = true;
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === "SIGNED_OUT" || (!session && !localStorage.getItem("archai-guest-user"))) {
+            set({
+              session: null,
+              user: null,
+              authLoading: false,
+              sessions: [],
+              activeSessionId: null,
+            });
+          } else if (session) {
+            set({
+              session,
+              user: session.user,
+              authLoading: false,
+            });
+            await get().loadSessionsFromSupabase();
+          }
+        });
+      }
     } catch {
       set({ authLoading: false });
     }
   },
 
   signOut: async () => {
-    try {
-      await supabase.auth.signOut({ scope: "local" });
-    } catch (err) {
-      console.warn("Sign out notice:", err);
-    } finally {
-      set({
-        user: null,
-        session: null,
-        sessions: [],
-        activeSessionId: null,
-      });
+    // 1. Instantly reset all in-memory store states to eliminate stale session/user data
+    set({
+      user: null,
+      session: null,
+      sessions: [],
+      activeSessionId: null,
+      generationId: null,
+      generationStatus: "IDLE",
+      currentQuestion: null,
+      interviewCompleted: false,
+      activeProcess: null,
+      arsrsData: null,
+      hldData: null,
+      hldNodes: [],
+      hldEdges: [],
+      selectedNode: null,
+      lldStatus: initialLldStatus,
+      lldData: initialLldData,
+      lldMessages: initialLldMessages,
+      logs: [],
+      validationData: null,
+      validatedGenerationId: null,
+      activeAgent: null,
+      agentSwarm: {},
+      activeAgentsList: [],
+      activePipelineStep: 1,
+    });
 
-      if (typeof window !== "undefined") {
-        // Clear any leftover supabase auth tokens and guest sessions in localStorage
-        try {
-          localStorage.removeItem("archai-guest-user");
-          Object.keys(localStorage).forEach((key) => {
-            if (key.startsWith("sb-") || key.includes("supabase.auth")) {
-              localStorage.removeItem(key);
-            }
-          });
-        } catch {
-          // ignore
+    // 2. Clear browser storage (localStorage and sessionStorage)
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("archai-guest-user");
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (
+            key &&
+            (key.startsWith("sb-") ||
+              key.includes("supabase.auth") ||
+              key.includes("supabase") ||
+              key === "archai-guest-user")
+          ) {
+            keysToRemove.push(key);
+          }
         }
-        window.location.href = "/signin";
+        keysToRemove.forEach((k) => localStorage.removeItem(k));
+        sessionStorage.clear();
+      } catch (storageErr) {
+        console.warn("Storage cleanup notice:", storageErr);
       }
+    }
+
+    // 3. Notify Supabase with a timeout safeguard so network latency never blocks logout
+    try {
+      await Promise.race([
+        supabase.auth.signOut({ scope: "local" }),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
+    } catch (err) {
+      console.warn("Supabase sign out notice:", err);
+    }
+
+    // 4. Clean navigation to signin page (full browser reload to flush in-memory React/router caches)
+    if (typeof window !== "undefined") {
+      window.location.href = "/signin";
     }
   },
 
