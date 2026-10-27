@@ -17,7 +17,6 @@ import { useAppStore } from "@/lib/store";
 import { aiEngineApi, type LldType } from "@/lib/ai-engine-client";
 import LLDGraph from "./LLDGraph";
 import JsonViewer from "./JsonViewer";
-import { dummyAllLldData } from "@/lib/mock-data";
 import clsx from "clsx";
 import Select, { type TSelectData } from "@/components/ui/select";
 
@@ -127,17 +126,17 @@ export default function LldsView({ onBackToHld }: Props = {}) {
               </div>
             )}
 
-            {currentStatus === "NOT_STARTED" && !currentData && !(dummyAllLldData as any)?.[activeLldType] && (
+            {currentStatus === "NOT_STARTED" && !currentData && (
               <div className="flex h-full flex-col items-center justify-center p-6 text-center">
                 <Server className="mb-2 h-10 w-10 text-neutral-400 dark:text-neutral-600" />
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {activeLldType.toUpperCase()} LLD has not started yet. Complete the interview to generate.
+                  {activeTabObj.label} has not been generated yet for this architecture.
                 </p>
               </div>
             )}
 
-            {(currentData || (dummyAllLldData as any)?.[activeLldType]) && currentStatus !== "GENERATING" && currentStatus !== "FAILED" && (
-              <LLDGraph customLldType={activeLldType} customLldData={currentData || (dummyAllLldData as any)?.[activeLldType]} />
+            {currentData && currentStatus !== "GENERATING" && currentStatus !== "FAILED" && (
+              <LLDGraph customLldType={activeLldType} customLldData={currentData} />
             )}
           </>
         )}

@@ -30,6 +30,7 @@ export default function Sidebar() {
     activeSessionId,
     createSession,
     setActiveSession,
+    deleteSession,
     user,
     signOut,
   } = useAppStore();
@@ -192,7 +193,7 @@ export default function Sidebar() {
                   key={s.id}
                   onClick={() => setActiveSession(s.id)}
                   className={cn(
-                    "group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs transition-all cursor-pointer",
+                    "group relative flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-all cursor-pointer",
                     isActive
                       ? "bg-white/30 font-bold text-black backdrop-blur-md dark:bg-white/[0.02] dark:text-white shadow-2xs border border-neutral-200/50 dark:border-white/[0.06] border-l-2 border-l-black dark:border-l-white"
                       : "text-neutral-700/80 hover:bg-white/20 hover:text-black dark:text-neutral-400/80 dark:hover:bg-white/[0.02] dark:hover:text-white"
@@ -212,6 +213,17 @@ export default function Sidebar() {
                       HLD
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSession(s.id);
+                    }}
+                    title="Delete architecture"
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-500/10 dark:hover:text-red-400 dark:hover:bg-red-950/40 transition-all cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               );
             })

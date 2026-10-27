@@ -162,6 +162,7 @@ interface AppState {
   addMessage: (sessionId: string, msg: ChatMessage) => Promise<void>;
   loadSessionsFromSupabase: () => Promise<void>;
   saveCurrentArchitecture: (targetSessionId?: string) => Promise<void>;
+  deleteSession: (sessionId: string) => Promise<void>;
   resetGenerationSession: () => void;
 
   // ── Demo & Offline Testing ──
@@ -214,14 +215,6 @@ interface AppState {
   selectModel: (modelId: string) => void;
   runBenchmarkSuite: (promptText: string) => Promise<void>;
 }
-
-import {
-  hldNodes as initialHldNodes,
-  hldEdges as initialHldEdges,
-  dummyHldData,
-  dummyAllLldData,
-  dummyArsrs,
-} from "./mock-data";
 
 const initialLldStatus: Record<LldType, LldStatusType> = {
   backend: "NOT_STARTED",
@@ -633,18 +626,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   setActiveLldType: (type) => set({ activeLldType: type }),
   jumpToLld: (type) => {
     const state = get();
-    const existingLld = state.lldData[type];
-    const fallbackData = (dummyAllLldData as Record<LldType, any>)[type] || null;
-    const effectiveData = existingLld || fallbackData;
+    const existingLld = state.lldData[type] || null;
 
     set({
       activeLldType: type,
       hldWorkspaceTab: "lld",
       activePipelineStep: 4,
-      lldData: existingLld ? state.lldData : { ...state.lldData, [type]: effectiveData },
       lldStatus: {
         ...state.lldStatus,
-        [type]: "READY",
+        [type]: existingLld ? "READY" : state.lldStatus[type] || "NOT_STARTED",
       },
     });
 
@@ -1198,6 +1188,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           interviewCompleted: true,
           activePipelineStep: 3,
           generationStatus: "COMPLETED",
+          activeView: "hld", // DIRECTLY DISPLAY THE DESIGN
         }));
       } else {
         // Fallback: check if any message had json_response with hld
@@ -1219,6 +1210,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             interviewCompleted: true,
             activePipelineStep: 3,
             generationStatus: "COMPLETED",
+            activeView: "hld", // DIRECTLY DISPLAY THE DESIGN
           }));
         } else {
           // Reset architecture data for sessions without an architecture diagram
@@ -1235,6 +1227,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             interviewCompleted: false,
             activePipelineStep: 1,
             generationStatus: "IDLE",
+            activeView: "chat",
           });
         }
       }
@@ -1424,79 +1417,72 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Demo & Offline Testing: Load basic HLD & LLD Template
-  loadDemoData: () => {
-    const demoGenId = "demo-template-arch-01";
-    let activeSid = get().activeSessionId;
-    let currentSessions = get().sessions;
+  deleteSession: async (sessionId: string) => {
+    if (!sessionId) return;
 
-    const demoMessages: ChatMessage[] = [
-      {
-        id: "msg-demo-user",
-        role: "user",
-        content: "Build a High-Scale Enterprise Video Streaming Platform with adaptive bitrate transcoding, CDN edge caching, subscription billing, and real-time viewer analytics.",
-      },
-      {
-        id: "msg-demo-ai",
-        role: "ai",
-        content: `Loaded the **Enterprise Video Streaming Platform** architecture template!\n\n• **High-Level Design (HLD)**: Event-driven microservices topology with 8 interconnected nodes.\n• **5 Low-Level Designs (LLDs)**: Backend, Frontend, Database, Security, and Cloud blueprints.`,
-      },
-    ];
+    const currentSessions = get().sessions;
+    const remainingSessions = currentSessions.filter((s) => s.id !== sessionId);
+    const wasActive = get().activeSessionId === sessionId;
 
-    if (!activeSid) {
-      activeSid = `demo-session-${Date.now()}`;
-      const demoSession: ChatSession = {
-        id: activeSid,
-        title: "Enterprise Video Streaming Platform (Template)",
-        messages: demoMessages,
-        hasArchitecture: true,
-      };
-      currentSessions = [demoSession, ...currentSessions];
+    // 1. Instantly update in-memory store
+    if (wasActive) {
+      if (remainingSessions.length > 0) {
+        set({ sessions: remainingSessions });
+        await get().setActiveSession(remainingSessions[0].id);
+      } else {
+        set({
+          sessions: [],
+          activeSessionId: null,
+          activeView: "chat",
+          activePipelineStep: 1,
+          generationId: null,
+          generationStatus: "IDLE",
+          currentQuestion: null,
+          interviewCompleted: false,
+          activeProcess: null,
+          arsrsData: null,
+          hldData: null,
+          hldNodes: [],
+          hldEdges: [],
+          selectedNode: null,
+          validationData: null,
+          validatedGenerationId: null,
+          validationError: null,
+          lldStatus: initialLldStatus,
+          lldData: initialLldData,
+          logs: [],
+          availableVersions: [],
+          activeVersionTag: "v1.0",
+          activeDiff: null,
+        });
+      }
     } else {
-      currentSessions = currentSessions.map((ses) =>
-        ses.id === activeSid
-          ? {
-              ...ses,
-              title: ses.title === "New Architecture" ? "Enterprise Video Streaming Platform (Template)" : ses.title,
-              hasArchitecture: true,
-              messages: ses.messages.length === 0 ? demoMessages : ses.messages,
-            }
-          : ses
-      );
+      set({ sessions: remainingSessions });
     }
 
-    set({
-      sessions: currentSessions,
-      activeSessionId: activeSid,
-      generationId: demoGenId,
-      arsrsData: dummyArsrs,
-      hldData: dummyHldData as Record<string, unknown>,
-      hldNodes: initialHldNodes,
-      hldEdges: initialHldEdges,
-      lldData: dummyAllLldData as Record<LldType, Record<string, unknown> | null>,
-      lldStatus: {
-        backend: "READY",
-        frontend: "READY",
-        database: "READY",
-        security: "READY",
-        cloud: "READY",
-      },
-      generationStatus: "COMPLETED",
-      activePipelineStep: 3,
-      activeView: "hld",
-      interviewCompleted: true,
-      activeAgent: {
-        id: "agent-sae-system-architect",
-        name: "Systems Architect & Microservices Synthesizer",
-        role: "Architecture Generation & Microservices Topology Synthesis",
-        icon: "cpu",
-        task: "Synthesized production-ready HLD topology and 5 LLD domain specifications.",
-        status: "completed",
-        stage: "HLD",
-        progressPercent: 100,
-        thought: "Interactive HLD & 5 LLD microservices templates loaded successfully.",
-      },
-    });
+    // 2. Cascade delete from Supabase if authenticated and is UUID
+    const currentUser = get().user;
+    if (currentUser && currentUser.app_metadata?.provider !== "guest" && isUUID(sessionId)) {
+      try {
+        await supabase
+          .from("architecture_designs")
+          .delete()
+          .eq("session_id", sessionId);
+
+        await supabase
+          .from("chat_sessions")
+          .delete()
+          .eq("id", sessionId);
+      } catch (err) {
+        console.warn("Could not delete session from Supabase:", err);
+      }
+    }
+  },
+
+  loadDemoData: () => {
+    // Dummy HLD/LLD templates completely removed.
+    // Creates a fresh clean session instead.
+    get().createSession();
   },
 
   // ── Versioning & Architectural Evolution ──

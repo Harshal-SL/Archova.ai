@@ -11,8 +11,7 @@ import {
   SquarePen,
   Layers,
   Plus,
-  MessageSquare,
-  Cpu,
+  Trash2,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
@@ -28,15 +27,13 @@ export default function ChatPage() {
     sidebarOpen,
     toggleSidebar,
     activeView,
-    setActiveView,
-    hldData,
     sessions,
     activeSessionId,
     createSession,
+    deleteSession,
     initAuth,
     theme,
     toggleTheme,
-    loadDemoData,
   } = useAppStore();
 
   useEffect(() => {
@@ -85,51 +82,25 @@ export default function ChatPage() {
             </div>
 
             {!isEmpty && (
-              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden sm:inline max-w-[160px] md:max-w-[240px]">
+              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden sm:inline max-w-[200px] md:max-w-[320px]">
                 / {sessionTitle}
               </span>
             )}
           </div>
 
-          {/* Center: View Switcher (Chat vs Architecture) */}
-          {activeSession && (
-            <div className="flex items-center rounded-xl border border-neutral-200/80 bg-white/70 p-0.5 dark:border-[#262626] dark:bg-[#0D0D0F] shadow-2xs backdrop-blur-md">
+          {/* Right: Delete Session, New Session, Theme */}
+          <div className="flex items-center gap-2">
+            {activeSessionId && (
               <button
                 type="button"
-                onClick={() => setActiveView("chat")}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-all cursor-pointer",
-                  activeView === "chat"
-                    ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
-                    : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white"
-                )}
+                onClick={() => deleteSession(activeSessionId)}
+                title="Delete this architecture chat"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-500 hover:text-red-600 hover:bg-red-50 hover:border-red-500/30 dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-400 dark:hover:text-red-400 dark:hover:bg-red-950/40 dark:hover:border-red-500/30 transition-all cursor-pointer shadow-2xs"
               >
-                <MessageSquare className="h-3.5 w-3.5" />
-                <span>Chat</span>
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
-              {hldData && (
-                <button
-                  type="button"
-                  onClick={() => setActiveView("hld")}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-all cursor-pointer",
-                    activeView === "hld"
-                      ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
-                      : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white"
-                  )}
-                >
-                  <Cpu className="h-3.5 w-3.5" />
-                  <span>Architecture</span>
-                </button>
-              )}
-            </div>
-          )}
+            )}
 
-
-
-
-          {/* Right: New Session, Theme */}
-          <div className="flex items-center gap-2">
             <ShimmerButton
               onClick={() => createSession()}
               borderRadius="12px"
