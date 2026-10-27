@@ -57,39 +57,39 @@ export default function ChatPage() {
         {/* Top Minimal Workspace Header */}
         <header
           className={cn(
-            "flex h-14 w-full items-center justify-between px-4 shrink-0 z-20 transition-all select-none gap-2",
+            "flex h-14 w-full items-center justify-between px-2.5 sm:px-4 shrink-0 z-20 transition-all select-none gap-2",
             isEmpty
               ? "bg-transparent border-b border-transparent"
               : "border-b border-neutral-200/70 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-xs"
           )}
         >
           {/* Left: Sidebar Toggle & ChatGPT Model Selector */}
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             {!sidebarOpen && (
               <button
                 type="button"
                 onClick={toggleSidebar}
                 title="Open sidebar"
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer backdrop-blur-md transition-colors shadow-2xs"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer backdrop-blur-md transition-colors shadow-2xs"
               >
                 <PanelLeft className="h-4 w-4" />
               </button>
             )}
 
-            <div className="flex items-center gap-1.5 rounded-xl border border-transparent hover:border-neutral-200/80 hover:bg-white/70 dark:hover:border-[#262626] dark:hover:bg-[#0D0D0F] px-2.5 py-1 text-sm font-bold text-neutral-800 dark:text-neutral-200 transition-all cursor-pointer backdrop-blur-md">
+            <div className="flex items-center gap-1 rounded-xl border border-transparent hover:border-neutral-200/80 hover:bg-white/70 dark:hover:border-[#262626] dark:hover:bg-[#0D0D0F] px-2 sm:px-2.5 py-1 text-xs sm:text-sm font-bold text-neutral-800 dark:text-neutral-200 transition-all cursor-pointer backdrop-blur-md shrink-0">
               <span>ArchAI 4o</span>
               <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
             </div>
 
             {!isEmpty && (
-              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden sm:inline max-w-[200px] md:max-w-[320px]">
+              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden md:inline max-w-[200px] lg:max-w-[320px]">
                 / {sessionTitle}
               </span>
             )}
           </div>
 
           {/* Right: Delete Session, New Session, Theme */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {activeSessionId && (
               <button
                 type="button"
@@ -108,7 +108,7 @@ export default function ChatPage() {
               shimmerDuration="2.5s"
               shimmerSize="1.5px"
               background="#0D0D0F"
-              className="px-3 py-1.5 text-xs font-bold text-white border border-[#262626] hover:border-[#005dff]/50 transition-all cursor-pointer shadow-xs"
+              className="px-2.5 sm:px-3 py-1.5 text-xs font-bold text-white border border-[#262626] hover:border-[#005dff]/50 transition-all cursor-pointer shadow-xs"
             >
               <div className="flex items-center gap-1.5 text-white font-bold">
                 <Plus className="h-3.5 w-3.5 text-[#005dff]" />
@@ -141,11 +141,11 @@ export default function ChatPage() {
           {activeView === "chat" && <ChatWindow />}
           {activeView === "hld" && <HldWorkspace />}
           {activeView === "split" && (
-            <div className="grid h-full w-full grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-800 overflow-hidden bg-transparent">
-              <div className="h-full overflow-hidden bg-transparent">
+            <div className="grid h-full w-full grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-neutral-200 dark:divide-neutral-800 overflow-hidden bg-transparent">
+              <div className="h-1/2 md:h-full overflow-hidden bg-transparent">
                 <ChatWindow />
               </div>
-              <div className="h-full overflow-hidden bg-transparent">
+              <div className="h-1/2 md:h-full overflow-hidden bg-transparent">
                 <HldWorkspace />
               </div>
             </div>

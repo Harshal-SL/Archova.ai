@@ -74,6 +74,7 @@ interface AppState {
   // ── Sidebar ──
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
 
   // ── Active Workspace View (ChatGPT style) ──
   activeView: WorkspaceView;
@@ -458,6 +459,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Sidebar
   sidebarOpen: true,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
   // Active Workspace View
   activeView: "chat",

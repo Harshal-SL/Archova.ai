@@ -26,6 +26,7 @@ export default function Sidebar() {
   const {
     sidebarOpen,
     toggleSidebar,
+    setSidebarOpen,
     sessions,
     activeSessionId,
     createSession,
@@ -40,7 +41,25 @@ export default function Sidebar() {
 
   React.useEffect(() => {
     setMounted(true);
-  }, []);
+    // Auto collapse sidebar on mobile devices on initial render
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, [setSidebarOpen]);
+
+  const handleSelectSession = (id: string) => {
+    setActiveSession(id);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleNewArchitecture = async () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+    await createSession();
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -74,11 +93,20 @@ export default function Sidebar() {
         </button>
       )}
 
-      {/* Main Sidebar Aside with Glassmorphism */}
+      {/* Mobile Backdrop Overlay when Drawer is open */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Main Sidebar Aside with Glassmorphism (Mobile Drawer + Desktop Fixed/Relative) */}
       <aside
         className={cn(
-          "relative flex h-full flex-col border-r border-neutral-200/50 bg-white/35 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300 ease-in-out dark:border-white/[0.08] dark:bg-black/35 shadow-[4px_0_24px_-2px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.4)] z-30 shrink-0 select-none overflow-hidden",
-          sidebarOpen ? "w-72 lg:w-80" : "w-0 -translate-x-full overflow-hidden border-r-0"
+          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/70 bg-white/95 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300 ease-in-out dark:border-white/[0.08] dark:bg-[#0D0D0F] shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white/35 md:dark:bg-black/35",
+          sidebarOpen ? "w-[280px] sm:w-80 translate-x-0" : "w-0 -translate-x-full overflow-hidden border-r-0 md:w-0"
         )}
       >
         {/* ── Background Animation Layer inside Sidebar ── */}
@@ -138,7 +166,7 @@ export default function Sidebar() {
         {/* New Architecture Button */}
         <div className="relative z-10 p-3 shrink-0">
           <ShimmerButton
-            onClick={() => createSession()}
+            onClick={handleNewArchitecture}
             borderRadius="16px"
             shimmerColor="#005dff"
             shimmerDuration="2.5s"
@@ -191,7 +219,7 @@ export default function Sidebar() {
               return (
                 <div
                   key={s.id}
-                  onClick={() => setActiveSession(s.id)}
+                  onClick={() => handleSelectSession(s.id)}
                   className={cn(
                     "group relative flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-all cursor-pointer",
                     isActive

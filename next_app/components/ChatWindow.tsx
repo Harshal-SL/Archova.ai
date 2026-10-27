@@ -330,9 +330,9 @@ export default function ChatWindow() {
 
             {/* Quick HLD Architecture ready prompt banner */}
             {hldData && (
-              <div className="my-3 flex items-center justify-between rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs">
+              <div className="my-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-3 sm:p-4 text-xs">
                 <div className="flex items-center gap-2.5">
-                  <Workflow className="h-5 w-5 text-blue-500" />
+                  <Workflow className="h-5 w-5 text-blue-500 shrink-0" />
                   <div>
                     <span className="font-bold text-neutral-900 dark:text-white">
                       High-Level Design (HLD) Ready
@@ -346,7 +346,7 @@ export default function ChatWindow() {
                 <button
                   type="button"
                   onClick={() => setActiveView("hld")}
-                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 text-xs transition-colors cursor-pointer shadow-md"
+                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs transition-colors cursor-pointer shadow-md shrink-0 self-end sm:self-auto"
                 >
                   <span>Open HLD Diagram</span>
                   <ArrowRight className="h-3.5 w-3.5" />

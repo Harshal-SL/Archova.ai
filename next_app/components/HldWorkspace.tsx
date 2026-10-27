@@ -73,12 +73,12 @@ export default function HldWorkspace() {
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-transparent text-black dark:text-white transition-colors">
       {/* ── Top Workspace Navigation Header ── */}
-      <div className="relative z-40 flex items-center justify-between border-b border-neutral-200/80 bg-white/80 px-4 py-2 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-950/80 shrink-0">
-        <div className="flex items-center gap-1.5 flex-wrap">
+      <div className="relative z-40 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200/80 bg-white/80 px-2 sm:px-4 py-1.5 sm:py-2 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-950/80 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
           {/* Back to Chat button */}
           <button
             onClick={() => setActiveView("chat")}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-all cursor-pointer mr-1 border border-neutral-200/80 dark:border-[#262626]"
+            className="flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-all cursor-pointer mr-0.5 sm:mr-1 border border-neutral-200/80 dark:border-[#262626]"
             title="Return to Chat Conversation"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -89,14 +89,14 @@ export default function HldWorkspace() {
           <button
             onClick={() => setHldWorkspaceTab("validation")}
             className={clsx(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
+              "flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
               hldWorkspaceTab === "validation"
                 ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-xs"
                 : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-900"
             )}
           >
             <ShieldCheck className="h-3.5 w-3.5" />
-            <span>Validation Audit</span>
+            <span className="hidden sm:inline">Validation </span><span>Audit</span>
             {isValidating && (
               <RefreshCw className="h-3 w-3 animate-spin text-indigo-500" />
             )}
@@ -118,19 +118,19 @@ export default function HldWorkspace() {
           <button
             onClick={() => setHldWorkspaceTab("json")}
             className={clsx(
-              "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
+              "flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
               hldWorkspaceTab === "json"
                 ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-xs"
                 : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-[#161619]"
             )}
           >
             <Code2 className="h-3.5 w-3.5 text-emerald-500" />
-            <span>Raw JSON</span>
+            <span className="hidden sm:inline">Raw </span><span>JSON</span>
           </button>
         </div>
 
         {/* ── Right Section: Version Dropdown, Changelog, and HLD/LLD Toggle Switch ── */}
-        <div className="relative z-50 flex items-center gap-2.5 text-xs shrink-0">
+        <div className="relative z-50 flex items-center gap-1.5 sm:gap-2.5 text-xs shrink-0 flex-wrap">
           {/* Version Switcher Dropdown */}
           <div className="relative z-50">
             <Select

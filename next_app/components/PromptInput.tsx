@@ -99,16 +99,16 @@ export default function PromptInput({
     <div
       className={cn(
         "w-full transition-all duration-200",
-        variant === "center" ? "max-w-[700px] px-4" : "max-w-3xl mx-auto px-4 pb-4 pt-2"
+        variant === "center" ? "max-w-[700px] px-2 sm:px-4" : "max-w-3xl mx-auto px-2 sm:px-4 pb-3 sm:pb-4 pt-1 sm:pt-2"
       )}
     >
       {/* Pill-shaped ChatGPT input container */}
       <div
         className={cn(
-          "relative flex items-center gap-2 rounded-full border transition-all duration-200",
+          "relative flex items-center gap-1.5 sm:gap-2 rounded-full border transition-all duration-200",
           "border-neutral-200/80 bg-white/95 text-neutral-900 focus-within:border-black focus-within:shadow-xl",
           "dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-white dark:focus-within:border-white/20 shadow-2xl backdrop-blur-md",
-          variant === "center" ? "p-2 pl-3.5 sm:pl-4 min-h-[52px]" : "p-1.5 pl-3 min-h-[48px]"
+          variant === "center" ? "p-1.5 sm:p-2 pl-2.5 sm:pl-4 min-h-[48px] sm:min-h-[52px]" : "p-1 sm:p-1.5 pl-2 sm:pl-3 min-h-[44px] sm:min-h-[48px]"
         )}
       >
         {/* Left: '+' Action Button */}
@@ -116,9 +116,9 @@ export default function PromptInput({
           type="button"
           onClick={onOpenTemplates}
           title="Add files or select architectural templates"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
+          className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
         >
-          <Plus className="h-5 w-5 stroke-[1.9]" />
+          <Plus className="h-4 w-4 sm:h-5 sm:w-5 stroke-[1.9]" />
         </button>
 
         {/* Center: Clean Textarea / Input */}
@@ -130,7 +130,7 @@ export default function PromptInput({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={isListening ? "Listening... Speak your requirements" : placeholder}
-          className="w-full resize-none bg-transparent py-1.5 text-sm sm:text-base text-neutral-900 placeholder:text-neutral-400 outline-none dark:text-white dark:placeholder:text-[#8E8E8E] leading-relaxed max-h-36 overflow-y-auto"
+          className="w-full resize-none bg-transparent py-1 text-xs sm:text-base text-neutral-900 placeholder:text-neutral-400 outline-none dark:text-white dark:placeholder:text-[#8E8E8E] leading-relaxed max-h-36 overflow-y-auto"
         />
 
         {/* Right side controls (exact ChatGPT order: Think, Mic, Audio/Send) */}
@@ -141,14 +141,14 @@ export default function PromptInput({
             onClick={() => setThinkActive(!thinkActive)}
             title="Multi-Agent Architectural Reasoning"
             className={cn(
-              "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium transition-colors cursor-pointer",
+              "flex items-center gap-1 sm:gap-1.5 rounded-full px-2 sm:px-2.5 py-1 text-xs sm:text-sm font-medium transition-colors cursor-pointer",
               thinkActive
                 ? "text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-[#161619]"
                 : "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
             )}
           >
             <Brain className="h-4 w-4" />
-            <span className="text-sm">Think</span>
+            <span className="text-xs sm:text-sm hidden sm:inline">Think</span>
           </button>
 
           {/* Microphone button */}
@@ -157,7 +157,7 @@ export default function PromptInput({
             onClick={handleToggleVoice}
             title={isListening ? "Stop listening" : "Dictate requirements"}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer",
+              "flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer",
               isListening && "text-red-500 dark:text-red-400 animate-pulse bg-red-500/10"
             )}
           >
@@ -174,7 +174,7 @@ export default function PromptInput({
             shimmerDuration="2.5s"
             background={hasValue && !disabled ? "rgba(37, 99, 235, 1)" : "rgba(16, 104, 235, 1)"}
             className={cn(
-              "flex h-9 w-9 p-0 shrink-0 items-center justify-center rounded-full transition-all duration-200 shadow-md cursor-pointer active:scale-95 border border-white/20",
+              "flex h-8 w-8 sm:h-9 sm:w-9 p-0 shrink-0 items-center justify-center rounded-full transition-all duration-200 shadow-md cursor-pointer active:scale-95 border border-white/20",
               hasValue && !disabled && "shadow-blue-500/30"
             )}
             title={hasValue ? "Send (Enter ↵)" : "Start Voice dictation"}
