@@ -74,7 +74,11 @@ class REEOrchestrator:
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
-    def run(self, request: REERequest) -> REEResponse:
+    def run(
+        self,
+        request: REERequest,
+        on_agent_update: Optional[Any] = None,
+    ) -> REEResponse:
         """
         Execute or resume a REE workflow run.
 
@@ -101,9 +105,26 @@ class REEOrchestrator:
 
             # ── Stage 1: Input Understanding ──────────────────────────────────
             # Skipped on resume — project_context is already populated in the SRC
+            if on_agent_update and not request.prior_src:
+                on_agent_update(
+                    "InputUnderstanding",
+                    "running",
+                    "Parsing input problem statement and discovering scope boundaries...",
+                    None,
+                    25,
+                )
             src = self._input_agent.run(src)
             if not request.prior_src:
                 ree_logger.print_stage_success("Input Understanding")
+            if on_agent_update and not request.prior_src:
+                domain_val = getattr(getattr(src, "project_context", None), "domain", "Enterprise System")
+                on_agent_update(
+                    "InputUnderstanding",
+                    "completed",
+                    "Input problem statement parsed and scoped.",
+                    f"Domain scope: {domain_val}",
+                    100,
+                )
 
             # ── Stage 2: Apply interview answers (if this is a resume) ─────────
             # The Moderator applies them and updates the InterviewSession history.
@@ -119,7 +140,7 @@ class REEOrchestrator:
                 ree_logger.print_stage_success("Interview Completed")
 
             # ── Stage 3: Engineering Team ─────────────────────────────────────
-            src = self._engineering_agent.run(src)
+            src = self._engineering_agent.run(src, on_agent_update=on_agent_update)
             if not request.prior_src:
                 ree_logger.print_stage_success("Requirement Engineer")
                 ree_logger.print_stage_success("Business Analyst")
@@ -128,11 +149,35 @@ class REEOrchestrator:
             # ── Stage 4: Review → Interview loop ─────────────────────────────
             # Run the Review Agent, then enter the interview loop if needed.
             # The loop exits when the verdict is READY or max rounds is reached.
+            if on_agent_update and not request.prior_src:
+                on_agent_update(
+                    "RequirementReview",
+                    "running",
+                    "Auditing requirement completeness, ambiguities & boundary gaps...",
+                    None,
+                    75,
+                )
             src = self._review_agent.run(src)
             if not request.prior_src:
                 ree_logger.print_stage_success("Requirement Review")
+            if on_agent_update and not request.prior_src:
+                on_agent_update(
+                    "RequirementReview",
+                    "completed",
+                    "Requirements review completed.",
+                    "Review findings incorporated.",
+                    100,
+                )
 
             while self._needs_interview(src, max_rounds):
+                if on_agent_update:
+                    on_agent_update(
+                        "InterviewModerator",
+                        "running",
+                        "Formulating targeted clarifying questions for stakeholder interview...",
+                        None,
+                        90,
+                    )
                 response = self._conduct_interview(src)
                 if response is not None:
                     # No answers available — return the interview to the caller.
@@ -140,6 +185,14 @@ class REEOrchestrator:
                     if response.interview_result and response.interview_result.get("questions"):
                         q_cnt = len(response.interview_result["questions"])
                         ree_logger.print_interview_required(q_cnt)
+                        if on_agent_update:
+                            on_agent_update(
+                                "InterviewModerator",
+                                "completed",
+                                f"Synthesized {q_cnt} clarification interview question(s).",
+                                f"{q_cnt} questions ready for user review.",
+                                100,
+                            )
                     return response
 
                 # Answers were already applied in _conduct_interview (single-turn path).

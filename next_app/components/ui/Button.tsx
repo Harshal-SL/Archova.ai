@@ -35,16 +35,65 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   neon?: boolean;
+  shimmer?: boolean;
+  shimmerColor?: string;
+  shimmerDuration?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, neon = true, size, variant, children, ...props }, ref) => {
+  (
+    {
+      className,
+      neon = false,
+      shimmer = true,
+      shimmerColor = "#ffffff",
+      shimmerDuration = "3s",
+      size,
+      variant,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <button
-        className={cn(buttonVariants({ variant, size }), className)}
+        style={
+          {
+            "--spread": "90deg",
+            "--shimmer-color": shimmerColor,
+            "--speed": shimmerDuration,
+          } as React.CSSProperties
+        }
+        className={cn(
+          buttonVariants({ variant, size }),
+          shimmer && "transform-gpu transition-transform duration-300 ease-in-out active:translate-y-px",
+          className
+        )}
         ref={ref}
         {...props}
       >
+        {shimmer && (
+          <>
+            {/* 1. Rotating perimeter border beam */}
+            <div
+              className="animate-spin-around absolute -inset-[200%] w-auto aspect-square m-auto pointer-events-none -z-30"
+              style={{
+                background: `conic-gradient(from 0deg, transparent 0deg, transparent 40deg, var(--shimmer-color, #ffffff) 90deg, transparent 140deg, transparent 360deg)`,
+              }}
+            />
+
+            {/* 2. Highlight */}
+            <div
+              className={cn(
+                "insert-0 absolute size-full pointer-events-none",
+                "rounded-2xl px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#ffffff1f]",
+                "transform-gpu transition-all duration-300 ease-in-out",
+                "group-hover:shadow-[inset_0_-6px_10px_#ffffff3f]",
+                "group-active:shadow-[inset_0_-10px_10px_#ffffff3f]"
+              )}
+            />
+          </>
+        )}
         {neon && (
           <>
             <span
@@ -57,7 +106,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             />
           </>
         )}
-        {children}
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          {children}
+        </span>
       </button>
     );
   }

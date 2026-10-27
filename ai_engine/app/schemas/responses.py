@@ -74,6 +74,33 @@ class GenerateArchitectureResponse(BaseModel):
     )
 
 
+class AgentTelemetrySchema(BaseModel):
+    """Schema representing an individual AI specialist agent's live operational telemetry."""
+
+    agent_id: str = Field(..., description="Unique agent identifier (e.g. business_analyst, requirement_engineer, domain_expert).")
+    name: str = Field(..., description="Human-readable agent title.")
+    role: str = Field(..., description="Specialization and operational role.")
+    stage: str = Field(..., description="Active pipeline phase, e.g. REE, SAE_HLD, SAE_LLD, VALIDATOR.")
+    icon: str = Field(default="sparkles", description="Icon representation token.")
+    status: str = Field(default="waiting", description="Agent lifecycle state: waiting | running | completed | failed.")
+    current_task: str = Field(default="", description="Active micro-task or objective.")
+    thought: Optional[str] = Field(default=None, description="Reasoning insight or extracted summary.")
+    progress_percent: int = Field(default=0, ge=0, le=100, description="Completion percentage 0-100.")
+    started_at: Optional[str] = Field(default=None, description="ISO timestamp when agent started.")
+    completed_at: Optional[str] = Field(default=None, description="ISO timestamp when agent finished.")
+
+
+class AgentTelemetryResponse(BaseModel):
+    """Response returned when polling active multi-agent swarm telemetry."""
+
+    generation_id: str = Field(..., description="Unique generation ID.")
+    status: str = Field(..., description="Overall generation status.")
+    stage: str = Field(default="REE", description="Current stage.")
+    active_agents: List[AgentTelemetrySchema] = Field(default_factory=list, description="Currently running agents.")
+    all_agents: List[AgentTelemetrySchema] = Field(default_factory=list, description="All agents participating in this generation.")
+    timestamp: str = Field(..., description="Timestamp of telemetry polling.")
+
+
 class GenerationStatusResponse(BaseModel):
     """Status polling response for the generation lifecycle and background tasks."""
 
@@ -85,6 +112,14 @@ class GenerationStatusResponse(BaseModel):
     llds: Dict[str, str] = Field(
         default_factory=dict,
         description="Per-LLD generation status (e.g. backend: READY, frontend: GENERATING).",
+    )
+    active_agents: List[AgentTelemetrySchema] = Field(
+        default_factory=list,
+        description="List of currently executing AI specialist agents.",
+    )
+    all_agents: List[AgentTelemetrySchema] = Field(
+        default_factory=list,
+        description="List of all agents participating in this generation.",
     )
 
 

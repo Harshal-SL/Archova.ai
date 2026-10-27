@@ -12,11 +12,12 @@ from pathlib import Path
 from typing import Dict, Optional
 from dotenv import load_dotenv
 
-# Load .env file from project root
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-env_path = PROJECT_ROOT / ".env"
+# Load .env file (Primary: ai_engine/app/.env, Fallback: ai_engine/.env)
+APP_DIR = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = APP_DIR.parent
+env_path = APP_DIR / ".env"
 if not env_path.exists():
-    env_path = Path(__file__).resolve().parent.parent / ".env"
+    env_path = PROJECT_ROOT / ".env"
 load_dotenv(dotenv_path=env_path, override=True)
 
 
@@ -71,7 +72,15 @@ def _resolve_model_map(default_model: str) -> Dict[str, str]:
     """Build capability to model resolution dictionary with fallback to default_model."""
     model_map: Dict[str, str] = {}
     for cap_name, env_key in CAPABILITY_ENV_MAPPING.items():
-        val = os.getenv(env_key, "").strip()
+        alt_key1 = f"{cap_name.upper()}_MODEL"
+        alt_key2 = f"{cap_name.upper()}_GENERATION_MODEL"
+        alt_key3 = f"{cap_name.upper()}_LLD_MODEL"
+        val = (
+            os.getenv(env_key, "").strip()
+            or os.getenv(alt_key1, "").strip()
+            or os.getenv(alt_key2, "").strip()
+            or os.getenv(alt_key3, "").strip()
+        )
         if val:
             model_map[cap_name] = val
         else:

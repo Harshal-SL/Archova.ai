@@ -25,33 +25,32 @@ export const dummyArsrs = {
   metadata: {
     document_type: "ARSRS (Architecture-Ready Structured Requirements Specification)",
     version: "2.5.0",
-    system_name: "Education & Campus Library Management System",
-    domain: "Higher Education & Digital Content Management",
+    system_name: "Enterprise Video Streaming & Transcoding Platform",
+    domain: "Cloud Video Streaming & Content Distribution",
     status: "APPROVED_FOR_ARCHITECTURE",
-    generated_at: "2026-09-06T18:00:00.000Z",
+    generated_at: "2026-10-16T15:00:00.000Z",
   },
   system_overview: {
     problem_statement:
-      "Build a modern College Library Management System with online catalog search, student self-service borrowing, inventory circulation tracking, reservation workflows, and automated overdue fine calculation.",
+      "Build a high-scale Enterprise Video Streaming Platform with adaptive bitrate transcoding, CDN edge distribution, subscription billing, and real-time viewer analytics.",
     architecture_pattern:
-      "Modular Cloud Microservices with Reactive Event-Driven Ingestion & Distributed Cache",
+      "Event-Driven Microservices with Distributed CDN & In-Memory Cache",
     primary_actors: [
-      "Student / Borrower",
-      "Faculty Member",
-      "Librarian / Circulation Staff",
-      "System Administrator",
+      "Viewer / Subscriber",
+      "Content Creator",
+      "Platform Administrator",
     ],
     clarified_specifications: {
       scaling_requirements:
-        "High concurrency (10,000+ daily active campus users, 500 peak borrows/min)",
+        "High concurrency (100,000+ concurrent viewers, 50,000 peak stream requests/sec)",
       primary_database:
         "PostgreSQL 16 Multi-AZ with PgBouncer connection pooling",
       caching_layer:
-        "Redis 7.2 Cluster for session tokens and hot catalog queries",
+        "Redis 7.2 Cluster for session tokens and streaming manifest cache",
       authentication_protocol:
         "OAuth2 PKCE with asymmetric RS256 JWT tokens & RBAC",
       deployment_target:
-        "Kubernetes (EKS/GKE) with Ingress-NGINX and TLS 1.3 termination",
+        "AWS ECS Fargate with CloudFront CDN and TLS 1.3 termination",
     },
   },
   functional_requirements: [
@@ -59,53 +58,53 @@ export const dummyArsrs = {
       id: "FR-01",
       title: "Authentication & Role-Based Access Control (RBAC)",
       description:
-        "Students, librarians, and faculty authenticate via campus SSO/OAuth2. Granular permissions govern catalog edits, borrowing limits, and overrides.",
+        "Viewers, creators, and administrators authenticate via OAuth2 PKCE. Granular permissions govern media uploads, stream access, and billing management.",
       priority: "P0",
-      compliance: "FERPA, OAuth2 RFC 7636",
+      compliance: "OAuth2 RFC 7636, SOC2",
     },
     {
       id: "FR-02",
-      title: "Full-Text Catalog Search & Inventory Filtering",
+      title: "Video Ingestion & Adaptive Bitrate Transcoding",
       description:
-        "Fast multi-attribute search across 100,000+ ISBN titles, authors, and genres with sub-50ms latency using PostgreSQL full-text indexing and Redis caching.",
+        "Fast multipart media uploads with automated background transcoding into 1080p, 720p, 480p, and 360p HLS streaming manifests.",
       priority: "P0",
-      compliance: "ISO 2709, MARC21 standard",
+      compliance: "HLS / MPEG-DASH standard",
     },
     {
       id: "FR-03",
-      title: "Circulation Lifecycle & Automated Overdue Reminders",
+      title: "Global CDN Edge Delivery & Signed URL Authorization",
       description:
-        "Manage book checkouts, returns, renewals, and holds. Automated event-driven notification queue dispatches email/SMS reminders before due dates.",
+        "Low-latency global edge caching via CloudFront with regional geo-restriction checks and signed streaming tokens.",
       priority: "P0",
-      compliance: "ACID Transaction guarantees",
+      compliance: "Sub-100ms first-chunk playback",
     },
     {
       id: "FR-04",
-      title: "Fine Calculation & Digital Payment Gateway",
+      title: "Subscription Billing & Tiered Membership",
       description:
-        "Automated daily fee calculation for overdue assets with waiver authorization controls and digital receipt reconciliation.",
+        "Recurring subscription billing with automated card payment processing, tier upgrades/downgrades, and proration calculations.",
       priority: "P1",
       compliance: "PCI-DSS Level 1 compliant gateway integration",
     },
     {
       id: "FR-05",
-      title: "Administrative Analytics & Usage Auditing",
+      title: "Real-Time Viewing Analytics & Engagement Telemetry",
       description:
-        "Comprehensive reporting on peak borrowing hours, underutilized titles, inventory turnover, and immutable audit logs of all role overrides.",
+        "Live aggregation of concurrent stream viewers, buffer health telemetry, and regional engagement analytics.",
       priority: "P2",
-      compliance: "SOC2 Type II data retention",
+      compliance: "GDPR, telemetry retention policy",
     },
   ],
   non_functional_requirements: {
-    availability: "99.95% multi-zone high-availability SLA",
+    availability: "99.99% multi-zone high-availability SLA",
     latency:
-      "P95 API response time < 80ms; in-memory cache lookups < 5ms under 5,000 RPS load",
+      "P95 API response time < 80ms; video manifest fetch < 30ms under 50,000 RPS load",
     scalability:
-      "Horizontal pod auto-scaling (min 3, max 15 pods) driven by CPU and request throughput metrics",
+      "Horizontal pod auto-scaling (min 3, max 15 pods) driven by CPU and stream concurrency metrics",
     security:
       "TLS 1.3 in-transit, AES-256 at-rest, Row-Level Security (RLS), and OWASP Top 10 WAF protections",
     data_integrity:
-      "ACID guarantees for all transactional borrowing operations with distributed Redis redlock",
+      "ACID guarantees for subscription billing with distributed Redis redlock",
     disaster_recovery:
       "RPO < 1 minute via streaming WAL replication; RTO < 15 minutes with automated multi-region failover",
   },
@@ -117,42 +116,40 @@ export const dummyArsrs = {
       key_attributes: ["id", "email", "name", "role", "created_at", "status"],
     },
     {
-      entity_name: "Book Title",
-      table_name: "books",
+      entity_name: "Video Asset",
+      table_name: "video_assets",
       primary_key: "id (UUID)",
       key_attributes: [
         "id",
-        "isbn",
+        "user_id",
         "title",
-        "author",
-        "publisher",
-        "total_copies",
-        "available_copies",
+        "manifest_url",
+        "status",
+        "duration_seconds",
+        "created_at",
       ],
     },
     {
-      entity_name: "Loan Transaction",
-      table_name: "loans",
+      entity_name: "Transcoding Job",
+      table_name: "transcoding_jobs",
+      primary_key: "id (UUID)",
+      key_attributes: [
+        "id",
+        "video_id",
+        "resolution",
+        "status",
+        "progress_percent",
+        "created_at",
+      ],
+    },
+    {
+      entity_name: "Subscription Membership",
+      table_name: "subscriptions",
       primary_key: "id (UUID)",
       key_attributes: [
         "id",
         "user_id",
-        "book_id",
-        "borrowed_at",
-        "due_at",
-        "returned_at",
-        "fine_amount",
-      ],
-    },
-    {
-      entity_name: "Reservation / Hold",
-      table_name: "reservations",
-      primary_key: "id (UUID)",
-      key_attributes: [
-        "id",
-        "user_id",
-        "book_id",
-        "queue_position",
+        "plan_tier",
         "status",
         "expires_at",
       ],
@@ -164,42 +161,42 @@ export const dummyArsrs = {
 export const sampleInterviewQuestions: InterviewQuestion[] = [
   {
     question_id: "Q-SCALE-01",
-    question: "What is your projected concurrent user scale and expected peak transaction volume?",
+    question: "What is your projected concurrent viewer scale and peak video streaming bandwidth?",
     priority: "high",
     rationale:
-      "Determines horizontal pod autoscaling parameters, caching tier size, and database connection pooling.",
+      "Determines CDN edge caching topology, transcoding cluster worker sizing, and database connection pooling.",
     options: [
-      "Campus Scale (10,000+ daily active users, 500 requests/sec peak)",
-      "Department Scale (<1,000 daily users, low write throughput)",
-      "Multi-University Enterprise (100,000+ users, geo-distributed clustering)",
+      "Global Platform (100,000+ concurrent viewers, 50 Gbps peak throughput)",
+      "Regional Platform (10,000+ concurrent viewers, 5 Gbps peak throughput)",
+      "Enterprise Private Studio (<1,000 viewers, internal high security)",
     ],
-    default_option: "Campus Scale (10,000+ daily active users, 500 requests/sec peak)",
+    default_option: "Global Platform (100,000+ concurrent viewers, 50 Gbps peak throughput)",
   },
   {
     question_id: "Q-DATA-02",
-    question: "What data consistency model is required for book reservations and checkout transactions?",
+    question: "What data persistence model is required for subscription transactions and viewer telemetry?",
     priority: "high",
     rationale:
-      "Ensures strict ACID compliance prevents double-borrowing of single copies under concurrent requests.",
+      "Ensures ACID consistency for billing while providing high-throughput ingest for viewing event streams.",
     options: [
-      "Strict ACID Transactions (PostgreSQL with Serializable Isolation & Redis Redlock)",
-      "Eventual Consistency with Optimistic Locking (NoSQL Document Store)",
-      "Hybrid Transactional/Analytical (PostgreSQL + ClickHouse)",
+      "Strict ACID for Billing (PostgreSQL 16) + In-Memory Telemetry Stream (Redis Cluster)",
+      "Single Relational Database for all workloads",
+      "Distributed NoSQL Document Store with Eventual Consistency",
     ],
-    default_option: "Strict ACID Transactions (PostgreSQL with Serializable Isolation & Redis Redlock)",
+    default_option: "Strict ACID for Billing (PostgreSQL 16) + In-Memory Telemetry Stream (Redis Cluster)",
   },
   {
     question_id: "Q-AUTH-03",
-    question: "Which authentication and authorization architecture should be provisioned for user access?",
+    question: "Which authentication and authorization architecture should be provisioned for subscriber access?",
     priority: "medium",
     rationale:
-      "Establishes identity federation, token lifetimes, and Role-Based Access Control (RBAC).",
+      "Establishes identity federation, signed playback tokens, and Role-Based Access Control (RBAC).",
     options: [
-      "OAuth2 PKCE with Campus SSO Federation & RS256 JWT (Recommended)",
+      "OAuth2 PKCE with Asymmetric RS256 JWT & Signed CDN URLs (Recommended)",
       "Stateless Session Cookies with Redis Token Blacklist",
-      "LDAP / Active Directory Integration with SAML 2.0",
+      "SAML 2.0 Enterprise Identity Federation",
     ],
-    default_option: "OAuth2 PKCE with Campus SSO Federation & RS256 JWT (Recommended)",
+    default_option: "OAuth2 PKCE with Asymmetric RS256 JWT & Signed CDN URLs (Recommended)",
   },
 ];
 

@@ -46,6 +46,17 @@ _APP_URL = "https://github.com/your-org/ai-architecture-engine"
 # Retry configuration for rate limits
 _RATE_LIMIT_BACKOFF_SECONDS = [2, 5, 10]   # wait times between retries on 429
 
+# Fixed per-agent API key distribution for parallel REE specialists
+REE_AGENT_KEY_INDEX: Dict[str, int] = {
+    "InputUnderstanding": 0,    # Key 1
+    "RequirementEngineer": 0,   # Key 1
+    "BusinessAnalyst": 1,       # Key 2
+    "DomainExpert": 2,          # Key 3
+    "RequirementReview": 3,     # Key 4
+    "ClarificationInterview": 3,# Key 4
+    "Interview": 3,             # Key 4
+}
+
 
 class OpenRouterClient:
     def __init__(
@@ -73,6 +84,7 @@ class OpenRouterClient:
         self._max_retries = max(max_retries, 3)
         self._key_lock = threading.Lock()
         self._key_counter = 0
+        self._blocked_keys: set[str] = set()
 
         key_exists = bool(self._keys)
         masked_keys = [f"Key #{idx + 1}: {k[:12]}..." for idx, k in enumerate(self._keys)]
@@ -85,11 +97,13 @@ class OpenRouterClient:
             )
 
     def _get_key(self, base_offset: int, attempt: int) -> str:
-        """Retrieve key for a given base offset and retry attempt."""
+        """Retrieve key for a given base offset and retry attempt, prioritizing unblocked keys."""
         if not self._keys:
             return self._api_key
-        idx = (base_offset + attempt) % len(self._keys)
-        return self._keys[idx]
+        available = [k for k in self._keys if k not in self._blocked_keys]
+        pool = available if available else self._keys
+        idx = (base_offset + attempt) % len(pool)
+        return pool[idx]
 
     # ── Public API ─────────────────────────────────────────────────────────────
 
@@ -155,6 +169,7 @@ class OpenRouterClient:
         temperature: float = 0.2,
         system_prompt: Optional[str] = None,
         json_mode: bool = False,
+        agent_name: str = "general",
     ) -> Optional[str]:
         """
         Send a prompt to OpenRouter and return the raw response text.
@@ -175,24 +190,25 @@ class OpenRouterClient:
             temperature=temperature,
             system_prompt=system_prompt,
             json_mode=json_mode,
+            agent_name=agent_name,
         )
 
         if content is not None:
             return content
 
-        # 2. Determine Fallback Model
+        # 2. Determine Fallback Model (must be distinct from primary model)
         fallback_model = (
             os.getenv("FALLBACK_MODEL", "").strip()
             or getattr(settings, "fallback_model", "")
-            or "nvidia/nemotron-3-nano-30b-a3b:free"
+            or "nvidia/nemotron-3.5-lightning:free"
         )
 
         if not fallback_model or fallback_model == model:
-            logger.error(
-                "OpenRouterClient: primary model %s failed after %d attempts and no distinct fallback model is configured.",
-                model, self._max_retries + 1,
+            fallback_model = (
+                "nvidia/nemotron-3.5-lightning:free"
+                if model != "nvidia/nemotron-3.5-lightning:free"
+                else "cohere/north-mini-code:free"
             )
-            return None
 
         # 3. Log Failover Event
         attempts_count = self._max_retries + 1
@@ -215,6 +231,7 @@ class OpenRouterClient:
             temperature=temperature,
             system_prompt=system_prompt,
             json_mode=json_mode,
+            agent_name=agent_name,
         )
 
         if fallback_content is not None:
@@ -235,6 +252,7 @@ class OpenRouterClient:
         temperature: float,
         system_prompt: Optional[str],
         json_mode: bool,
+        agent_name: str = "general",
     ) -> Optional[str]:
         """
         Execute request retry loop for a single target model.
@@ -244,11 +262,13 @@ class OpenRouterClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        reasoning_max = int(os.getenv("LLM_REASONING_MAX_TOKENS", "0"))
         payload: Dict[str, Any] = {
             "model": model,
             "messages": messages,
             "max_tokens": max_tokens,
             "temperature": temperature,
+            "reasoning": {"max_tokens": reasoning_max},
         }
 
         if json_mode:
@@ -279,16 +299,21 @@ class OpenRouterClient:
 
         last_error: Optional[Exception] = None
 
-        with self._key_lock:
-            key_offset = self._key_counter
-            self._key_counter = (self._key_counter + 1) % max(1, len(self._keys))
+        norm_name = agent_name.strip()
+        if norm_name in REE_AGENT_KEY_INDEX and self._keys:
+            key_offset = REE_AGENT_KEY_INDEX[norm_name] % len(self._keys)
+        else:
+            with self._key_lock:
+                key_offset = self._key_counter
+                self._key_counter = (self._key_counter + 1) % max(1, len(self._keys))
 
         active_first_key = self._get_key(key_offset, 0)
         key_num = (self._keys.index(active_first_key) + 1) if active_first_key in self._keys else (key_offset + 1)
-        logger.info("OpenRouterClient: Dispatching model %s using API Key #%d (%s...)", model, key_num, active_first_key[:12] if active_first_key else "NONE")
+        logger.info("OpenRouterClient: Dispatching model %s for agent '%s' using API Key #%d (%s...)", model, agent_name, key_num, active_first_key[:12] if active_first_key else "NONE")
 
         for attempt in range(self._max_retries + 1):
             active_key = self._get_key(key_offset, attempt)
+            curr_num = (self._keys.index(active_key) + 1) if active_key in self._keys else (key_offset + attempt + 1)
             current_headers = dict(headers)
             current_headers["Authorization"] = f"Bearer {active_key}"
 
@@ -300,8 +325,9 @@ class OpenRouterClient:
                     timeout=self._timeout,
                 )
 
-                if response.status_code == 400 and "response_format" in payload:
-                    logger.warning("OpenRouterClient: model %s returned 400 with response_format — retrying without json_mode", model)
+                if response.status_code == 400 and ("reasoning" in payload or "response_format" in payload):
+                    logger.warning("OpenRouterClient: model %s returned 400 with reasoning/response_format — retrying without them", model)
+                    payload.pop("reasoning", None)
                     payload.pop("response_format", None)
                     response = requests.post(
                         OPENROUTER_COMPLETIONS_URL,
@@ -310,15 +336,25 @@ class OpenRouterClient:
                         timeout=self._timeout,
                     )
 
+                if response.status_code in (401, 403):
+                    self._blocked_keys.add(active_key)
+                    next_key = self._get_key(key_offset, attempt + 1)
+                    next_num = (self._keys.index(next_key) + 1) if next_key in self._keys else 1
+                    logger.warning(
+                        "OpenRouterClient: HTTP %d on attempt %d for model %s with Key #%d — marked key blocked, rotating immediately to Key #%d",
+                        response.status_code, attempt + 1, model, curr_num, next_num,
+                    )
+                    continue
+
                 if response.status_code == 429:
                     wait = _RATE_LIMIT_BACKOFF_SECONDS[
                         min(attempt, len(_RATE_LIMIT_BACKOFF_SECONDS) - 1)
                     ]
                     next_key = self._get_key(key_offset, attempt + 1)
-                    key_num = (self._keys.index(next_key) + 1) if next_key in self._keys else 1
+                    next_num = (self._keys.index(next_key) + 1) if next_key in self._keys else 1
                     logger.warning(
-                        "OpenRouterClient: 429 rate limit on attempt %d for model %s — switching to Key #%d and waiting %ds before retry",
-                        attempt + 1, model, key_num, wait,
+                        "OpenRouterClient: 429 rate limit on attempt %d for model %s with Key #%d — rotating to Key #%d and waiting %ds before retry",
+                        attempt + 1, model, curr_num, next_num, wait,
                     )
                     time.sleep(wait)
                     continue
@@ -376,13 +412,25 @@ class OpenRouterClient:
         first = choices[0]
         if not isinstance(first, dict):
             return None
-        message = first.get("message", {})
-        content = message.get("content", "")
+        message = first.get("message") or {}
+        content = message.get("content")
         if isinstance(content, str) and content.strip():
             return content.strip()
+        reasoning = message.get("reasoning") or message.get("reasoning_content")
+        if isinstance(reasoning, str) and reasoning.strip():
+            return reasoning.strip()
+        text = first.get("text")
+        if isinstance(text, str) and text.strip():
+            return text.strip()
         return None
 
     def is_configured(self) -> bool:
         """Return True if an API key is present."""
+        if not self._api_key:
+            env_key = os.getenv("OPENROUTER_API_KEY", "").strip()
+            if env_key:
+                self._api_key = env_key
+                if not self._keys:
+                    self._keys = [env_key]
         return bool(self._api_key)
 

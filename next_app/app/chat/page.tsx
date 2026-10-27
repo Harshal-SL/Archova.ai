@@ -10,12 +10,14 @@ import {
   ChevronDown,
   SquarePen,
   Layers,
+  Plus,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
 import HldWorkspace from "@/components/HldWorkspace";
 import ExplainModal from "@/components/ExplainModal";
 import BubbleBg from "@/components/BubbleBg";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +81,7 @@ export default function ChatPage() {
             </div>
 
             {!isEmpty && (
-              <span className="truncate text-xs font-semibold text-neutral-500 dark:text-neutral-400 ml-1 hidden sm:inline">
+              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden sm:inline">
                 / {sessionTitle}
               </span>
             )}
@@ -89,16 +91,21 @@ export default function ChatPage() {
 
 
           {/* Right: New Session, Theme */}
-          <div className="flex items-center gap-1.5">
-
-            <button
-              type="button"
+          <div className="flex items-center gap-2">
+            <ShimmerButton
               onClick={() => createSession()}
-              title="New Architecture"
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-300 dark:hover:bg-white/10 cursor-pointer transition-colors shadow-2xs backdrop-blur-md"
+              borderRadius="12px"
+              shimmerColor="#38bdf8"
+              shimmerDuration="2.5s"
+              shimmerSize="1.5px"
+              background="#141416"
+              className="px-3 py-1.5 text-xs font-bold text-white border border-neutral-800/80 dark:border-white/10 hover:border-neutral-700 transition-all cursor-pointer shadow-xs"
             >
-              <SquarePen className="h-4 w-4" />
-            </button>
+              <div className="flex items-center gap-1.5 text-white font-bold">
+                <Plus className="h-3.5 w-3.5 text-sky-400" />
+                <span className="hidden sm:inline">New Architecture</span>
+              </div>
+            </ShimmerButton>
 
             <button
               type="button"

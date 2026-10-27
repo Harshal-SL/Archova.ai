@@ -10,6 +10,7 @@ import {
   useEdgesState,
   type NodeMouseHandler,
   type Node,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import {
   ArrowRight,
@@ -21,14 +22,22 @@ import {
   Cloud,
   Cpu,
   X,
+  Sparkles,
+  Zap,
+  Maximize2,
+  Minimize2,
+  ArrowDownUp,
+  GitFork,
+  Search,
+  Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { parseLldToReactFlow } from "@/lib/graph-parser";
-import { dummyAllLlds } from "@/lib/dummy-data";
 import { architectureNodeTypes } from "./flow/ArchitectureNodes";
 import { architectureEdgeTypes } from "./flow/AnimatedFlowEdge";
 import { getEdgeTheme, getComponentTheme } from "@/lib/flow-colors";
+import ModelDesignControls from "./ModelDesignControls";
 
 interface Props {
   customLldType?: string;
@@ -41,22 +50,45 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
     lldData,
     setSelectedNode,
     openExplain,
+    openTechRationale,
     theme,
+    layoutDirection,
+    setLayoutDirection,
+    activeModelId,
   } = useAppStore();
 
+  const isArchova = !activeModelId || activeModelId === "archova";
   const isDark = theme === "dark";
+  const rfInstanceRef = useRef<any>(null);
 
   const type = customLldType || activeLldType || "backend";
   const rawData = customLldData || lldData[activeLldType as keyof typeof lldData] || null;
-  const effectiveData = rawData || (dummyAllLlds as Record<string, unknown>)[type] || null;
+  const effectiveData = rawData || null;
+
+  // Defensive sanitizer: guarantees React Flow nodes always have valid position: { x, y }
+  const sanitizeNodes = useCallback((nodeList: Node[]): Node[] => {
+    if (!Array.isArray(nodeList)) return [];
+    return nodeList.map((n, idx) => {
+      const raw = n as any;
+      const posX = typeof n?.position?.x === "number" ? n.position.x : (typeof raw.x === "number" ? raw.x : 200 + (idx % 4) * 360);
+      const posY = typeof n?.position?.y === "number" ? n.position.y : (typeof raw.y === "number" ? raw.y : 120 + Math.floor(idx / 4) * 220);
+      return {
+        ...n,
+        id: String(n.id || `node-${idx}`),
+        position: { x: posX, y: posY },
+        data: n.data || { label: raw.label || raw.name || n.id || `Component ${idx + 1}` },
+      };
+    });
+  }, []);
 
   // Parse nodes and edges from custom LLD data or fallback
   const initialData = useMemo(() => {
     if (effectiveData) {
-      return parseLldToReactFlow(type, effectiveData as Record<string, unknown>);
+      const parsed = parseLldToReactFlow(type, effectiveData as Record<string, unknown>, layoutDirection);
+      return { nodes: sanitizeNodes(parsed.nodes), edges: parsed.edges || [] };
     }
     return { nodes: [], edges: [] };
-  }, [type, effectiveData]);
+  }, [type, effectiveData, layoutDirection, sanitizeNodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialData.edges);
@@ -72,19 +104,34 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
-
-  // Sync state when dynamic LLD data or type changes
+  // Sync state when dynamic LLD data or type or layoutDirection changes
   useEffect(() => {
-    const activeData = rawData || (dummyAllLlds as Record<string, unknown>)[type] || null;
+    const activeData = rawData || null;
     const updated = activeData
-      ? parseLldToReactFlow(type, activeData as Record<string, unknown>)
+      ? parseLldToReactFlow(type, activeData as Record<string, unknown>, layoutDirection)
       : { nodes: [], edges: [] };
-    setNodes(updated.nodes);
+    setNodes(sanitizeNodes(updated.nodes));
     setEdges(updated.edges);
     setSelectedLayer("all");
     setSelectedNodeData(null);
     setInspectorOpen(false);
-  }, [type, rawData, setNodes, setEdges]);
+  }, [type, rawData, layoutDirection, setNodes, setEdges, sanitizeNodes]);
+
+  const handleLayoutDirectionChange = useCallback(
+    (dir: "TB" | "LR") => {
+      setLayoutDirection(dir);
+      const activeData = rawData || null;
+      if (activeData) {
+        const updated = parseLldToReactFlow(type, activeData as Record<string, unknown>, dir);
+        setNodes(sanitizeNodes(updated.nodes));
+        setEdges(updated.edges);
+      }
+      setTimeout(() => {
+        rfInstanceRef.current?.fitView({ duration: 500, padding: 0.18 });
+      }, 50);
+    },
+    [type, rawData, setLayoutDirection, setNodes, setEdges, sanitizeNodes]
+  );
 
   // Extract layer group containers
   const layerGroups = useMemo(() => {
@@ -316,6 +363,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         data: {
           ...((e.data || {}) as Record<string, unknown>),
           strokeColor,
+          animated: animationsEnabled,
         },
         style: {
           ...e.style,
@@ -335,6 +383,40 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
 
   return (
     <div className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}>
+      {/* ── Top-Right Floating Toolbar ── */}
+      <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
+        <div className="flex items-center gap-2">
+
+          {/* Flow Animation Toggle */}
+          <button
+            onClick={() => setAnimationsEnabled(!animationsEnabled)}
+            className={`pointer-events-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 cursor-pointer shadow-2xs ${
+              animationsEnabled
+                ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+                : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
+            }`}
+            title="Toggle data flow animation"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
+          </button>
+
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-2xs cursor-pointer transition-colors"
+            title="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+        </div>
+
+        {/* ── Right-Top Controls Directly Below Flow: Active Button (Requirement 2 & 3) ── */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <ModelDesignControls />
+        </div>
+      </div>
+
       {/* ── React Flow Canvas or Empty State ── */}
       {nodes.length === 0 ? (
         <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-transparent text-black dark:text-white">
@@ -350,7 +432,10 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         </div>
       ) : (
         <ReactFlow
-          key={`${type}-${nodes.length}`}
+          key={`${type}-${layoutDirection}-${nodes.length}`}
+          onInit={(inst) => {
+            rfInstanceRef.current = inst;
+          }}
           nodes={displayNodes}
           edges={displayEdges}
           nodeTypes={architectureNodeTypes}
@@ -519,6 +604,31 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
 
           {/* Drawer Footer Actions */}
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
+            {/* Action 1: Why This Tech? (In-detail Rationale & Alternatives) — ONLY visible for AI_engine */}
+            {isArchova ? (
+              <button
+                onClick={() => {
+                  openTechRationale({
+                    id: selectedNodeData.id,
+                    type: selectedNodeData.type,
+                    division: type,
+                    ...((selectedNodeData.data || {}) as Record<string, unknown>),
+                  });
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 text-xs font-bold text-white transition-all hover:from-blue-500 hover:to-indigo-500 cursor-pointer shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+                <span>Why This Tech? (In-detail & Alternatives)</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-50/70 p-2.5 text-[11px] text-amber-900 dark:border-amber-500/20 dark:bg-amber-950/25 dark:text-amber-200">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span>
+                  <strong>Note:</strong> In-detail rationale & trade-offs are available exclusively for <strong>Archova AI Engine</strong> designs.
+                </span>
+              </div>
+            )}
+
             <button
               onClick={() => {
                 const label = String(selectedNodeData.data?.label || selectedNodeData.id);
@@ -532,7 +642,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
                   desc
                 );
               }}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-black py-2.5 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-300 bg-white py-2 text-xs font-semibold text-neutral-800 transition-all hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white cursor-pointer shadow-2xs"
             >
               <span>View Full Component Specification</span>
               <ArrowRight className="h-3.5 w-3.5" />

@@ -460,7 +460,7 @@ export default function ArsrsEditor({
                   type="text"
                   value={doc.metadata?.system_name || ""}
                   onChange={(e) => updateSystemName(e.target.value)}
-                  placeholder="e.g. College Library Management System"
+                  placeholder="e.g. Enterprise Cloud Streaming Platform"
                   className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-xs sm:text-sm text-neutral-900 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 dark:border-white/10 dark:bg-black/60 dark:text-white"
                 />
               </div>

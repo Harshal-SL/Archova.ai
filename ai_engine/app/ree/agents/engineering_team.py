@@ -60,12 +60,17 @@ class EngineeringTeamAgent:
         self._business_analyst = BusinessAnalystAgent()
         self._domain_expert = DomainExpertAgent()
 
-    def run(self, src: SharedRequirementContext) -> SharedRequirementContext:
+    def run(
+        self,
+        src: SharedRequirementContext,
+        on_agent_update: Optional[Any] = None,
+    ) -> SharedRequirementContext:
         """
         Execute all three specialist agents in parallel and merge results.
 
         Args:
             src: Current SRC with project_context populated.
+            on_agent_update: Optional callback(name, status, task, thought, progress) for live telemetry.
 
         Returns:
             Updated SRC with all three agent sections populated.
@@ -90,6 +95,30 @@ class EngineeringTeamAgent:
 
         src.status = REEStatus.ENGINEERING
         logger.info("EngineeringTeamAgent: starting 3 parallel AI specialists")
+
+        # Live telemetry: publish parallel start events
+        if on_agent_update:
+            on_agent_update(
+                "RequirementEngineer",
+                "running",
+                "Decomposing functional requirements, system constraints & actors...",
+                None,
+                45,
+            )
+            on_agent_update(
+                "BusinessAnalyst",
+                "running",
+                "Extracting business goals, user personas, revenue models & KPIs...",
+                None,
+                45,
+            )
+            on_agent_update(
+                "DomainExpert",
+                "running",
+                "Auditing regulatory compliance (GDPR, PCI-DSS), risks & architectural patterns...",
+                None,
+                45,
+            )
 
         # Build isolated copies — each agent gets its own SRC so they
         # cannot stomp on each other's writes during parallel execution.
@@ -118,12 +147,28 @@ class EngineeringTeamAgent:
                 result_src = future.result()
                 completed[name] = result_src
                 logger.info("EngineeringTeamAgent: %s finished", name)
+
+                if on_agent_update:
+                    thought = None
+                    if name == "BusinessAnalyst" and getattr(result_src, "business_context", None):
+                        goals = getattr(result_src.business_context, "goals", [])
+                        thought = f"Identified {len(goals)} business goals & core KPIs." if goals else "Synthesized business context & stakeholder objectives."
+                    elif name == "RequirementEngineer" and getattr(result_src, "requirements", None):
+                        frs = getattr(result_src.requirements, "functional", [])
+                        thought = f"Decomposed {len(frs)} functional requirements with contracts." if frs else "Synthesized functional requirement contracts."
+                    elif name == "DomainExpert" and getattr(result_src, "domain_context", None):
+                        rules = getattr(result_src.domain_context, "compliance_requirements", [])
+                        thought = f"Synthesized {len(rules)} compliance & security boundaries." if rules else "Enforcing domain-specific architectural patterns."
+                    on_agent_update(name, "completed", f"{name} analysis completed successfully.", thought, 100)
+
             except Exception as exc:  # noqa: BLE001
                 logger.error(
                     "EngineeringTeamAgent: %s raised an unhandled exception: %s",
                     name, exc, exc_info=True,
                 )
                 src.errors.append(f"{name} failed with unhandled exception: {exc}")
+                if on_agent_update:
+                    on_agent_update(name, "failed", f"{name} encountered an error: {str(exc)}", None, 100)
 
         # Merge outputs from each completed agent back into the master SRC
         if "RequirementEngineer" in completed:

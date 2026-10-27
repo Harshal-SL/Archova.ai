@@ -16,6 +16,8 @@ import {
   Cloud,
   Cpu,
   ArrowRight,
+  Sparkles,
+  Info,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { getComponentTheme, getLayerGroupTheme } from "@/lib/flow-colors";
@@ -77,9 +79,74 @@ const DualHandle = ({ id, position, color, isDark, className }: DualHandleProps)
   </>
 );
 
+// Helper for interactive In-detail rationale button visible on all cards
+interface InDetailButtonProps {
+  onClick: (e: React.MouseEvent) => void;
+  accentColor: string;
+  isDark: boolean;
+  theme: any;
+  className?: string;
+  label?: string;
+}
+
+const InDetailButton = ({
+  onClick,
+  accentColor,
+  isDark,
+  theme,
+  className = "",
+  label = "In-detail",
+}: InDetailButtonProps) => {
+  const activeModelId = useAppStore((s) => s.activeModelId);
+
+  // "In-detail" is visible ONLY for AI_engine generated architecture, NOT for LLM model designs
+  const isArchova = !activeModelId || activeModelId === "archova";
+  if (!isArchova) {
+    return null;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`pointer-events-auto flex items-center gap-1 rounded-md border px-2 py-0.5 text-[9.5px] font-black tracking-wide shadow-xs hover:scale-105 active:scale-95 cursor-pointer backdrop-blur-md transition-all duration-150 shrink-0 ${className}`}
+      style={{
+        backgroundColor: isDark ? `${theme.badgeBgDark || "#18181b"}f5` : "#ffffffee",
+        borderColor: isDark ? `${theme.badgeBorderDark || "#3f3f46"}` : `${theme.lightColor || "#6366f1"}88`,
+        color: isDark ? accentColor : (theme.badgeTextLight || "#4f46e5"),
+        boxShadow: isDark
+          ? `0 2px 8px -2px ${theme.glow || "rgba(0,0,0,0.5)"}`
+          : `0 2px 6px -1px rgba(0,0,0,0.12)`,
+      }}
+      title="Why this technology? View in-detail rationale, alternatives & trade-offs"
+    >
+      <Sparkles className="h-2.5 w-2.5 text-amber-400 shrink-0 animate-pulse" />
+      <span className="shrink-0">{label}</span>
+    </button>
+  );
+};
+
+
+// Reusable Version Badge Component for Evolved / New Nodes across HLD & LLD
+export const VersionBadge = memo(({ data }: { data: any }) => {
+  const versionAdded = data?.version_added || data?.version;
+  const isNew = Boolean(data?.is_new || versionAdded);
+  if (!isNew && !versionAdded) return null;
+
+  const rawVer = String(versionAdded || "");
+  const formattedVer = rawVer ? (rawVer.startsWith("v") ? rawVer : `v${rawVer}`) : "NEW";
+
+  return (
+    <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 px-1.5 py-0.2 text-[8px] font-black tracking-wider uppercase shadow-xs shrink-0">
+      ✨ {formattedVer}
+    </span>
+  );
+});
+VersionBadge.displayName = "VersionBadge";
+
 // ── 1. Layer Group Node (Container / Bounding Box) ──
 export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
-  const { theme: appTheme, jumpToLld } = useAppStore();
+  const { theme: appTheme, jumpToLld, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Architecture Layer");
   const count = typeof data?.count === "number" ? data.count : undefined;
@@ -89,7 +156,9 @@ export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
 
   const lowerLabel = `${label} ${id}`.toLowerCase();
   const IconComponent =
-    lowerLabel.includes("frontend")
+    lowerLabel.includes("user") || lowerLabel.includes("actor") || lowerLabel.includes("stakeholder")
+      ? Users
+      : lowerLabel.includes("frontend")
       ? Globe
       : lowerLabel.includes("backend") || lowerLabel.includes("service")
       ? Server
@@ -105,6 +174,7 @@ export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
     id.startsWith("dbgroup-") ||
     id.startsWith("cgroup-") ||
     id.startsWith("secgroup-") ||
+    id === "group-actors" ||
     Boolean(data?.hideExplore);
 
   const divisionLld = isLldInternalGroup
@@ -123,7 +193,7 @@ export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
 
   return (
     <div
-      className="relative h-full w-full rounded-2xl border-2 border-dashed p-4 backdrop-blur-xs transition-all duration-300"
+      className="group relative h-full w-full rounded-2xl border-2 border-dashed p-4 backdrop-blur-xs transition-all duration-300"
       style={{
         borderColor: isDark ? `${groupTheme.darkColor}44` : `${groupTheme.lightColor}99`,
         backgroundColor: isDark ? `${groupTheme.primary}08` : `${groupTheme.lightColor}12`,
@@ -131,63 +201,84 @@ export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
       }}
     >
       {/* Top Layer Header */}
-      <div className="flex items-center justify-between pb-3">
-        <div className="flex items-center gap-2">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-lg border shadow-xs"
-            style={{
-              backgroundColor: isDark ? groupTheme.badgeBgDark : groupTheme.badgeBgLight,
-              borderColor: isDark ? groupTheme.badgeBorderDark : groupTheme.badgeBorderLight,
-              color: isDark ? accentColor : groupTheme.badgeTextLight,
-            }}
-          >
-            <IconComponent className="h-4 w-4" />
-          </div>
-          <span
-            className="font-heading text-xs font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            {label}
-          </span>
-          {Boolean(data?.subtitle) && (
-            <span className="hidden md:inline-block text-[10px] font-semibold text-neutral-600 dark:text-neutral-400">
-              · {String(data.subtitle)}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          {count !== undefined && (
-            <span
-              className="rounded-md border px-2.5 py-0.5 text-[10px] font-extrabold shadow-xs"
+      <div className="flex flex-col gap-1 pb-2.5 mb-2 border-b border-dashed border-neutral-800/40 dark:border-neutral-700/30">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div
+              className="flex h-6 w-6 items-center justify-center rounded-md border shadow-xs shrink-0"
               style={{
-                backgroundColor: isDark ? groupTheme.badgeBgDark : "#ffffff",
-                borderColor: isDark ? groupTheme.badgeBorderDark : groupTheme.lightColor,
-                color: accentColor,
+                backgroundColor: isDark ? groupTheme.badgeBgDark : groupTheme.badgeBgLight,
+                borderColor: isDark ? groupTheme.badgeBorderDark : groupTheme.badgeBorderLight,
+                color: isDark ? accentColor : groupTheme.badgeTextLight,
               }}
             >
-              {count} Components
+              <IconComponent className="h-3.5 w-3.5" />
+            </div>
+            <span
+              className="font-heading text-xs font-black uppercase tracking-wider truncate"
+              style={{ color: accentColor }}
+              title={label}
+            >
+              {label}
             </span>
-          )}
-          {divisionLld && (
-            <button
-              type="button"
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <InDetailButton
               onClick={(e) => {
                 e.stopPropagation();
-                jumpToLld(divisionLld as any);
+                openTechRationale({
+                  id,
+                  label,
+                  subtitle: data?.subtitle,
+                  type: "layer",
+                  description: `${label} architectural boundary and component tier`,
+                  ...data,
+                });
               }}
-              className="pointer-events-auto flex items-center gap-1 rounded-md border px-2.5 py-0.5 text-[10px] font-extrabold shadow-xs transition-all hover:scale-105 cursor-pointer"
-              style={{
-                backgroundColor: isDark ? groupTheme.badgeBgDark : groupTheme.lightColor,
-                borderColor: isDark ? groupTheme.badgeBorderDark : groupTheme.lightColor,
-                color: isDark ? accentColor : "#ffffff",
-              }}
-              title={`Display ${divisionLld.toUpperCase()} LLD Design`}
-            >
-              <span>Explore {divisionLld.toUpperCase()} LLD</span>
-              <ArrowRight className="h-3 w-3" />
-            </button>
-          )}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={groupTheme}
+              label="Info"
+              className="!px-1.5 !py-0.5"
+            />
+            {count !== undefined && (
+              <span
+                className="rounded-md border px-1.5 py-0.5 text-[9px] font-black tracking-wide shadow-xs shrink-0"
+                style={{
+                  backgroundColor: isDark ? groupTheme.badgeBgDark : "#ffffff",
+                  borderColor: isDark ? groupTheme.badgeBorderDark : groupTheme.lightColor,
+                  color: accentColor,
+                }}
+              >
+                {count} Nodes
+              </span>
+            )}
+            {divisionLld && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  jumpToLld(divisionLld as any);
+                }}
+                className="pointer-events-auto flex items-center gap-1 rounded-md border px-2 py-0.5 text-[9px] font-black tracking-wide shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                style={{
+                  backgroundColor: isDark ? groupTheme.badgeBgDark : groupTheme.lightColor,
+                  borderColor: isDark ? groupTheme.badgeBorderDark : groupTheme.lightColor,
+                  color: isDark ? accentColor : "#ffffff",
+                }}
+                title={`Display ${divisionLld.toUpperCase()} LLD Design`}
+              >
+                <span>{divisionLld.toUpperCase()} LLD</span>
+                <ArrowRight className="h-2.5 w-2.5" />
+              </button>
+            )}
+          </div>
         </div>
+        {Boolean(data?.subtitle) && (
+          <span className="text-[9.5px] font-medium text-neutral-500 dark:text-neutral-400 truncate max-w-full">
+            {String(data.subtitle)}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -196,7 +287,7 @@ LayerGroupNode.displayName = "LayerGroupNode";
 
 // ── 2. User / Actor Node ──
 export const ActorNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "User Actor");
   const role = String(data?.role || data?.description || "Stakeholder");
@@ -240,11 +331,35 @@ export const ActorNode = memo(({ id, data, selected }: NodeProps) => {
         <Users className="h-3.5 w-3.5" />
       </div>
       <div className="flex flex-col text-left">
-        <span className="font-heading font-extrabold leading-tight text-slate-900 dark:text-neutral-50">{label}</span>
+        <div className="flex items-center gap-1.5">
+          <span className="font-heading font-extrabold leading-tight text-slate-900 dark:text-neutral-50">{label}</span>
+          <VersionBadge data={data} />
+        </div>
         {role && role !== "Stakeholder" && (
           <span className="text-[10px] font-semibold text-neutral-600 dark:text-neutral-400">{role}</span>
         )}
       </div>
+
+      <InDetailButton
+        onClick={(e) => {
+          e.stopPropagation();
+          openTechRationale({
+            id,
+            label,
+            role,
+            type: "actor",
+            description: role || "External client / user actor in the architecture",
+            ...data,
+          });
+        }}
+        accentColor={accentColor}
+        isDark={isDark}
+        theme={theme}
+        className="ml-auto"
+      />
+
+      <DualHandle id="act-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="act-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <DualHandle id="act-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
       <DualHandle id="act-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
@@ -254,7 +369,7 @@ ActorNode.displayName = "ActorNode";
 
 // ── 3. Frontend Client Node ──
 export const FrontendNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Web Application");
   const tech = String(data?.tech || data?.description || "React / Next.js");
@@ -270,7 +385,7 @@ export const FrontendNode = memo(({ id, data, selected }: NodeProps) => {
         selected ? "ring-2 ring-offset-1" : ""
       }`}
       style={{
-        minWidth: 280,
+        minWidth: 290,
         minHeight: 84,
         borderColor,
         background: bgColor,
@@ -297,14 +412,35 @@ export const FrontendNode = memo(({ id, data, selected }: NodeProps) => {
         >
           <Globe className="h-4 w-4" />
         </div>
-        <div className="flex flex-col text-left">
-          <span
-            className="text-[9.5px] font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            Frontend Layer
-          </span>
-          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50">{label}</span>
+        <div className="flex flex-col text-left flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[9.5px] font-black uppercase tracking-wider truncate"
+                style={{ color: accentColor }}
+              >
+                Frontend Layer
+              </span>
+              <VersionBadge data={data} />
+            </div>
+            <InDetailButton
+              onClick={(e) => {
+                e.stopPropagation();
+                openTechRationale({
+                  id,
+                  label,
+                  tech,
+                  type: "frontend",
+                  description: `Frontend client application: ${label} utilizing ${tech}`,
+                  ...data,
+                });
+              }}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={theme}
+            />
+          </div>
+          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 truncate leading-tight">{label}</span>
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[220px] font-medium">{tech}</span>
         </div>
       </div>
@@ -317,7 +453,7 @@ FrontendNode.displayName = "FrontendNode";
 
 // ── 4. API Gateway / Ingress Node ──
 export const GatewayNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "API Gateway / Ingress");
   const tech = String(data?.tech || "NGINX · TLS 1.3 · Rate Limiting · RBAC");
@@ -333,8 +469,8 @@ export const GatewayNode = memo(({ id, data, selected }: NodeProps) => {
         selected ? "ring-2 ring-offset-1" : ""
       }`}
       style={{
-        minWidth: 280,
-        minHeight: 80,
+        minWidth: 290,
+        minHeight: 82,
         borderColor,
         background: bgColor,
         boxShadow: getCardShadow(isDark, selected, theme.glow, theme.lightColor),
@@ -360,14 +496,35 @@ export const GatewayNode = memo(({ id, data, selected }: NodeProps) => {
         >
           <ShieldCheck className="h-5 w-5" />
         </div>
-        <div className="flex flex-col text-left">
-          <span
-            className="text-[9.5px] font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            API & Security Layer
-          </span>
-          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50">{label}</span>
+        <div className="flex flex-col text-left flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[9.5px] font-black uppercase tracking-wider truncate"
+                style={{ color: accentColor }}
+              >
+                API & Security Layer
+              </span>
+              <VersionBadge data={data} />
+            </div>
+            <InDetailButton
+              onClick={(e) => {
+                e.stopPropagation();
+                openTechRationale({
+                  id,
+                  label,
+                  tech,
+                  type: "gateway",
+                  description: `API Gateway and Ingress Controller: ${label} (${tech})`,
+                  ...data,
+                });
+              }}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={theme}
+            />
+          </div>
+          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 truncate leading-tight">{label}</span>
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[240px] font-medium">{tech}</span>
         </div>
       </div>
@@ -380,7 +537,7 @@ GatewayNode.displayName = "GatewayNode";
 
 // ── 5. Modular Microservice Node ──
 export const ServiceNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Service");
   const code = String(data?.code || "SVC");
@@ -415,23 +572,47 @@ export const ServiceNode = memo(({ id, data, selected }: NodeProps) => {
       <DualHandle id="svc-left" position={Position.Left} color={accentColor} isDark={isDark} />
 
       {/* Header with Service Code Badge */}
-      <div className="flex items-center justify-between pb-1.5 pt-0.5">
-        <span
-          className="rounded-md border px-2 py-0.5 text-[10px] font-black tracking-tight shadow-xs"
-          style={{
-            backgroundColor: isDark ? theme.badgeBgDark : theme.badgeBgLight,
-            borderColor: isDark ? theme.badgeBorderDark : theme.badgeBorderLight,
-            color: isDark ? accentColor : theme.badgeTextLight,
-          }}
-        >
-          {code}
-        </span>
-        <span
-          className="text-[9px] font-extrabold uppercase tracking-wide"
-          style={{ color: accentColor }}
-        >
-          {protocol}
-        </span>
+      <div className="flex items-center justify-between pb-1.5 pt-0.5 gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span
+            className="rounded-md border px-2 py-0.5 text-[10px] font-black tracking-tight shadow-xs shrink-0"
+            style={{
+              backgroundColor: isDark ? theme.badgeBgDark : theme.badgeBgLight,
+              borderColor: isDark ? theme.badgeBorderDark : theme.badgeBorderLight,
+              color: isDark ? accentColor : theme.badgeTextLight,
+            }}
+          >
+            {code}
+          </span>
+          <VersionBadge data={data} />
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <InDetailButton
+            onClick={(e) => {
+              e.stopPropagation();
+              openTechRationale({
+                id,
+                label,
+                tech,
+                code,
+                protocol,
+                type: "service",
+                description: tech || `Microservice responsible for ${label} operations`,
+                ...data,
+              });
+            }}
+            accentColor={accentColor}
+            isDark={isDark}
+            theme={theme}
+          />
+          <span
+            className="text-[9px] font-extrabold uppercase tracking-wide truncate max-w-[85px]"
+            style={{ color: accentColor }}
+            title={protocol}
+          >
+            {protocol}
+          </span>
+        </div>
       </div>
 
       {/* Title */}
@@ -454,6 +635,8 @@ export const ServiceNode = memo(({ id, data, selected }: NodeProps) => {
         <span className="mt-1 line-clamp-1 text-[10px] text-neutral-600 dark:text-neutral-400 font-medium">{tech}</span>
       )}
 
+      <DualHandle id="svc-top" position={Position.Top} color={accentColor} isDark={isDark} />
+      <DualHandle id="svc-left" position={Position.Left} color={accentColor} isDark={isDark} />
       <DualHandle id="svc-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
       <DualHandle id="svc-right" position={Position.Right} color={accentColor} isDark={isDark} />
     </div>
@@ -463,7 +646,7 @@ ServiceNode.displayName = "ServiceNode";
 
 // ── 6. Database / Storage Node ──
 export const DatabaseNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Database");
   const engine = String(data?.engine || "PostgreSQL");
@@ -480,7 +663,7 @@ export const DatabaseNode = memo(({ id, data, selected }: NodeProps) => {
         selected ? "ring-2 ring-offset-1" : ""
       }`}
       style={{
-        minWidth: 280,
+        minWidth: 290,
         minHeight: 84,
         borderColor,
         background: bgColor,
@@ -507,14 +690,36 @@ export const DatabaseNode = memo(({ id, data, selected }: NodeProps) => {
         >
           <Database className="h-4 w-4" />
         </div>
-        <div className="flex flex-col text-left">
-          <span
-            className="text-[9.5px] font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            {engine}
-          </span>
-          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 leading-tight">{label}</span>
+        <div className="flex flex-col text-left flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[9.5px] font-black uppercase tracking-wider"
+                style={{ color: accentColor }}
+              >
+                {engine}
+              </span>
+              <VersionBadge data={data} />
+            </div>
+            <InDetailButton
+              onClick={(e) => {
+                e.stopPropagation();
+                openTechRationale({
+                  id,
+                  label,
+                  engine,
+                  schema,
+                  type: "database",
+                  description: `Primary persistence database: ${label} running ${engine}`,
+                  ...data,
+                });
+              }}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={theme}
+            />
+          </div>
+          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 leading-tight truncate">{label}</span>
           {schema && (
             <span className="font-mono text-[9px] text-neutral-600 dark:text-neutral-400 truncate max-w-[210px] font-semibold">
               {schema}
@@ -531,7 +736,7 @@ DatabaseNode.displayName = "DatabaseNode";
 
 // ── 7. Cache & Redis Node ──
 export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Redis Cluster");
   const subtitle = String(data?.subtitle || data?.description || "Cache · Tokens · PubSub");
@@ -547,8 +752,8 @@ export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
         selected ? "ring-2 ring-offset-1" : ""
       }`}
       style={{
-        minWidth: 230,
-        minHeight: 78,
+        minWidth: 290,
+        minHeight: 82,
         borderColor,
         background: bgColor,
         boxShadow: getCardShadow(isDark, selected, theme.glow, theme.lightColor),
@@ -562,7 +767,7 @@ export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
 
       <DualHandle id="cache-top" position={Position.Top} color={accentColor} isDark={isDark} />
       <DualHandle id="cache-left" position={Position.Left} color={accentColor} isDark={isDark} />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <div
           className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border shadow-xs transition-all"
           style={{
@@ -572,17 +777,38 @@ export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
             boxShadow: isDark ? `0 0 10px -2px ${theme.glow}` : `0 2px 8px -1px ${theme.lightColor}55`,
           }}
         >
-          <Cpu className="h-4 w-4" />
+          <Radio className="h-4 w-4" />
         </div>
-        <div className="flex flex-col text-left">
-          <span
-            className="text-[9.5px] font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            In-Memory Cache
-          </span>
-          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 leading-tight">{label}</span>
-          <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[190px] font-medium">{subtitle}</span>
+        <div className="flex flex-col text-left flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[9.5px] font-black uppercase tracking-wider"
+                style={{ color: accentColor }}
+              >
+                In-Memory Layer
+              </span>
+              <VersionBadge data={data} />
+            </div>
+            <InDetailButton
+              onClick={(e) => {
+                e.stopPropagation();
+                openTechRationale({
+                  id,
+                  label,
+                  subtitle,
+                  type: "cache",
+                  description: `In-memory cache and session store: ${label} (${subtitle})`,
+                  ...data,
+                });
+              }}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={theme}
+            />
+          </div>
+          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 leading-tight truncate">{label}</span>
+          <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[200px] font-medium">{subtitle}</span>
         </div>
       </div>
       <DualHandle id="cache-bottom" position={Position.Bottom} color={accentColor} isDark={isDark} />
@@ -594,7 +820,7 @@ CacheNode.displayName = "CacheNode";
 
 // ── 8. Message Queue / Event Bus Node ──
 export const QueueNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "RabbitMQ");
   const subtitle = String(data?.subtitle || data?.description || "Event Messaging · DLQ · Retry x3");
@@ -610,8 +836,8 @@ export const QueueNode = memo(({ id, data, selected }: NodeProps) => {
         selected ? "ring-2 ring-offset-1" : ""
       }`}
       style={{
-        minWidth: 240,
-        minHeight: 80,
+        minWidth: 290,
+        minHeight: 82,
         borderColor,
         background: bgColor,
         boxShadow: getCardShadow(isDark, selected, theme.glow, theme.lightColor),
@@ -637,14 +863,35 @@ export const QueueNode = memo(({ id, data, selected }: NodeProps) => {
         >
           <Radio className="h-4 w-4" />
         </div>
-        <div className="flex flex-col text-left">
-          <span
-            className="text-[9.5px] font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            Event Broker
-          </span>
-          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 leading-tight">{label}</span>
+        <div className="flex flex-col text-left flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[9.5px] font-black uppercase tracking-wider truncate"
+                style={{ color: accentColor }}
+              >
+                Event Broker
+              </span>
+              <VersionBadge data={data} />
+            </div>
+            <InDetailButton
+              onClick={(e) => {
+                e.stopPropagation();
+                openTechRationale({
+                  id,
+                  label,
+                  subtitle,
+                  type: "queue",
+                  description: `Asynchronous message broker: ${label} (${subtitle})`,
+                  ...data,
+                });
+              }}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={theme}
+            />
+          </div>
+          <span className="font-heading text-xs font-bold text-slate-900 dark:text-neutral-50 leading-tight truncate">{label}</span>
           <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[200px] font-medium">{subtitle}</span>
         </div>
       </div>
@@ -657,7 +904,7 @@ QueueNode.displayName = "QueueNode";
 
 // ── 9. DevOps & Observability Node ──
 export const DevOpsNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme } = useAppStore();
+  const { theme: appTheme, openTechRationale } = useAppStore();
   const isDark = appTheme !== "light";
   const label = String(data?.label || "DevOps Tool");
   const role = String(data?.role || data?.description || "");
@@ -683,8 +930,8 @@ export const DevOpsNode = memo(({ id, data, selected }: NodeProps) => {
         selected ? "ring-2 ring-offset-1" : ""
       }`}
       style={{
-        minWidth: 245,
-        minHeight: 78,
+        minWidth: 290,
+        minHeight: 80,
         borderColor,
         background: bgColor,
         boxShadow: getCardShadow(isDark, selected, theme.glow, theme.lightColor),
@@ -710,14 +957,36 @@ export const DevOpsNode = memo(({ id, data, selected }: NodeProps) => {
         >
           <IconComponent className="h-4 w-4" />
         </div>
-        <div className="flex flex-col text-left">
-          <span
-            className="text-[9.5px] font-black uppercase tracking-wider"
-            style={{ color: accentColor }}
-          >
-            {category.toUpperCase()}
-          </span>
-          <span className="font-heading text-xs font-bold leading-tight text-slate-900 dark:text-neutral-50">{label}</span>
+        <div className="flex flex-col text-left flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-1.5 mb-0.5">
+            <div className="flex items-center gap-1.5">
+              <span
+                className="text-[9.5px] font-black uppercase tracking-wider truncate"
+                style={{ color: accentColor }}
+              >
+                {category.toUpperCase()}
+              </span>
+              <VersionBadge data={data} />
+            </div>
+            <InDetailButton
+              onClick={(e) => {
+                e.stopPropagation();
+                openTechRationale({
+                  id,
+                  label,
+                  role,
+                  category,
+                  type: "devops",
+                  description: `DevOps, cloud orchestration, and observability: ${label} (${category})`,
+                  ...data,
+                });
+              }}
+              accentColor={accentColor}
+              isDark={isDark}
+              theme={theme}
+            />
+          </div>
+          <span className="font-heading text-xs font-bold leading-tight text-slate-900 dark:text-neutral-50 truncate">{label}</span>
           {role && (
             <span className="text-[10px] text-neutral-600 dark:text-neutral-400 truncate max-w-[195px] font-medium">{role}</span>
           )}

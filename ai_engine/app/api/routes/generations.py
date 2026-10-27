@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.schemas.requests import StartGenerationRequest, SubmitAnswerRequest
 from app.schemas.responses import (
+    AgentTelemetryResponse,
     ArtifactResponse,
     GenerateArchitectureResponse,
     GenerationLogsResponse,
@@ -36,7 +37,10 @@ async def start_generation(payload: StartGenerationRequest) -> StartGenerationRe
     detect ambiguities, generates clarification questions, and returns the first question.
     """
     try:
-        context = generation_service.start_generation(payload.prompt)
+        context = generation_service.start_generation(
+            payload.prompt,
+            generation_id=payload.generation_id,
+        )
         first_q = None
         if context.interview_questions:
             q_data = context.interview_questions[0]
@@ -200,6 +204,28 @@ async def get_generation_status(generation_id: str) -> GenerationStatusResponse:
         ) from exc
 
 
+# ── 4b. Get Active Agent Telemetry Swarm ─────────────────────────────────────
+
+
+@router.get(
+    "/{generation_id}/agents",
+    response_model=AgentTelemetryResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Poll active multi-agent swarm telemetry",
+)
+async def get_agent_telemetry(generation_id: str) -> AgentTelemetryResponse:
+    """Returns live telemetry of all AI specialist agents (Business Analyst, Requirement Engineer, etc.)."""
+    try:
+        data = generation_service.get_agent_telemetry(generation_id)
+        return AgentTelemetryResponse(**data)
+    except Exception as exc:
+        logger.exception("Error in get_agent_telemetry: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch agent telemetry: {str(exc)}",
+        ) from exc
+
+
 # ── 5. Get ARSRS ─────────────────────────────────────────────────────────────
 
 
@@ -262,6 +288,12 @@ async def get_hld(generation_id: str) -> ArtifactResponse:
     response_model=LLDDetailResponse,
     status_code=status.HTTP_200_OK,
     summary="Retrieve specific Low Level Design (LLD) artifact",
+)
+@router.get(
+    "/{generation_id}/llds/{lld_type}",
+    response_model=LLDDetailResponse,
+    status_code=status.HTTP_200_OK,
+    include_in_schema=False,
 )
 async def get_lld(generation_id: str, lld_type: str) -> LLDDetailResponse:
     """Retrieve the status and generated payload of a specific LLD type.

@@ -56,14 +56,23 @@ function seeded(index: number, salt: number) {
 }
 
 function createStaticStars(count: number): StaticStar[] {
-  return Array.from({ length: count }, (_, index) => ({
-    x: seeded(index, 1) * 100,
-    y: seeded(index, 2) * 100,
-    size: 1 + seeded(index, 3) * 2.4,
-    opacity: 0.32 + seeded(index, 4) * 0.48,
-    delay: seeded(index, 5) * 4,
-    duration: 2.4 + seeded(index, 6) * 3.2,
-  }));
+  return Array.from({ length: count }, (_, index) => {
+    const rawX = seeded(index, 1) * 100;
+    const rawY = seeded(index, 2) * 100;
+    const rawSize = 1 + seeded(index, 3) * 2.4;
+    const rawOpacity = 0.32 + seeded(index, 4) * 0.48;
+    const rawDelay = seeded(index, 5) * 4;
+    const rawDuration = 2.4 + seeded(index, 6) * 3.2;
+
+    return {
+      x: Math.round(rawX * 100) / 100,
+      y: Math.round(rawY * 100) / 100,
+      size: Math.round(rawSize * 10) / 10,
+      opacity: Math.round(rawOpacity * 100) / 100,
+      delay: Math.round(rawDelay * 10) / 10,
+      duration: Math.round(rawDuration * 10) / 10,
+    };
+  });
 }
 
 function createShootingStars(count: number): ShootingStar[] {
@@ -120,10 +129,10 @@ function GridRunner({
       style={{
         left: isHorizontal ? runner.start : linePosition,
         top: isHorizontal ? linePosition : runner.start,
-        width: isHorizontal ? runner.length : 1,
-        height: isHorizontal ? 1 : runner.length,
-        background: `linear-gradient(${gradientDirection}, transparent 0%, var(--shooting-star-head, rgba(255,255,255,0.12)) 18%, var(--shooting-star-body, rgba(255,255,255,0.88)) 52%, var(--shooting-star-core, #ffffff) 58%, transparent 100%)`,
-        boxShadow: "var(--shooting-star-shadow, 0 0 16px rgba(255,255,255,0.45), 0 0 28px rgba(255,255,255,0.2))",
+        width: isHorizontal ? runner.length : 1.75,
+        height: isHorizontal ? 1.75 : runner.length,
+        background: `linear-gradient(${gradientDirection}, transparent 0%, var(--shooting-star-head, rgba(0,0,0,0.55)) 15%, var(--shooting-star-body, rgba(0,0,0,0.95)) 48%, var(--shooting-star-core, #000000) 65%, transparent 100%)`,
+        boxShadow: "var(--shooting-star-shadow, 0 0 6px rgba(0,0,0,0.7), 0 0 14px rgba(0,0,0,0.35))",
       }}
       initial={{ opacity: 0, scaleX: isHorizontal ? 0.35 : 1, scaleY: isHorizontal ? 1 : 0.35 }}
       animate={
@@ -162,8 +171,14 @@ export function ShootingStarsGrid({
   reducedMotionFallback = true,
   interactive = false,
 }: ShootingStarsGridProps) {
+  const [mounted, setMounted] = React.useState(false);
   const reduceMotion = useReducedMotion() === true;
   const rootRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const staticStars = React.useMemo(
     () => createStaticStars(Math.max(0, Math.min(starCount, 90))),
     [starCount],
@@ -182,18 +197,19 @@ export function ShootingStarsGrid({
       const rect = node.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * 100;
       const y = ((event.clientY - rect.top) / rect.height) * 100;
-      node.style.setProperty("--shooting-stars-glow-x", `${x}%`);
-      node.style.setProperty("--shooting-stars-glow-y", `${y}%`);
+      node.style.setProperty("--shooting-stars-glow-x", `${x.toFixed(2)}%`);
+      node.style.setProperty("--shooting-stars-glow-y", `${y.toFixed(2)}%`);
     },
     [interactive, reduceMotion],
   );
 
-  const shouldAnimate = !reduceMotion || !reducedMotionFallback;
+  const shouldAnimate = mounted && (!reduceMotion || !reducedMotionFallback);
 
   return (
     <section
       ref={rootRef}
       onPointerMove={onPointerMove}
+      suppressHydrationWarning
       className={cn(
         "group/shooting-stars relative isolate min-h-[520px] w-full overflow-hidden rounded-[2rem] border border-neutral-200 bg-white text-black shadow-2xl dark:border-white/10 dark:bg-black dark:text-white",
         className,
@@ -210,8 +226,8 @@ export function ShootingStarsGrid({
         <div
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute inset-0 -z-30 opacity-85 dark:opacity-60",
-            "[background-image:linear-gradient(to_right,rgba(0,0,0,0.12)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.12)_1px,transparent_1px)]",
+            "pointer-events-none absolute inset-0 -z-30 opacity-70 dark:opacity-60",
+            "[background-image:linear-gradient(to_right,rgba(0,0,0,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,0,0,0.04)_1px,transparent_1px)]",
             "[background-size:var(--shooting-stars-grid-size)_var(--shooting-stars-grid-size)]",
             "dark:[background-image:linear-gradient(to_right,rgba(255,255,255,0.075)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.075)_1px,transparent_1px)]",
           )}
@@ -223,7 +239,7 @@ export function ShootingStarsGrid({
         className="pointer-events-none absolute inset-0 -z-20 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(255,255,255,0.2)_54%,rgba(255,255,255,0.85)_100%)] dark:bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.35)_52%,rgba(0,0,0,0.98)_100%)]"
       />
 
-      {glow && (
+      {glow && mounted && (
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_var(--shooting-stars-glow-x)_var(--shooting-stars-glow-y),rgba(0,0,0,0.1),transparent_36%),radial-gradient(circle_at_72%_72%,rgba(0,0,0,0.06),transparent_32%)] dark:bg-[radial-gradient(circle_at_var(--shooting-stars-glow-x)_var(--shooting-stars-glow-y),rgba(255,255,255,0.12),transparent_36%),radial-gradient(circle_at_72%_72%,rgba(255,255,255,0.06),transparent_32%)]"
@@ -232,8 +248,8 @@ export function ShootingStarsGrid({
         />
       )}
 
-      {showStaticStars && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      {showStaticStars && mounted && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" suppressHydrationWarning>
           {staticStars.map((star, index) => (
             <motion.span
               key={index}
@@ -264,17 +280,19 @@ export function ShootingStarsGrid({
         </div>
       )}
 
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-        {shootingStars.map((star, index) => (
-          <GridRunner
-            key={index}
-            runner={star}
-            index={index}
-            shouldAnimate={shouldAnimate}
-            speedScale={speedScale}
-          />
-        ))}
-      </div>
+      {mounted && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" suppressHydrationWarning>
+          {shootingStars.map((star, index) => (
+            <GridRunner
+              key={index}
+              runner={star}
+              index={index}
+              shouldAnimate={shouldAnimate}
+              speedScale={speedScale}
+            />
+          ))}
+        </div>
+      )}
 
       {children !== undefined ? (
         children ? (

@@ -23,7 +23,7 @@ from pathlib import Path
 
 from app.config import settings
 from app.services.requirement_extractor.pipeline import run_extraction_pipeline
-from backend.rag import (
+from app.rag import (
     QdrantManager,
     RAGRetriever,
     QueryBuilder,

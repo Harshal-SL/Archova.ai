@@ -1,8 +1,9 @@
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, Brain, Mic, ArrowUp } from "lucide-react";
+import { Plus, Brain, Mic, ArrowUp, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { useAppStore } from "@/lib/store";
+import BenchmarkConfigModal from "./BenchmarkConfigModal";
 
 interface PromptInputProps {
   onSend: (text: string) => void;
@@ -19,10 +20,13 @@ export default function PromptInput({
   variant = "bottom",
   onOpenTemplates,
 }: PromptInputProps) {
+  const { benchmarkModelsConfig } = useAppStore();
   const [value, setValue] = useState("");
   const [thinkActive, setThinkActive] = useState(true);
   const [isListening, setIsListening] = useState(false);
+  const [showBenchmarkModal, setShowBenchmarkModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
 
   // Auto-resize textarea height
   useEffect(() => {
@@ -160,21 +164,23 @@ export default function PromptInput({
             <Mic className="h-4 w-4" />
           </button>
 
-          {/* Circular Blue Action Button (Waveform when empty, ArrowUp when text typed) */}
-          <button
+          {/* Circular Blue Action Button with Shimmer Animation */}
+          <ShimmerButton
             type="button"
             onClick={hasValue ? handleSend : handleToggleVoice}
             disabled={disabled}
-            title={hasValue ? "Send (Enter ↵)" : "Start Voice dictation"}
+            borderRadius="9999px"
+            shimmerColor="rgba(255, 255, 255, 0.85)"
+            shimmerDuration="2.5s"
+            background={hasValue && !disabled ? "rgba(37, 99, 235, 1)" : "rgba(16, 104, 235, 1)"}
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 shadow-sm cursor-pointer active:scale-95",
-              hasValue && !disabled
-                ? "bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/30"
-                : "bg-[#1068eb] hover:bg-[#0d60d8] text-white"
+              "flex h-9 w-9 p-0 shrink-0 items-center justify-center rounded-full transition-all duration-200 shadow-md cursor-pointer active:scale-95 border border-white/20",
+              hasValue && !disabled && "shadow-blue-500/30"
             )}
+            title={hasValue ? "Send (Enter ↵)" : "Start Voice dictation"}
           >
             {hasValue ? (
-              <ArrowUp className="h-4 w-4 stroke-[2.5]" />
+              <ArrowUp className="h-4 w-4 stroke-[2.5] text-white" />
             ) : (
               /* Waveform Icon matching Image 2 */
               <svg
@@ -192,9 +198,16 @@ export default function PromptInput({
                 <line x1="18" y1="10" x2="18" y2="14" />
               </svg>
             )}
-          </button>
+          </ShimmerButton>
         </div>
       </div>
+
+      {/* Benchmark Models & API Keys Modal */}
+      <BenchmarkConfigModal
+        isOpen={showBenchmarkModal}
+        onClose={() => setShowBenchmarkModal(false)}
+      />
     </div>
   );
 }
+

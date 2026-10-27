@@ -14,7 +14,7 @@ API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
 
 MODELS = [
-    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "cohere/north-mini-code:free",
     "poolside/laguna-s-2.1:free",
     "nvidia/nemotron-3.5-lightning:free",
     "nvidia/nemotron-3-super-120b-a12b:free",

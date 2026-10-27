@@ -19,8 +19,13 @@ import {
   Workflow,
   Database,
   Cpu,
+  Scale,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { useAppStore } from "@/lib/store";
+import BenchmarkConfigModal from "../BenchmarkConfigModal";
+
 
 interface UseAutoResizeTextareaProps {
   minHeight: number;
@@ -89,7 +94,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={cn(
             "flex min-h-[60px] w-full rounded-md border-0 bg-transparent px-3 py-2 text-sm",
             "transition-all duration-200 ease-in-out",
-            "placeholder:text-neutral-500 text-white",
+            "placeholder:text-neutral-400 dark:placeholder:text-neutral-500 text-neutral-900 dark:text-white",
             "disabled:cursor-not-allowed disabled:opacity-50",
             showRing ? "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" : "",
             className
@@ -102,7 +107,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
         {showRing && isFocused && (
           <motion.span
-            className="absolute inset-0 rounded-xl pointer-events-none ring-2 ring-offset-0 ring-white/10"
+            className="absolute inset-0 rounded-xl pointer-events-none ring-2 ring-offset-0 ring-black/10 dark:ring-white/10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -128,7 +133,11 @@ export function AnimatedAIChat({
   userName = "Harshal",
   className,
 }: AnimatedAIChatProps) {
+  const { theme, benchmarkModelsConfig } = useAppStore();
+  const isDark = theme === "dark";
+
   const [value, setValue] = useState("");
+  const [showBenchmarkModal, setShowBenchmarkModal] = useState(false);
   const [attachments, setAttachments] = useState<string[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [, startTransition] = useTransition();
@@ -153,9 +162,9 @@ export function AnimatedAIChat({
     },
     {
       icon: <Database className="w-4 h-4 text-purple-400" />,
-      label: "Campus Library System",
-      description: "ACID transactions, circulation tracking & automated overdue fines",
-      prefix: "Build a College Library Management System with catalog search, inventory circulation, and automated overdue calculation.",
+      label: "Fintech Payment Engine",
+      description: "ACID transactions, idempotent ledger & fraud detection",
+      prefix: "Build a High-Reliability Fintech Payment Processing Engine with idempotent ledger transactions, fraud detection, and multi-currency settlement.",
     },
     {
       icon: <MonitorIcon className="w-4 h-4 text-emerald-400" />,
@@ -299,7 +308,7 @@ export function AnimatedAIChat({
   return (
     <div
       className={cn(
-        "flex flex-col w-full items-center justify-center bg-black text-white p-4 sm:p-6 relative select-none",
+        "flex flex-col w-full items-center justify-center bg-transparent text-neutral-900 dark:text-white p-4 sm:p-6 relative select-none",
         className
       )}
     >
@@ -333,18 +342,18 @@ export function AnimatedAIChat({
               transition={{ delay: 0.15, duration: 0.4 }}
               className="inline-block"
             >
-              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-white pb-1">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-neutral-900 dark:text-white pb-1">
                 How can I help, {userName}?
               </h1>
               <motion.div
-                className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mx-auto"
+                className="h-px bg-gradient-to-r from-transparent via-neutral-300 dark:via-white/20 to-transparent mx-auto"
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: "100%", opacity: 1 }}
                 transition={{ delay: 0.35, duration: 0.6 }}
               />
             </motion.div>
             <motion.p
-              className="text-xs sm:text-sm text-neutral-400"
+              className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.25 }}
@@ -353,9 +362,9 @@ export function AnimatedAIChat({
             </motion.p>
           </div>
 
-          {/* Main Black Glass Container */}
+          {/* Main Glass Container: white glass in light mode, dark glass in dark mode */}
           <motion.div
-            className="relative backdrop-blur-2xl bg-[#0f0f11]/90 rounded-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all"
+            className="relative backdrop-blur-2xl bg-white/75 dark:bg-[#0f0f11]/90 rounded-2xl border border-neutral-200/80 dark:border-white/[0.08] shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-all"
             initial={{ scale: 0.98 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.1 }}
@@ -365,14 +374,14 @@ export function AnimatedAIChat({
               {showCommandPalette && (
                 <motion.div
                   ref={commandPaletteRef}
-                  className="absolute left-3 right-3 bottom-full mb-2 backdrop-blur-2xl bg-black/95 rounded-xl z-50 shadow-2xl border border-white/10 overflow-hidden"
+                  className="absolute left-3 right-3 bottom-full mb-2 backdrop-blur-2xl bg-white/95 dark:bg-black/95 rounded-xl z-50 shadow-2xl border border-neutral-200 dark:border-white/10 overflow-hidden"
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 5 }}
                   transition={{ duration: 0.15 }}
                 >
-                  <div className="py-1 bg-black/95">
-                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500 border-b border-white/5">
+                  <div className="py-1 bg-white/95 dark:bg-black/95">
+                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-neutral-500 border-b border-neutral-100 dark:border-white/5">
                       Architecture Presets
                     </div>
                     {commandSuggestions.map((suggestion, index) => (
@@ -381,8 +390,8 @@ export function AnimatedAIChat({
                         className={cn(
                           "flex items-center gap-2.5 px-3 py-2 text-xs transition-colors cursor-pointer",
                           activeSuggestion === index
-                            ? "bg-white/10 text-white"
-                            : "text-neutral-300 hover:bg-white/5"
+                            ? "bg-neutral-100 dark:bg-white/10 text-neutral-900 dark:text-white font-semibold"
+                            : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-white/5"
                         )}
                         onClick={() => selectCommandSuggestion(index)}
                         initial={{ opacity: 0 }}
@@ -393,7 +402,7 @@ export function AnimatedAIChat({
                           {suggestion.icon}
                         </div>
                         <div className="font-semibold">{suggestion.label}</div>
-                        <div className="text-neutral-500 text-[11px] ml-auto truncate max-w-[220px]">
+                        <div className="text-neutral-400 dark:text-neutral-500 text-[11px] ml-auto truncate max-w-[220px]">
                           {suggestion.description}
                         </div>
                       </motion.div>
@@ -426,9 +435,9 @@ export function AnimatedAIChat({
                   "resize-none",
                   "bg-transparent",
                   "border-none",
-                  "text-white text-sm sm:text-base leading-relaxed",
+                  "text-neutral-900 dark:text-white text-sm sm:text-base leading-relaxed",
                   "focus:outline-none",
-                  "placeholder:text-neutral-500",
+                  "placeholder:text-neutral-400 dark:placeholder:text-neutral-500",
                   "min-h-[60px]"
                 )}
                 style={{
@@ -450,7 +459,7 @@ export function AnimatedAIChat({
                   {attachments.map((file, index) => (
                     <motion.div
                       key={index}
-                      className="flex items-center gap-2 text-xs bg-white/[0.05] py-1.5 px-3 rounded-lg text-neutral-300 border border-white/5"
+                      className="flex items-center gap-2 text-xs bg-neutral-100 dark:bg-white/[0.05] py-1.5 px-3 rounded-lg text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-white/5"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
@@ -459,7 +468,7 @@ export function AnimatedAIChat({
                       <button
                         type="button"
                         onClick={() => removeAttachment(index)}
-                        className="text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                        className="text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white transition-colors cursor-pointer"
                       >
                         <XIcon className="w-3 h-3" />
                       </button>
@@ -470,7 +479,7 @@ export function AnimatedAIChat({
             </AnimatePresence>
 
             {/* Bottom Actions Bar */}
-            <div className="p-3 sm:p-4 border-t border-white/[0.06] flex items-center justify-between gap-4">
+            <div className="p-3 sm:p-4 border-t border-neutral-200/60 dark:border-white/[0.06] flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 {/* Paperclip / Attach File */}
                 <motion.button
@@ -478,11 +487,11 @@ export function AnimatedAIChat({
                   onClick={handleAttachFile}
                   whileTap={{ scale: 0.94 }}
                   title="Attach requirements spec or architecture doc"
-                  className="p-2 text-neutral-400 hover:text-white rounded-lg transition-colors relative group cursor-pointer"
+                  className="p-2 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white rounded-lg transition-colors relative group cursor-pointer"
                 >
                   <Paperclip className="w-4 h-4" />
                   <motion.span
-                    className="absolute inset-0 bg-white/[0.06] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute inset-0 bg-black/[0.04] dark:bg-white/[0.06] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     layoutId="button-highlight"
                   />
                 </motion.button>
@@ -498,40 +507,63 @@ export function AnimatedAIChat({
                   whileTap={{ scale: 0.94 }}
                   title="Architecture Presets (/)"
                   className={cn(
-                    "p-2 text-neutral-400 hover:text-white rounded-lg transition-colors relative group cursor-pointer",
-                    showCommandPalette && "bg-white/10 text-white"
+                    "p-2 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white rounded-lg transition-colors relative group cursor-pointer",
+                    showCommandPalette && "bg-black/10 text-black dark:bg-white/10 dark:text-white"
                   )}
                 >
                   <Command className="w-4 h-4" />
                   <motion.span
-                    className="absolute inset-0 bg-white/[0.06] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute inset-0 bg-black/[0.04] dark:bg-white/[0.06] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     layoutId="button-highlight"
                   />
                 </motion.button>
+
+                {/* Benchmark LLM Models Toggle Button */}
+                <motion.button
+                  type="button"
+                  onClick={() => setShowBenchmarkModal(true)}
+                  whileTap={{ scale: 0.94 }}
+                  title="Configure Baseline LLM Models & API Keys to Benchmark"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors cursor-pointer"
+                >
+                  <Scale className="w-3.5 h-3.5 text-indigo-500" />
+                  <span className="hidden sm:inline">Compare ({benchmarkModelsConfig.length} LLMs)</span>
+                </motion.button>
               </div>
 
-              {/* Send Button */}
-              <motion.button
+              {/* Send Button with Theme-Adaptive Shimmer Animation */}
+              <ShimmerButton
                 type="button"
                 onClick={handleSendMessage}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 disabled={disabled || isTyping || !value.trim()}
+                borderRadius="12px"
+                shimmerColor={isDark ? "#000000" : "#ffffff"}
+                shimmerDuration="2.5s"
+                shimmerSize="2px"
+                background={isDark ? "#ffffff" : "#000000"}
                 className={cn(
-                  "px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                  "flex items-center gap-2",
+                  "px-4 py-2 text-xs sm:text-sm font-bold transition-all shadow-md",
+                  isDark
+                    ? "text-black border border-neutral-300"
+                    : "text-white border border-neutral-800 shadow-neutral-950/20",
                   value.trim() && !disabled
-                    ? "bg-white text-black hover:bg-neutral-200 shadow-md shadow-white/10"
-                    : "bg-white/[0.06] text-neutral-500 cursor-not-allowed"
+                    ? isDark
+                      ? "cursor-pointer hover:shadow-lg hover:bg-neutral-50 active:scale-[0.98]"
+                      : "cursor-pointer hover:shadow-lg hover:bg-neutral-900 active:scale-[0.98]"
+                    : "opacity-85 cursor-not-allowed"
                 )}
               >
-                {isTyping ? (
-                  <LoaderIcon className="w-4 h-4 animate-spin text-black" />
-                ) : (
-                  <SendIcon className="w-3.5 h-3.5" />
-                )}
-                <span>Synthesize</span>
-              </motion.button>
+                <div className="flex items-center gap-2">
+                  {isTyping ? (
+                    <LoaderIcon className={cn("w-4 h-4 animate-spin shrink-0", isDark ? "text-black" : "text-white")} />
+                  ) : (
+                    <SendIcon className={cn("w-3.5 h-3.5 shrink-0", isDark ? "text-black" : "text-white")} />
+                  )}
+                  <span className={cn("font-extrabold tracking-tight", isDark ? "text-black" : "text-white")}>
+                    Synthesize
+                  </span>
+                </div>
+              </ShimmerButton>
             </div>
           </motion.div>
 
@@ -541,7 +573,7 @@ export function AnimatedAIChat({
               <motion.button
                 key={suggestion.label}
                 onClick={() => selectCommandSuggestion(index)}
-                className="flex items-center gap-2 px-3.5 py-2 bg-neutral-900/90 hover:bg-neutral-800/90 border border-white/[0.06] hover:border-white/20 rounded-xl text-xs sm:text-sm text-neutral-300 hover:text-white transition-all relative group cursor-pointer shadow-xs"
+                className="flex items-center gap-2 px-3.5 py-2 bg-white/80 hover:bg-white dark:bg-neutral-900/90 dark:hover:bg-neutral-800/90 border border-neutral-200/80 hover:border-neutral-300 dark:border-white/[0.06] dark:hover:border-white/20 rounded-xl text-xs sm:text-sm text-neutral-700 hover:text-black dark:text-neutral-300 dark:hover:text-white transition-all relative group cursor-pointer shadow-xs backdrop-blur-sm"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08 }}
@@ -558,16 +590,16 @@ export function AnimatedAIChat({
       <AnimatePresence>
         {isTyping && (
           <motion.div
-            className="fixed bottom-8 mx-auto transform backdrop-blur-2xl bg-black/90 rounded-full px-4 py-2 shadow-2xl border border-white/10 z-50"
+            className="fixed bottom-8 mx-auto transform backdrop-blur-2xl bg-white/90 dark:bg-black/90 rounded-full px-4 py-2 shadow-2xl border border-neutral-200 dark:border-white/10 z-50"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-center">
-                <span className="text-[11px] font-bold text-white">AI</span>
+              <div className="w-7 h-7 rounded-full bg-neutral-100 dark:bg-white/10 flex items-center justify-center text-center">
+                <span className="text-[11px] font-bold text-neutral-900 dark:text-white">AI</span>
               </div>
-              <div className="flex items-center gap-2 text-xs font-semibold text-neutral-200">
+              <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                 <span>Analyzing requirements</span>
                 <TypingDots />
               </div>
@@ -592,6 +624,12 @@ export function AnimatedAIChat({
           }}
         />
       )}
+
+      {/* Benchmark Models & API Keys Configuration Modal */}
+      <BenchmarkConfigModal
+        isOpen={showBenchmarkModal}
+        onClose={() => setShowBenchmarkModal(false)}
+      />
     </div>
   );
 }
@@ -602,7 +640,7 @@ function TypingDots() {
       {[1, 2, 3].map((dot) => (
         <motion.div
           key={dot}
-          className="w-1.5 h-1.5 bg-white rounded-full mx-0.5"
+          className="w-1.5 h-1.5 bg-neutral-800 dark:bg-white rounded-full mx-0.5"
           initial={{ opacity: 0.3 }}
           animate={{
             opacity: [0.3, 0.9, 0.3],
@@ -615,7 +653,7 @@ function TypingDots() {
             ease: "easeInOut",
           }}
           style={{
-            boxShadow: "0 0 4px rgba(255, 255, 255, 0.4)",
+            boxShadow: "0 0 4px rgba(120, 120, 120, 0.4)",
           }}
         />
       ))}

@@ -14,11 +14,11 @@
   --primary-btn-fg: #ffffff;
   --primary-btn-hover: #262626;
   --muted-text: #666666;
-  --grid-line: rgba(0, 0, 0, 0.08);
-  --shooting-star-head: rgba(0, 0, 0, 0.22);
-  --shooting-star-body: rgba(0, 0, 0, 0.85);
+  --grid-line: rgba(0, 0, 0, 0.04);
+  --shooting-star-head: rgba(0, 0, 0, 0.55);
+  --shooting-star-body: rgba(0, 0, 0, 0.95);
   --shooting-star-core: #000000;
-  --shooting-star-shadow: 0 0 16px rgba(0, 0, 0, 0.35), 0 0 28px rgba(0, 0, 0, 0.18);
+  --shooting-star-shadow: 0 0 6px rgba(0, 0, 0, 0.7), 0 0 14px rgba(0, 0, 0, 0.35);
 }
 
 .dark {
@@ -44,6 +44,30 @@
   --font-sans: 'Manrope', var(--font-manrope), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-heading: 'Manrope', var(--font-manrope), sans-serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
+
+  --animate-shimmer-slide: shimmer-slide var(--speed, 3s) ease-in-out infinite alternate;
+  --animate-spin-around: spin-around calc(var(--speed, 3s) * 2) infinite linear;
+
+  @keyframes shimmer-slide {
+    to {
+      transform: translate(calc(100cqw - 100%), 0);
+    }
+  }
+
+  @keyframes spin-around {
+    0% {
+      transform: translateZ(0) rotate(0deg);
+    }
+
+    100% {
+      transform: translateZ(0) rotate(360deg);
+    }
+  }
+}
+
+html[data-scroll-behavior="smooth"],
+html {
+  scroll-behavior: smooth;
 }
 
 /* ── Universal Manrope Font Enforcement ── */
@@ -101,7 +125,7 @@ pre,
 /* Monochrome Tech Grid Pattern */
 .bg-grid-pattern {
   background-size: 32px 32px;
-  background-image: 
+  background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
 }
@@ -143,19 +167,24 @@ pre,
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.2);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.4);
 }
+
 .dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
+
 .dark ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.4);
 }
@@ -177,11 +206,13 @@ pre,
   opacity: 0.9;
   transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s;
 }
+
 .react-flow__node:hover .react-flow__handle {
   opacity: 1;
   transform: scale(1.35);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
+
 .dark .react-flow__node:hover .react-flow__handle {
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
 }
@@ -211,6 +242,7 @@ nextjs-portal,
       0 0 3px 1.2px rgba(56, 189, 248, 0.35),
       0 0 6px 1.8px rgba(0, 93, 255, 0.25);
   }
+
   50% {
     transform: rotate(270deg);
     box-shadow:
@@ -220,6 +252,7 @@ nextjs-portal,
       0 0 3px 1.2px rgba(56, 189, 248, 0.35),
       0 0 6px 1.8px rgba(0, 93, 255, 0.25);
   }
+
   100% {
     transform: rotate(450deg);
     box-shadow:
@@ -232,15 +265,18 @@ nextjs-portal,
 }
 
 @keyframes loaderLetter {
+
   0%,
   100% {
     opacity: 0.35;
     transform: translateY(0);
   }
+
   20% {
     opacity: 1;
     transform: scale(1.15);
   }
+
   40% {
     opacity: 0.7;
     transform: translateY(0);
@@ -256,16 +292,48 @@ nextjs-portal,
 }
 
 @keyframes ripple {
-  0% { transform: scale(0.5); opacity: 0.6; }
-  100% { transform: scale(2); opacity: 0; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
 }
 
 @keyframes dashFlow {
   from {
     stroke-dashoffset: 48;
   }
+
   to {
     stroke-dashoffset: 0;
   }
 }
 
+/* ── Shimmer Button Magic Animations ── */
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+
+@keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0deg);
+  }
+
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+.animate-shimmer-slide {
+  animation: shimmer-slide var(--speed, 3s) ease-in-out infinite alternate !important;
+}
+
+.animate-spin-around {
+  animation: spin-around calc(var(--speed, 3s) * 2) infinite linear !important;
+}

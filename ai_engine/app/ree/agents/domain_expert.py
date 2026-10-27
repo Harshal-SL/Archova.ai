@@ -161,7 +161,7 @@ class DomainExpertAgent(BaseAIAgent):
             existing_context=existing_summary,
         )
 
-        result = self._call_llm(prompt, max_tokens=1000, temperature=0.1)
+        result = self._call_llm(prompt, max_tokens=1500, temperature=0.1)
 
         if result is None:
             self._add_note(

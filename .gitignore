@@ -51,3 +51,7 @@ ai_engine/venv/
 ai_engine/.chroma/
 ai_engine/pipeline_smoke_report.json
 ai_engine/random_design_test_output.json
+.agents/
+.vscode/
+prompt.txt
+skills-lock.json

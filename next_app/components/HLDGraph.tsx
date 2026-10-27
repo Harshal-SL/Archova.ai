@@ -10,6 +10,8 @@ import {
   useEdgesState,
   type NodeMouseHandler,
   type Node,
+  type Edge,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import {
   Search,
@@ -25,14 +27,18 @@ import {
   Globe,
   Radio,
   ChevronDown,
+  Sparkles,
+  ArrowDownUp,
+  GitFork,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
+import Select, { type TSelectData } from "@/components/ui/select";
 import { architectureNodeTypes } from "./flow/ArchitectureNodes";
 import { architectureEdgeTypes } from "./flow/AnimatedFlowEdge";
 import { getEdgeTheme, getComponentTheme } from "@/lib/flow-colors";
-import { parseHldToReactFlow } from "@/lib/graph-parser";
-import { dummyHldData } from "@/lib/mock-data";
+import { parseHldToReactFlow, layoutHldLeftToRight, layoutHldTopDown } from "@/lib/graph-parser";
+import ModelDesignControls from "./ModelDesignControls";
 
 export function getComponentLldType(
   node: Node | null | undefined
@@ -55,7 +61,8 @@ export function getComponentLldType(
     label.includes("web app") ||
     label.includes("next.js") ||
     label.includes("react") ||
-    label.includes("student") ||
+    label.includes("user") ||
+    label.includes("client") ||
     label.includes("admin") ||
     label.includes("gateway")
   ) {
@@ -122,6 +129,7 @@ interface HLDGraphProps {
 
 export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
   const {
+    hldData,
     hldNodes: dynamicNodes,
     hldEdges: dynamicEdges,
     setSelectedNode,
@@ -129,18 +137,40 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
     setActiveLldType,
     jumpToLld,
     openExplain,
+    openTechRationale,
     theme,
+    layoutDirection,
+    setLayoutDirection,
+    activeModelId,
   } = useAppStore();
 
+  const isArchova = !activeModelId || activeModelId === "archova";
   const isDark = theme === "dark";
+  const rfInstanceRef = useRef<any>(null);
 
-  // Use dynamicNodes or fallback to parsed dummyHldData
+  // Defensive sanitizer: guarantees React Flow nodes always have valid position: { x, y }
+  const sanitizeNodes = useCallback((nodeList: Node[]): Node[] => {
+    if (!Array.isArray(nodeList)) return [];
+    return nodeList.map((n, idx) => {
+      const raw = n as any;
+      const posX = typeof n?.position?.x === "number" ? n.position.x : (typeof raw.x === "number" ? raw.x : 200 + (idx % 4) * 360);
+      const posY = typeof n?.position?.y === "number" ? n.position.y : (typeof raw.y === "number" ? raw.y : 120 + Math.floor(idx / 4) * 220);
+      return {
+        ...n,
+        id: String(n.id || `node-${idx}`),
+        position: { x: posX, y: posY },
+        data: n.data || { label: raw.label || raw.name || n.id || `Component ${idx + 1}` },
+      };
+    });
+  }, []);
+
+  // Use dynamicNodes or empty graph
   const initialData = useMemo(() => {
     if (dynamicNodes && dynamicNodes.length > 0) {
-      return { nodes: dynamicNodes, edges: dynamicEdges || [] };
+      return { nodes: sanitizeNodes(dynamicNodes), edges: dynamicEdges || [] };
     }
-    return parseHldToReactFlow(dummyHldData);
-  }, [dynamicNodes, dynamicEdges]);
+    return { nodes: [], edges: [] };
+  }, [dynamicNodes, dynamicEdges, sanitizeNodes]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData.nodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialData.edges);
@@ -154,47 +184,58 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
   const [selectedLayer, setSelectedLayer] = useState<string>("all");
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [divisionDropdownOpen, setDivisionDropdownOpen] = useState(false);
-  const divisionDropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        divisionDropdownRef.current &&
-        !divisionDropdownRef.current.contains(e.target as unknown as HTMLElement)
-      ) {
-        setDivisionDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const divisionOptions = useMemo(
+  const divisionSelectData: TSelectData[] = useMemo(
     () => [
-      { id: "all", label: "All Divisions", count: 16 },
-      { id: "frontend", label: "Frontend", count: 4 },
-      { id: "backend", label: "Backend", count: 7 },
-      { id: "database", label: "Database", count: 2 },
-      { id: "deployment", label: "Deployment", count: 3 },
+      { id: "all", label: "All Divisions (16)", value: "all", description: "Show complete multi-tier system topology", icon: "🌐" },
+      { id: "frontend", label: "Frontend (4)", value: "frontend", description: "Client interfaces, mobile, and API gateway", icon: "💻" },
+      { id: "backend", label: "Backend (7)", value: "backend", description: "Microservices, async workers, and message buses", icon: "⚙️" },
+      { id: "database", label: "Database (2)", value: "database", description: "Primary datastores, replicas, and caching layers", icon: "🗄️" },
+      { id: "deployment", label: "Deployment (3)", value: "deployment", description: "Cloud infrastructure, CDN, and telemetry", icon: "🚀" },
     ],
     []
   );
 
-  const activeDivision =
-    divisionOptions.find((d) => d.id === selectedLayer) || divisionOptions[0];
-
-  // Sync state when dynamic nodes/edges from backend are updated
+  // Sync state when dynamic nodes/edges from backend or layoutDirection are updated
   useEffect(() => {
-    if (dynamicNodes && dynamicNodes.length > 0) {
-      setNodes(dynamicNodes);
-      setEdges(dynamicEdges || []);
+    if (hldData) {
+      const parsed = parseHldToReactFlow(hldData, undefined, layoutDirection);
+      setNodes(sanitizeNodes(parsed.nodes));
+      setEdges(parsed.edges || []);
+    } else if (dynamicNodes && dynamicNodes.length > 0) {
+      const parsed =
+        layoutDirection === "LR"
+          ? layoutHldLeftToRight(dynamicNodes as any, dynamicEdges as any)
+          : layoutHldTopDown(dynamicNodes as any, dynamicEdges as any);
+      setNodes(sanitizeNodes(parsed.nodes));
+      setEdges(parsed.edges || []);
     } else {
-      const fallback = parseHldToReactFlow(dummyHldData);
-      setNodes(fallback.nodes);
-      setEdges(fallback.edges);
+      setNodes([]);
+      setEdges([]);
     }
-  }, [dynamicNodes, dynamicEdges, setNodes, setEdges]);
+  }, [hldData, dynamicNodes, dynamicEdges, layoutDirection, setNodes, setEdges, sanitizeNodes]);
+
+  const handleLayoutDirectionChange = useCallback(
+    (dir: "TB" | "LR") => {
+      setLayoutDirection(dir);
+      if (hldData) {
+        const parsed = parseHldToReactFlow(hldData, undefined, dir);
+        setNodes(sanitizeNodes(parsed.nodes));
+        setEdges(parsed.edges);
+      } else if (dynamicNodes && dynamicNodes.length > 0) {
+        const parsed =
+          dir === "LR"
+            ? layoutHldLeftToRight(dynamicNodes as any, dynamicEdges as any)
+            : layoutHldTopDown(dynamicNodes as any, dynamicEdges as any);
+        setNodes(sanitizeNodes(parsed.nodes));
+        setEdges(parsed.edges);
+      }
+      setTimeout(() => {
+        rfInstanceRef.current?.fitView({ duration: 500, padding: 0.18 });
+      }, 50);
+    },
+    [hldData, dynamicNodes, dynamicEdges, setLayoutDirection, setNodes, setEdges, sanitizeNodes]
+  );
 
   // Jump to corresponding LLD tab
   const handleJumpToLld = useCallback(
@@ -350,6 +391,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
         data: {
           ...((e.data || {}) as Record<string, unknown>),
           strokeColor,
+          animated: animationsEnabled,
         },
         style: {
           ...e.style,
@@ -369,106 +411,66 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
     <div className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}>
       {/* ── Top Floating Control Panel Monochrome ── */}
       {/* ── Top-Right Floating Controls (Positioned Below Home Button) ── */}
-      <div className="absolute top-3.5 right-4 z-20 flex items-center gap-2 pointer-events-none">
-        {/* Architecture Division Dropdown */}
-        <div ref={divisionDropdownRef} className="relative pointer-events-auto">
-          <button
-            type="button"
-            onClick={() => setDivisionDropdownOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-xl border border-neutral-300 bg-white/95 px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white cursor-pointer transition-all"
-            title="Filter by architecture division"
-          >
-            <Layers className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
-            <span>{activeDivision.label}</span>
-            <span className="rounded-full bg-neutral-200 px-1.5 py-0.2 text-[9px] font-mono text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
-              {activeDivision.count}
-            </span>
-            <ChevronDown
-              className={cn(
-                "h-3.5 w-3.5 text-neutral-400 transition-transform duration-200",
-                divisionDropdownOpen && "rotate-180"
-              )}
+      <div className="absolute top-3.5 right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
+        <div className="flex items-center gap-2">
+          {/* Architecture Division Dropdown */}
+          <div className="pointer-events-auto">
+            <Select
+              id="hld-division-select"
+              title="Filter Architecture Division"
+              value={selectedLayer}
+              onChange={(val) => setSelectedLayer(val)}
+              data={divisionSelectData}
             />
+          </div>
+
+          {/* Search / Filter Input */}
+          <div className="relative flex items-center pointer-events-auto">
+            <Search className="absolute left-2.5 h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
+            <input
+              type="text"
+              placeholder="Filter components..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 w-44 rounded-xl border border-neutral-300 bg-white/95 pl-8 pr-3 text-xs text-black placeholder:text-neutral-400 backdrop-blur-md focus:border-black focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-white shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
+          {/* Flow Animation Toggle */}
+          <button
+            onClick={() => setAnimationsEnabled(!animationsEnabled)}
+            className={`pointer-events-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 cursor-pointer shadow-2xs ${animationsEnabled
+              ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
+              : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
+              }`}
+            title="Toggle data flow animation"
+          >
+            <Zap className="h-3.5 w-3.5" />
+            <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
           </button>
 
-          {divisionDropdownOpen && (
-            <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl border border-neutral-200 bg-white/98 p-1.5 shadow-xl backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/98 z-50 animate-in fade-in zoom-in-95 duration-100">
-              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                Filter Divisions
-              </div>
-              {divisionOptions.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedLayer(tab.id);
-                    setDivisionDropdownOpen(false);
-                  }}
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors cursor-pointer",
-                    selectedLayer === tab.id
-                      ? "bg-black text-white dark:bg-white dark:text-black font-bold shadow-xs"
-                      : "text-neutral-700 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white"
-                  )}
-                >
-                  <span>{tab.label}</span>
-                  <span
-                    className={cn(
-                      "rounded-full px-1.5 py-0.2 text-[9px] font-mono",
-                      selectedLayer === tab.id
-                        ? "bg-white/20 text-white dark:bg-black/20 dark:text-black"
-                        : "bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
-                    )}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-2xs cursor-pointer transition-colors"
+            title="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
         </div>
 
-        {/* Search / Filter Input */}
-        <div className="relative flex items-center pointer-events-auto">
-          <Search className="absolute left-2.5 h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
-          <input
-            type="text"
-            placeholder="Filter components..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-8 w-44 rounded-xl border border-neutral-300 bg-white/95 pl-8 pr-3 text-xs text-black placeholder:text-neutral-400 backdrop-blur-md focus:border-black focus:outline-none dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-white dark:placeholder:text-neutral-500 dark:focus:border-white shadow-2xs"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-2 text-neutral-400 hover:text-black dark:hover:text-white cursor-pointer"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          )}
+        {/* ── Right-Top Controls Directly Below Flow: Active Button (Requirement 2 & 3) ── */}
+        <div className="flex items-center gap-2 pointer-events-auto">
+          <ModelDesignControls />
         </div>
-
-        {/* Flow Animation Toggle */}
-        <button
-          onClick={() => setAnimationsEnabled(!animationsEnabled)}
-          className={`pointer-events-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 cursor-pointer shadow-2xs ${animationsEnabled
-            ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
-            : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
-            }`}
-          title="Toggle data flow animation"
-        >
-          <Zap className="h-3.5 w-3.5" />
-          <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
-        </button>
-
-        {/* Fullscreen Toggle */}
-        <button
-          onClick={() => setIsFullscreen(!isFullscreen)}
-          className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-2xs cursor-pointer transition-colors"
-          title="Toggle Fullscreen"
-        >
-          {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-        </button>
       </div>
 
       {/* ── React Flow Interactive Canvas or Empty State ── */}
@@ -484,6 +486,9 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
         </div>
       ) : (
         <ReactFlow
+          onInit={(inst) => {
+            rfInstanceRef.current = inst;
+          }}
           nodes={displayNodes}
           edges={displayEdges}
           nodeTypes={architectureNodeTypes}
@@ -626,12 +631,36 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
 
           {/* Drawer Footer Actions */}
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
+            {/* Action 1: Why This Tech? (In-detail Rationale & Alternatives) — ONLY visible for AI_engine */}
+            {isArchova ? (
+              <button
+                onClick={() => {
+                  openTechRationale({
+                    id: selectedNodeData.id,
+                    type: selectedNodeData.type,
+                    ...((selectedNodeData.data || {}) as Record<string, unknown>),
+                  });
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 text-xs font-bold text-white transition-all hover:from-blue-500 hover:to-indigo-500 cursor-pointer shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
+                <span>Why This Tech? (In-detail & Alternatives)</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-50/70 p-2.5 text-[11px] text-amber-900 dark:border-amber-500/20 dark:bg-amber-950/25 dark:text-amber-200">
+                <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span>
+                  <strong>Note:</strong> In-detail rationale & trade-offs are available exclusively for <strong>Archova AI Engine</strong> designs.
+                </span>
+              </div>
+            )}
+
             <button
               onClick={() => {
                 const targetLld = getComponentLldType(selectedNodeData);
                 handleJumpToLld(targetLld);
               }}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-black py-2.5 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl bg-black py-2 text-xs font-semibold text-white transition-all hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 cursor-pointer shadow-sm"
             >
               <span>Explore {getComponentLldType(selectedNodeData).toUpperCase()} LLD Blueprint</span>
               <ArrowRight className="h-3.5 w-3.5" />

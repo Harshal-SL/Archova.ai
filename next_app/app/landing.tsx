@@ -22,10 +22,15 @@ import {
   MessageSquare,
   ChevronRight,
   Check,
+  Lightbulb,
+  AlertTriangle,
+  Target,
+  Workflow,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import BubbleBg from "@/components/BubbleBg";
 import { AnimatedContainer } from "@/components/ui/footer-section";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 const lldBadges = [
   { name: "Backend LLD", icon: Server },
@@ -35,12 +40,6 @@ const lldBadges = [
   { name: "Cloud LLD", icon: Cloud },
 ];
 
-const metrics = [
-  { value: "10x", label: "Faster RFC Velocity", detail: "From weeks of whiteboard debate to minutes of deterministic synthesis" },
-  { value: "5", label: "Parallel LLD Engines", detail: "Concurrent generation across Backend, Frontend, DB, Security & Cloud" },
-  { value: "100%", label: "Deterministic Graph", detail: "Visual React Flow topology with protocol-level edge verification" },
-  { value: "ISO/IEEE", label: "Formal Spec Format", detail: "Standardized ARSRS documents ready for security and enterprise audits" },
-];
 
 const services = [
   {
@@ -265,7 +264,6 @@ function PushPin({ color = "#f97316" }: { color?: string }) {
 
 export default function LandingPage() {
   const router = useRouter();
-  const [activePreviewTab, setActivePreviewTab] = useState<"topology" | "terminal" | "arsrs">("topology");
 
   const handleLoadTemplate = () => {
     useAppStore.getState().loadDemoData();
@@ -284,193 +282,86 @@ export default function LandingPage() {
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
         <section id="home" className="relative pt-24 pb-20 md:pt-36 md:pb-28 overflow-hidden">
           <div className="mx-auto max-w-6xl px-4 text-center">
-            {/* Announcement Pill */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 py-1.5 text-xs font-semibold text-neutral-800 backdrop-blur-md transition-all hover:border-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white shadow-xs mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black dark:bg-white opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-black dark:bg-white" />
-              </span>
-              <span>ArchAI 2.5 • Autonomous Multi-Agent Systems Engineering</span>
-              <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
-            </div>
+            <AnimatedContainer delay={0.1}>
+              {/* Announcement Pill */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-4 py-1.5 text-xs font-semibold text-neutral-800 backdrop-blur-md transition-all hover:border-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white shadow-xs mb-8">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black dark:bg-white opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-black dark:bg-white" />
+                </span>
+                <span>ArchAI 2.5 • Autonomous Multi-Agent Systems Engineering</span>
+                <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
+              </div>
 
-            {/* Bold Monochrome Headline */}
-            <h1 className="font-heading max-w-5xl mx-auto text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl md:text-7xl">
-              Architect Enterprise Systems in{" "}
-              <span className="bg-gradient-to-r from-black via-neutral-700 to-neutral-500 dark:from-white dark:via-neutral-200 dark:to-neutral-400 bg-clip-text text-transparent">
-                Seconds, Not Sprints
-              </span>
-            </h1>
+              {/* Bold Monochrome Headline */}
+              <h1 className="font-heading max-w-5xl mx-auto text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl md:text-7xl">
+                Architect Enterprise Systems in{" "}
+                <span className="bg-gradient-to-r from-black via-neutral-700 to-neutral-500 dark:from-white dark:via-neutral-200 dark:to-neutral-400 bg-clip-text text-transparent">
+                  Seconds, Not Sprints
+                </span>
+              </h1>
 
-            {/* Subtitle */}
-            <p className="mt-7 max-w-3xl mx-auto text-base sm:text-xl leading-relaxed text-neutral-600 dark:text-neutral-400">
-              Transform high-level problem statements into formal IEEE/ISO-compliant ARSRS specifications,
-              interactive zoomable High-Level Design (HLD) topologies, and 5 parallel Low-Level Designs.
-            </p>
+              {/* Subtitle */}
+              <p className="mt-7 max-w-3xl mx-auto text-base sm:text-xl leading-relaxed text-neutral-600 dark:text-neutral-400">
+                Transform high-level problem statements into formal IEEE/ISO-compliant ARSRS specifications,
+                interactive zoomable High-Level Design (HLD) topologies, and 5 parallel Low-Level Designs.
+              </p>
+            </AnimatedContainer>
 
             {/* 5 LLD Domain Badges in Monochrome Aesthetic */}
-            <div className="mt-8 flex flex-wrap justify-center gap-2.5">
-              {lldBadges.map(({ name, icon: Icon }, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-800 shadow-xs backdrop-blur-sm transition-all duration-200 hover:border-black hover:text-black dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white hover:-translate-y-0.5"
-                >
-                  <Icon className="h-3.5 w-3.5 text-neutral-700 dark:text-neutral-300" />
-                  <span>{name}</span>
-                </div>
-              ))}
-            </div>
+            <AnimatedContainer delay={0.25}>
+              <div className="mt-8 flex flex-wrap justify-center gap-2.5">
+                {lldBadges.map(({ name, icon: Icon }, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-800 shadow-xs backdrop-blur-sm transition-all duration-200 hover:border-black hover:text-black dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white hover:-translate-y-0.5"
+                  >
+                    <Icon className="h-3.5 w-3.5 text-neutral-700 dark:text-neutral-300" />
+                    <span>{name}</span>
+                  </div>
+                ))}
+              </div>
+            </AnimatedContainer>
 
             {/* Hero CTAs */}
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                href="/chat"
-                className="group flex items-center gap-2.5 rounded-full bg-black text-white dark:bg-white dark:text-black px-8 py-4 text-sm font-bold shadow-lg transition-all duration-200 hover:bg-neutral-800 dark:hover:bg-neutral-200 hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <span>Launch Architecture Studio</span>
-                <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
-              <button
-                type="button"
-                onClick={handleLoadTemplate}
-                className="group flex items-center gap-2.5 rounded-full border border-blue-500/40 bg-blue-50/90 px-7 py-4 text-sm font-bold text-blue-700 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-blue-100 hover:border-blue-600 dark:border-blue-400/30 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60 dark:hover:border-blue-400 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-              >
-                <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400 transition-transform duration-200 group-hover:scale-110" />
-                <span>Load Basic HLD & LLD Template</span>
-              </button>
-              <a
-                href="#services"
-                className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-7 py-4 text-sm font-bold text-neutral-800 backdrop-blur-sm transition-all duration-200 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
-              >
-                <span>Explore Capabilities</span>
-              </a>
-            </div>
-
-            {/* Monochrome Code / Architecture Simulator Preview Window */}
-            <div className="mt-16 mx-auto max-w-5xl rounded-2xl border border-neutral-300 bg-white/90 p-2 shadow-xl dark:border-neutral-800 dark:bg-[#0a0a0a]/90 backdrop-blur-xl">
-              {/* Window Header */}
-              <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 px-4 py-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-neutral-300 dark:bg-neutral-700" />
-                  <span className="ml-2 font-mono text-xs text-neutral-500">
-                    archai-engine://runtime-v2.5
-                  </span>
-                </div>
-
-                {/* Tab Switcher */}
-                <div className="flex items-center gap-1 rounded-lg bg-neutral-100 dark:bg-neutral-900 p-1 text-xs font-semibold">
-                  <button
-                    onClick={() => setActivePreviewTab("topology")}
-                    className={`rounded-md px-3 py-1 transition-all ${activePreviewTab === "topology"
-                        ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
-                      }`}
+            <AnimatedContainer delay={0.35}>
+              <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Link href="/chat">
+                  <ShimmerButton
+                    shimmerColor="rgba(255, 255, 255, 0.9)"
+                    shimmerDuration="2.5s"
+                    borderRadius="9999px"
+                    background="rgba(10, 10, 15, 0.95)"
+                    className="px-8 py-4 text-sm font-bold shadow-xl border border-white/20 hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    HLD Topology Map
-                  </button>
-                  <button
-                    onClick={() => setActivePreviewTab("terminal")}
-                    className={`rounded-md px-3 py-1 transition-all ${activePreviewTab === "terminal"
-                        ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
-                      }`}
-                  >
-                    SSE Execution Log
-                  </button>
-                  <button
-                    onClick={() => setActivePreviewTab("arsrs")}
-                    className={`rounded-md px-3 py-1 transition-all ${activePreviewTab === "arsrs"
-                        ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
-                        : "text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white"
-                      }`}
-                  >
-                    ARSRS Spec
-                  </button>
-                </div>
-              </div>
-
-              {/* Window Content */}
-              <div className="p-6 text-left font-mono text-xs overflow-x-auto min-h-[260px] flex items-center justify-center">
-                {activePreviewTab === "topology" && (
-                  <div className="w-full space-y-4">
-                    <div className="flex items-center justify-between text-neutral-900 dark:text-white border-b border-neutral-200 dark:border-neutral-800 pb-2">
-                      <span className="font-bold flex items-center gap-2">
-                        <Network className="h-4 w-4" /> Live Multi-Tier Graph Topology
-                      </span>
-                      <span className="text-[11px] bg-neutral-100 dark:bg-neutral-900 px-2 py-0.5 rounded text-neutral-700 dark:text-neutral-300 border border-neutral-300 dark:border-neutral-700">
-                        14 Verified Nodes • 19 Edges
-                      </span>
+                    <div className="flex items-center gap-2.5 text-white">
+                      <span>Launch Architecture Studio</span>
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-center">
-                      <div className="rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">Client Tier</p>
-                        <p className="mt-1 font-bold text-neutral-900 dark:text-white">Next.js Web + Mobile</p>
-                        <span className="inline-block mt-2 text-[10px] text-neutral-500">HTTPS / WebSocket</span>
-                      </div>
-                      <div className="rounded-xl border border-black dark:border-white bg-neutral-100 dark:bg-neutral-800/80 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-neutral-700 dark:text-neutral-300 font-bold">API Gateway</p>
-                        <p className="mt-1 font-bold text-neutral-900 dark:text-white">Kong Gateway + OIDC</p>
-                        <span className="inline-block mt-2 text-[10px] text-neutral-500">Rate Limit / JWT Auth</span>
-                      </div>
-                      <div className="rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">Microservices</p>
-                        <p className="mt-1 font-bold text-neutral-900 dark:text-white">Auth, Event & Queue</p>
-                        <span className="inline-block mt-2 text-[10px] text-neutral-500">gRPC & Kafka Broker</span>
-                      </div>
-                      <div className="rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-neutral-500 font-bold">Persistence</p>
-                        <p className="mt-1 font-bold text-neutral-900 dark:text-white">PostgreSQL + Redis</p>
-                        <span className="inline-block mt-2 text-[10px] text-neutral-500">Read Replicas / Cache</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activePreviewTab === "terminal" && (
-                  <div className="w-full space-y-1.5 text-neutral-700 dark:text-neutral-300">
-                    <p className="font-bold text-black dark:text-white">[00:00:01] ⚡ [CLIENT] Problem statement ingested: "High-throughput real-time event analytics"</p>
-                    <p>[00:00:02] 🧠 [REE Engine] Launching stakeholder clarification interview (5 questions initialized)</p>
-                    <p className="text-neutral-500 dark:text-neutral-400">[00:00:04] ✓ [REE Engine] Clarifications resolved: SLA 99.99%, RTO 15m, 25k QPS peak</p>
-                    <p className="font-bold text-black dark:text-white">[00:00:05] 🚀 [SAE Engine] Synthesizing ARSRS specification and generating HLD topology...</p>
-                    <p>[00:00:07] ✓ [SAE Engine] ARSRS spec completed & HLD graph compiled (14 nodes, 19 edges)</p>
-                    <p className="text-neutral-500 dark:text-neutral-400">[00:00:08] ⚡ [LLD Dispatcher] Spawning 5 parallel design generators (Backend, Frontend, DB, Security, Cloud)</p>
-                  </div>
-                )}
-
-                {activePreviewTab === "arsrs" && (
-                  <div className="w-full space-y-2 text-neutral-800 dark:text-neutral-200">
-                    <p className="font-bold text-black dark:text-white"># ARCHITECTURE-READY STRUCTURED REQUIREMENTS SPECIFICATION</p>
-                    <p className="text-neutral-500">// Standard: ISO/IEC/IEEE 29148:2018 | Verification: SAE v2.5</p>
-                    <p><span className="font-bold text-black dark:text-white">SYSTEM_TARGET:</span> Distributed Event-Driven Architecture</p>
-                    <p><span className="font-bold text-black dark:text-white">AVAILABILITY:</span> Multi-AZ active-passive with automatic health failover</p>
-                    <p><span className="font-bold text-black dark:text-white">THROUGHPUT:</span> 25,000 sustained queries/sec with sub-50ms p99 latency</p>
-                    <p><span className="font-bold text-black dark:text-white">SECURITY:</span> Zero Trust perimeter, mutual TLS (mTLS) service-to-service, OAuth2/OIDC</p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Metrics Bar */}
-            <div className="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {metrics.map((m, idx) => (
-                <div
-                  key={idx}
-                  className="monochrome-card rounded-2xl p-6 text-left backdrop-blur-md"
+                  </ShimmerButton>
+                </Link>
+                <ShimmerButton
+                  type="button"
+                  onClick={handleLoadTemplate}
+                  shimmerColor="rgba(59, 130, 246, 0.85)"
+                  shimmerDuration="3s"
+                  borderRadius="9999px"
+                  background="rgba(15, 23, 42, 0.85)"
+                  className="px-7 py-4 text-sm font-bold text-blue-300 border border-blue-500/30 shadow-md backdrop-blur-sm hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  <div className="text-3xl font-extrabold text-black dark:text-white font-heading">
-                    {m.value}
+                  <div className="flex items-center gap-2.5">
+                    <Layers className="h-4 w-4 text-blue-400 transition-transform duration-200 group-hover:scale-110" />
+                    <span>Load Basic HLD & LLD Template</span>
                   </div>
-                  <div className="mt-1 text-sm font-bold text-neutral-900 dark:text-white font-heading">
-                    {m.label}
-                  </div>
-                  <div className="mt-2 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-                    {m.detail}
-                  </div>
-                </div>
-              ))}
-            </div>
+                </ShimmerButton>
+                <a
+                  href="#services"
+                  className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-7 py-4 text-sm font-bold text-neutral-800 backdrop-blur-sm transition-all duration-200 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
+                >
+                  <span>Explore Capabilities</span>
+                </a>
+              </div>
+            </AnimatedContainer>
           </div>
         </section>
 
@@ -479,122 +370,260 @@ export default function LandingPage() {
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
         <section id="about" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3">
-                <Layers className="h-3.5 w-3.5" />
-                <span>About ArchAI</span>
+            <AnimatedContainer delay={0.1}>
+              <div className="text-center mb-16">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3 shadow-xs">
+                  <Sparkles className="h-3.5 w-3.5 text-neutral-800 dark:text-neutral-200" />
+                  <span>About ArchAI • Project, Idea & Solution</span>
+                </div>
+                <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
+                  Transforming Architecture from Art to Science
+                </h2>
+                <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
+                  Modern distributed systems are too complex for whiteboard guesswork. Discover the idea behind ArchAI, the crisis it addresses, and how our autonomous multi-agent platform delivers production-ready systems engineering.
+                </p>
               </div>
-              <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
-                The End of Architecture Paralysis
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-                Engineering teams spend weeks trapped in whiteboard meetings, debating ambiguous RFCs, and maintaining stale diagrams. ArchAI replaces subjective guesswork with formal multi-agent synthesis.
-              </p>
+            </AnimatedContainer>
+
+            {/* ── 3 Redesigned Narrative Cards: Idea/Problem, Project, Solution ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+              {/* CARD 1: THE IDEA & THE PROBLEM */}
+              <AnimatedContainer delay={0.15} className="h-full">
+                <div className="relative group overflow-hidden rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-950/60 p-7 lg:p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-amber-500/40 dark:hover:border-amber-500/40 shadow-sm hover:shadow-[0_20px_50px_rgba(245,158,11,0.09)] flex flex-col justify-between h-full">
+                  {/* Animated Top Border Beam */}
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/80 to-transparent opacity-40 group-hover:opacity-100 group-hover:h-[3px] transition-all duration-500" />
+                  
+                  {/* Radial Glow on Hover */}
+                  <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-amber-500/10 dark:bg-amber-500/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  <div>
+                    {/* Header: Icon & Badge */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                        <Lightbulb className="h-6 w-6" />
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-amber-50/80 px-3 py-1 text-xs font-bold text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                        01 • The Idea & Problem
+                      </span>
+                    </div>
+
+                    {/* Title & Body */}
+                    <h3 className="font-heading text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                      The Architecture Paralysis
+                    </h3>
+                    <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      Engineering organizations lose 30–40% of senior bandwidth in circular whiteboard debates. Natural language requirements are inherently vague—omitting peak QPS, recovery objectives, data residency, and failure boundaries.
+                    </p>
+
+                    {/* Problem & Idea Points */}
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-amber-500/5">
+                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span><strong>Whiteboard Deadlock:</strong> Weeks wasted reviewing subjective diagrams that rapidly diverge from actual code.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-amber-500/5">
+                        <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span><strong>Ambiguity Blindspots:</strong> Edge cases and throughput bottlenecks go unnoticed until midnight outages occur.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-amber-500/5">
+                        <Sparkles className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span><strong>The Spark:</strong> Treat software architecture as a formal, deterministic engineering synthesis rather than artistic guesswork.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Tag */}
+                  <div className="mt-8 pt-4 border-t border-neutral-200/60 dark:border-neutral-800/80 flex items-center justify-between text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                    <span>RFC Latency</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">4–8 Weeks Lost Manually</span>
+                  </div>
+                </div>
+              </AnimatedContainer>
+
+              {/* CARD 2: THE PROJECT */}
+              <AnimatedContainer delay={0.25} className="h-full">
+                <div className="relative group overflow-hidden rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-950/60 p-7 lg:p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-blue-500/40 dark:hover:border-blue-500/40 shadow-sm hover:shadow-[0_20px_50px_rgba(59,130,246,0.09)] flex flex-col justify-between h-full">
+                  {/* Animated Top Border Beam */}
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/80 to-transparent opacity-40 group-hover:opacity-100 group-hover:h-[3px] transition-all duration-500" />
+                  
+                  {/* Radial Glow on Hover */}
+                  <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-blue-500/10 dark:bg-blue-500/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  <div>
+                    {/* Header: Icon & Badge */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                        <Cpu className="h-6 w-6" />
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-300/60 bg-blue-50/80 px-3 py-1 text-xs font-bold text-blue-900 dark:border-blue-800/60 dark:bg-blue-950/50 dark:text-blue-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                        02 • The Project
+                      </span>
+                    </div>
+
+                    {/* Title & Body */}
+                    <h3 className="font-heading text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                      ArchAI: Autonomous Architect
+                    </h3>
+                    <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      ArchAI is an autonomous multi-agent platform engineered to bridge the divide between high-level stakeholder intent and production-ready distributed system topologies, formal specs, and code contracts.
+                    </p>
+
+                    {/* Project Pillars */}
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-blue-500/5">
+                        <Workflow className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <span><strong>Multi-Agent Coordination:</strong> Specialized agents collaborate synchronously to probe requirements, map dependencies, and verify protocols.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-blue-500/5">
+                        <Network className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <span><strong>Interactive Graph Topologies:</strong> Visual React Flow canvases with real-time layer filtering and deep node inspectors.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-blue-500/5">
+                        <Layers className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+                        <span><strong>ISO/IEEE ARSRS Standards:</strong> Generates authoritative, auditable specification documents adhering to ISO 29148.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Tag */}
+                  <div className="mt-8 pt-4 border-t border-neutral-200/60 dark:border-neutral-800/80 flex items-center justify-between text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                    <span>Engine Architecture</span>
+                    <span className="font-bold text-blue-600 dark:text-blue-400">Multi-Agent Systems Platform</span>
+                  </div>
+                </div>
+              </AnimatedContainer>
+
+              {/* CARD 3: THE SOLUTION */}
+              <AnimatedContainer delay={0.35} className="h-full">
+                <div className="relative group overflow-hidden rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-950/60 p-7 lg:p-8 backdrop-blur-xl transition-all duration-500 hover:-translate-y-2 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 shadow-sm hover:shadow-[0_20px_50px_rgba(16,185,129,0.09)] flex flex-col justify-between h-full">
+                  {/* Animated Top Border Beam */}
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/80 to-transparent opacity-40 group-hover:opacity-100 group-hover:h-[3px] transition-all duration-500" />
+                  
+                  {/* Radial Glow on Hover */}
+                  <div className="absolute -top-24 -right-24 h-56 w-56 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                  <div>
+                    {/* Header: Icon & Badge */}
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/20 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                        <ShieldCheck className="h-6 w-6" />
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/60 bg-emerald-50/80 px-3 py-1 text-xs font-bold text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/50 dark:text-emerald-300">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        03 • The Solution
+                      </span>
+                    </div>
+
+                    {/* Title & Body */}
+                    <h3 className="font-heading text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
+                      Deterministic Full-Stack Synthesis
+                    </h3>
+                    <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      ArchAI replaces subjective guesswork with deterministic multi-domain synthesis. It unifies high-level visual graphs and low-level code implementation blueprints into a living, verifiable architecture.
+                    </p>
+
+                    {/* Solution Highlights */}
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-emerald-500/5">
+                        <Zap className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span><strong>10x Faster RFC Velocity:</strong> Compress months of speculative back-and-forth into minutes of validated systems synthesis.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-emerald-500/5">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span><strong>5 Parallel LLD Blueprints:</strong> Instant execution designs across Backend, Database schemas, Frontend, Security, and Cloud.</span>
+                      </div>
+                      <div className="flex items-start gap-2.5 text-xs text-neutral-700 dark:text-neutral-300 p-2 rounded-xl transition-colors hover:bg-emerald-500/5">
+                        <Target className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span><strong>Protocol-Level Verification:</strong> Strict Zero-Trust, mTLS boundaries, and verified communication pathways across every node.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Tag */}
+                  <div className="mt-8 pt-4 border-t border-neutral-200/60 dark:border-neutral-800/80 flex items-center justify-between text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
+                    <span>Velocity Impact</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">Minutes, Not Sprints</span>
+                  </div>
+                </div>
+              </AnimatedContainer>
             </div>
 
-            {/* The Dual-Engine Core Bento */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* REE Card */}
-              <div className="monochrome-card rounded-3xl p-8 lg:p-10 relative overflow-hidden">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-md">
-                    <Sparkles className="h-6 w-6" />
+            {/* ── Visual Flow Pipeline Ribbon ── */}
+            <AnimatedContainer delay={0.2}>
+              <div className="mt-12 rounded-3xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40 p-6 md:p-8 backdrop-blur-md">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-xs">
+                      <Workflow className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-heading text-sm md:text-base font-bold text-neutral-900 dark:text-white">
+                        The Continuous Architecture Continuum
+                      </h4>
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                        How ArchAI transitions from raw concept to verified production systems
+                      </p>
+                    </div>
                   </div>
-                  <span className="rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
-                    Core Engine 01
-                  </span>
-                </div>
 
-                <h3 className="font-heading text-2xl font-bold">
-                  REE: Requirements Engineering Engine
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                  Natural language problem statements are inherently ambiguous. REE acts as your principal systems engineer, executing an adaptive stakeholder interview to systematically uncover every critical requirement before a single line of architecture is generated.
-                </p>
-
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
-                    <CheckCircle2 className="h-4 w-4 text-black dark:text-white shrink-0 mt-0.5" />
-                    <span><strong>Proactive Ambiguity Probing:</strong> Automatically questions concurrency, peak traffic, storage retention, and compliance requirements.</span>
-                  </div>
-                  <div className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
-                    <CheckCircle2 className="h-4 w-4 text-black dark:text-white shrink-0 mt-0.5" />
-                    <span><strong>Quantitative SLA & NFR Mapping:</strong> Determines strict availability targets (99.9% vs 99.99%), recovery time objectives, and data residency.</span>
-                  </div>
-                  <div className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
-                    <CheckCircle2 className="h-4 w-4 text-black dark:text-white shrink-0 mt-0.5" />
-                    <span><strong>Adaptive Multiple-Choice & Custom Inputs:</strong> Provides recommended defaults with full keyboard shortcut velocity.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* SAE Card */}
-              <div className="monochrome-card rounded-3xl p-8 lg:p-10 relative overflow-hidden">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-md">
-                    <Network className="h-6 w-6" />
-                  </div>
-                  <span className="rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-bold text-neutral-800 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200">
-                    Core Engine 02
-                  </span>
-                </div>
-
-                <h3 className="font-heading text-2xl font-bold">
-                  SAE: System Architecture Engine
-                </h3>
-                <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                  Once requirements are locked, SAE performs domain-driven system decomposition, mapping microservices, data pipelines, caching tiers, and cloud primitives into verifiable High-Level and Low-Level architecture specifications.
-                </p>
-
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
-                    <CheckCircle2 className="h-4 w-4 text-black dark:text-white shrink-0 mt-0.5" />
-                    <span><strong>ISO/IEEE Specification Synthesis:</strong> Generates formal ARSRS documents with clear functional constraints and executive summaries.</span>
-                  </div>
-                  <div className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
-                    <CheckCircle2 className="h-4 w-4 text-black dark:text-white shrink-0 mt-0.5" />
-                    <span><strong>Interactive Graph Topology:</strong> Renders visual React Flow flowcharts with layer filtering and node-level inspection.</span>
-                  </div>
-                  <div className="flex items-start gap-3 text-xs text-neutral-700 dark:text-neutral-300">
-                    <CheckCircle2 className="h-4 w-4 text-black dark:text-white shrink-0 mt-0.5" />
-                    <span><strong>5 Concurrent LLD Blueprints:</strong> Parallel generation across Backend, Frontend, Database, Security, and Cloud domains.</span>
+                  {/* Sequential Steps in Flow */}
+                  <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono">
+                    <span className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 shadow-2xs">
+                      1. Problem Statement
+                    </span>
+                    <ArrowRight className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                    <span className="rounded-full border border-amber-300/80 bg-amber-50 px-3 py-1 text-amber-800 dark:border-amber-800/80 dark:bg-amber-950/60 dark:text-amber-300 shadow-2xs">
+                      2. Stakeholder Probing
+                    </span>
+                    <ArrowRight className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                    <span className="rounded-full border border-blue-300/80 bg-blue-50 px-3 py-1 text-blue-800 dark:border-blue-800/80 dark:bg-blue-950/60 dark:text-blue-300 shadow-2xs">
+                      3. ARSRS & HLD Graph
+                    </span>
+                    <ArrowRight className="h-3.5 w-3.5 text-neutral-400 shrink-0" />
+                    <span className="rounded-full border border-emerald-300/80 bg-emerald-50 px-3 py-1 text-emerald-800 dark:border-emerald-800/80 dark:bg-emerald-950/60 dark:text-emerald-300 shadow-2xs">
+                      4. 5 Domain LLD Blueprints
+                    </span>
                   </div>
                 </div>
               </div>
-            </div>
+            </AnimatedContainer>
 
             {/* Architecture Principles */}
-            <div className="mt-12 rounded-3xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100/70 dark:bg-neutral-900/50 p-8 lg:p-10 backdrop-blur-md">
-              <h4 className="font-heading text-xl font-bold text-neutral-900 dark:text-white mb-6">
-                Our Foundational Architectural Principles
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <h5 className="font-heading font-bold text-black dark:text-white text-sm">
-                    Deterministic & Reproducible
-                  </h5>
-                  <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                    Architectural decisions are backed by formal requirements models rather than random stochastic hallucinations. Same inputs yield verified blueprints.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-heading font-bold text-black dark:text-white text-sm">
-                    Zero-Trust & Security-First
-                  </h5>
-                  <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                    Every synthesized architecture defaults to strict mTLS communication, least-privilege RBAC matrices, and cryptographic identity boundaries.
-                  </p>
-                </div>
-                <div>
-                  <h5 className="font-heading font-bold text-black dark:text-white text-sm">
-                    Cloud-Agnostic Velocity
-                  </h5>
-                  <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                    Export blueprints ready for Kubernetes, AWS, Google Cloud, Azure, or bare metal without proprietary vendor lock-in.
-                  </p>
+            <AnimatedContainer delay={0.25}>
+              <div className="mt-8 rounded-3xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100/70 dark:bg-neutral-900/50 p-8 lg:p-10 backdrop-blur-md">
+                <h4 className="font-heading text-xl font-bold text-neutral-900 dark:text-white mb-6">
+                  Our Foundational Architectural Principles
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <h5 className="font-heading font-bold text-black dark:text-white text-sm">
+                      Deterministic & Reproducible
+                    </h5>
+                    <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      Architectural decisions are backed by formal requirements models rather than random stochastic hallucinations. Same inputs yield verified blueprints.
+                    </p>
+                  </div>
+                  <div>
+                    <h5 className="font-heading font-bold text-black dark:text-white text-sm">
+                      Zero-Trust & Security-First
+                    </h5>
+                    <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      Every synthesized architecture defaults to strict mTLS communication, least-privilege RBAC matrices, and cryptographic identity boundaries.
+                    </p>
+                  </div>
+                  <div>
+                    <h5 className="font-heading font-bold text-black dark:text-white text-sm">
+                      Cloud-Agnostic Velocity
+                    </h5>
+                    <p className="mt-2 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+                      Export blueprints ready for Kubernetes, AWS, Google Cloud, Azure, or bare metal without proprietary vendor lock-in.
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </AnimatedContainer>
           </div>
         </section>
 
@@ -603,18 +632,20 @@ export default function LandingPage() {
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
         <section id="services" className="relative py-20 md:py-32 border-t border-neutral-200 dark:border-neutral-800 overflow-hidden">
           <div className="mx-auto max-w-6xl px-4">
-            <div className="text-center mb-16 md:mb-20">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3 shadow-2xs">
-                <Zap className="h-3.5 w-3.5" />
-                <span>Our Capabilities • 6 Continuous Stages</span>
+            <AnimatedContainer delay={0.1}>
+              <div className="text-center mb-16 md:mb-20">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3 shadow-2xs">
+                  <Zap className="h-3.5 w-3.5" />
+                  <span>Our Capabilities • 6 Continuous Stages</span>
+                </div>
+                <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
+                  Full-Lifecycle Architecture Pipeline
+                </h2>
+                <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
+                  From interactive requirement clarification to production-ready low-level architecture modules across every engineering layer.
+                </p>
               </div>
-              <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
-                Full-Lifecycle Architecture Pipeline
-              </h2>
-              <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-                From interactive requirement clarification to production-ready low-level architecture modules across every engineering layer.
-              </p>
-            </div>
+            </AnimatedContainer>
 
             {/* Zigzag Pinned Cards Pipeline Container */}
             <div className="relative max-w-5xl mx-auto px-2 sm:px-4">
@@ -673,7 +704,7 @@ export default function LandingPage() {
                   const isEven = idx % 2 === 0;
 
                   return (
-                    <div key={idx} className="w-full flex flex-col">
+                    <AnimatedContainer key={idx} delay={0.12} className="w-full flex flex-col">
                       <div
                         className={`relative z-10 w-full md:w-[420px] lg:w-[450px] transition-all duration-300 group ${
                           isEven
@@ -769,7 +800,7 @@ export default function LandingPage() {
                           <div className="w-0.5 h-4 border-l-2 border-dashed border-neutral-300 dark:border-neutral-700" />
                         </div>
                       )}
-                    </div>
+                    </AnimatedContainer>
                   );
                 })}
               </div>

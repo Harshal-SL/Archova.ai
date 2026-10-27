@@ -4,13 +4,20 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _load_env_file(override: bool = True) -> None:
     """Load key-value pairs from .env file into os.environ."""
-    env_path = _PROJECT_ROOT / ".env"
-    if not env_path.exists():
+    candidates = [
+        Path(__file__).resolve().parents[1] / ".env",  # Primary: ai_engine/app/.env
+        _PROJECT_ROOT / ".env",                         # Fallback: ai_engine/.env
+        Path.cwd() / "app" / ".env",
+        Path.cwd() / ".env",
+        Path.cwd() / "ai_engine" / ".env",
+    ]
+    env_path = next((p for p in candidates if p.exists()), None)
+    if not env_path:
         return
 
     try:

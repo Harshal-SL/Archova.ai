@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAppStore, generateMsgId, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 // ── Smart Architecture Copilot Generator for Live Diagram Inquiries ──
 function generateArchitectureReply(prompt: string, hldData: Record<string, unknown> | null): string {
@@ -84,6 +85,7 @@ export default function TubelightChatBar() {
     addMessage,
     createSession,
     hldData,
+    evolveArchitecture,
     user,
     hldWorkspaceTab,
   } = useAppStore();
@@ -354,20 +356,40 @@ export default function TubelightChatBar() {
       setFloatingInput("");
       setIsSending(true);
 
-      // Simulate Copilot processing with intelligent response
-      setTimeout(async () => {
-        const reply = generateArchitectureReply(trimmed, hldData);
-        if (sid) {
-          await addMessage(sid, {
-            id: generateMsgId(),
-            role: "ai",
-            content: reply,
-          });
+      const hasBaseline = Boolean(hldData && typeof hldData === "object" && Object.keys(hldData).length > 0);
+
+      if (hasBaseline) {
+        try {
+          await evolveArchitecture(trimmed);
+        } catch (err: unknown) {
+          console.error("Architecture evolution failed, using fallback copilot reply:", err);
+          const reply = generateArchitectureReply(trimmed, hldData);
+          if (sid) {
+            const msg = err instanceof Error ? err.message : String(err);
+            await addMessage(sid, {
+              id: generateMsgId(),
+              role: "ai",
+              content: `${reply}\n\n*(Note: Automated delta mutation encountered: ${msg})*`,
+            });
+          }
+        } finally {
+          setIsSending(false);
         }
-        setIsSending(false);
-      }, 750);
+      } else {
+        setTimeout(async () => {
+          const reply = generateArchitectureReply(trimmed, hldData);
+          if (sid) {
+            await addMessage(sid, {
+              id: generateMsgId(),
+              role: "ai",
+              content: reply,
+            });
+          }
+          setIsSending(false);
+        }, 500);
+      }
     },
-    [activeSessionId, createSession, addMessage, hldData, isSending]
+    [activeSessionId, createSession, addMessage, hldData, evolveArchitecture, isSending]
   );
 
   const copyToClipboard = (text: string, id: string) => {
@@ -461,21 +483,23 @@ export default function TubelightChatBar() {
                   <span>ArchAI 4o</span>
                 </div>
 
-                {/* Send Button with Neon Accent */}
-                <button
+                {/* Send Button with Shimmer Animation */}
+                <ShimmerButton
                   type="button"
                   onClick={() => handleSendMessage(input)}
                   disabled={!input.trim() || isSending}
                   title="Send to Architecture Copilot"
+                  borderRadius="9999px"
+                  shimmerColor="rgba(6, 182, 212, 0.85)"
+                  shimmerDuration="2.5s"
+                  background={input.trim() && !isSending ? "rgba(10, 10, 15, 0.95)" : "rgba(35, 35, 40, 0.5)"}
                   className={cn(
-                    "flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl sm:rounded-full transition-all duration-200 cursor-pointer shadow-xs active:scale-95",
-                    input.trim() && !isSending
-                      ? "bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200 shadow-md ring-2 ring-cyan-400/40"
-                      : "bg-neutral-200/70 text-neutral-400 dark:bg-neutral-800/60 dark:text-neutral-600 cursor-not-allowed"
+                    "flex h-9 w-9 sm:h-10 sm:w-10 p-0 items-center justify-center rounded-xl sm:rounded-full transition-all duration-200 cursor-pointer shadow-md active:scale-95 border border-white/20",
+                    !input.trim() && "opacity-50 cursor-not-allowed"
                   )}
                 >
-                  <Send className={cn("h-4 w-4 transition-transform", input.trim() && "translate-x-0.5 -translate-y-0.5")} />
-                </button>
+                  <Send className={cn("h-4 w-4 text-white transition-transform", input.trim() && "translate-x-0.5 -translate-y-0.5")} />
+                </ShimmerButton>
               </div>
             </div>
           </div>
@@ -535,7 +559,7 @@ export default function TubelightChatBar() {
                     Live
                   </span>
                 </div>
-                <p className="truncate text-[10px] text-neutral-500 dark:text-neutral-400">
+                <p className="truncate text-[10px] text-neutral-400/70 dark:text-neutral-500/70 opacity-60">
                   {activeSession?.title || "Active Architecture Chat"}
                 </p>
               </div>
@@ -655,7 +679,9 @@ export default function TubelightChatBar() {
                 <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black text-xs animate-spin">
                   <Cpu className="h-3 w-3" />
                 </div>
-                <span className="font-mono text-[11px] animate-pulse">ArchAI is analyzing architecture...</span>
+                <span className="font-mono text-[11px] animate-pulse">
+                  {hldData ? "Evolving architecture & updating diagram (v1.x)..." : "ArchAI is analyzing architecture..."}
+                </span>
               </div>
             )}
 
@@ -679,19 +705,21 @@ export default function TubelightChatBar() {
                 className="w-full bg-transparent text-xs text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-white dark:placeholder:text-neutral-500"
               />
 
-              <button
+              <ShimmerButton
                 type="button"
                 onClick={() => handleSendMessage(floatingInput)}
                 disabled={!floatingInput.trim() || isSending}
+                borderRadius="10px"
+                shimmerColor="rgba(6, 182, 212, 0.85)"
+                shimmerDuration="2.5s"
+                background={floatingInput.trim() && !isSending ? "rgba(10, 10, 15, 0.95)" : "rgba(35, 35, 40, 0.5)"}
                 className={cn(
-                  "flex h-7 w-7 items-center justify-center rounded-xl transition-all cursor-pointer shadow-xs",
-                  floatingInput.trim() && !isSending
-                    ? "bg-black text-white hover:bg-neutral-800 dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-                    : "bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600 cursor-not-allowed"
+                  "flex h-7 w-7 p-0 items-center justify-center rounded-xl transition-all cursor-pointer shadow-xs border border-white/20",
+                  !floatingInput.trim() && "opacity-50 cursor-not-allowed"
                 )}
               >
-                <CornerDownLeft className="h-3.5 w-3.5" />
-              </button>
+                <CornerDownLeft className="h-3.5 w-3.5 text-white" />
+              </ShimmerButton>
             </div>
           </div>
 

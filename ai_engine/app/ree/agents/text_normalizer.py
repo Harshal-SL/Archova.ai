@@ -1030,11 +1030,11 @@ def extract_semantic_functional_requirements(raw_input: str) -> List[str]:
     text = raw_input.strip()
 
     # Match clauses that indicate user/staff/admin capabilities
-    # E.g. "allows staff to manage products, record stock-in and stock-out transactions..."
+    # E.g. "allows staff to manage products, record stock-in and stock-out transactions..." or "with catalog search, inventory circulation..."
     capability_patterns = [
         r"(?:allows?|enables?|lets?)\s+[\w\s]+\s+to\s+([^.]+)",
         r"(?:can|must|should|will)\s+([^.]+)",
-        r"(?:provides?|features?|includes?)\s+([^.]+)",
+        r"(?:provides?|providing|features?|featuring|includes?|including|supporting|capable\s+of|with)\s+([^.]+)",
     ]
 
     for pattern in capability_patterns:
@@ -1057,7 +1057,8 @@ def extract_semantic_functional_requirements(raw_input: str) -> List[str]:
         sentences = [s.strip() for s in re.split(r"[.!?]+", text) if s.strip()]
         for sentence in sentences:
             clean_s = clean_conversational_prefix(sentence).strip()
-            if len(clean_s) >= 15 and not clean_s.lower().startswith(("the proposed system is", "this project is", "build a")):
+            clean_s = re.sub(r"^(?:build|create|develop|implement|design|provide|set\s+up)\s+(?:a|an|the)\s+", "", clean_s, flags=re.IGNORECASE).strip()
+            if len(clean_s) >= 15 and not clean_s.lower().startswith(("the proposed system is", "this project is")):
                 if not any(clean_s.lower() == existing.lower() for existing in frs):
                     frs.append(clean_s)
 

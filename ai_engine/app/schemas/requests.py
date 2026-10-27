@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -13,6 +15,10 @@ class StartGenerationRequest(BaseModel):
         min_length=1,
         description="Raw problem statement or stakeholder requirements text.",
         examples=["Build an online event management system for university hackathons."],
+    )
+    generation_id: Optional[str] = Field(
+        default=None,
+        description="Optional client-generated generation ID to enable immediate telemetry polling.",
     )
 
 

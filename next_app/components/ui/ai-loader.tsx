@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Brain, Mic, Cpu, Network, Sparkles, Activity, X } from "lucide-react";
+import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export interface LoaderProps {
@@ -32,6 +33,40 @@ export const Component: React.FC<LoaderProps> = ({
   onDismiss,
 }) => {
   const letters = text.split("");
+  const activeAgentsList = useAppStore((s) => s.activeAgentsList);
+
+  const normalizedStage = (stage || "REE").toUpperCase();
+  const displayEngineName =
+    agentName ||
+    (normalizedStage === "REE"
+      ? "REE Engine"
+      : normalizedStage === "SAE" || normalizedStage === "HLD"
+      ? "SAE Engine"
+      : "Archova Engine");
+
+  // Determine active specialist agents currently executing concurrently
+  const runningSpecialists = (activeAgentsList || []).filter((a) => a.status === "running");
+
+  const specialistPills =
+    runningSpecialists.length > 0
+      ? runningSpecialists.map((a) => ({
+          id: a.agent_id,
+          name: a.name.replace(" Agent", ""),
+          progress: a.progress_percent,
+        }))
+      : normalizedStage === "REE"
+      ? [
+          { id: "ba", name: "BusinessAnalyst", progress: 65 },
+          { id: "re", name: "RequirementEngineer", progress: 55 },
+          { id: "de", name: "DomainExpert", progress: 45 },
+        ]
+      : normalizedStage === "SAE" || normalizedStage === "HLD"
+      ? [
+          { id: "ra", name: "RequirementAnalysis", progress: 80 },
+          { id: "ta", name: "TechnologyAdvisor", progress: 75 },
+          { id: "hld", name: "HLDArchitect", progress: 70 },
+        ]
+      : [];
 
   const getAgentIcon = (stageName?: string) => {
     switch (stageName?.toUpperCase()) {
@@ -76,15 +111,34 @@ export const Component: React.FC<LoaderProps> = ({
         <div className="flex flex-col items-center max-w-lg space-y-2.5 z-10 animate-fadeIn">
           {/* Agent Stage & Name Badge */}
           <div className="inline-flex items-center gap-2 rounded-full border border-sky-500/30 bg-sky-500/10 px-3.5 py-1 text-xs font-semibold text-sky-300 backdrop-blur-md shadow-[0_0_15px_rgba(56,189,248,0.2)]">
-            {getAgentIcon(stage)}
-            <span>{agentName || "Autonomous Architecture Agent"}</span>
-            {stage && (
-              <span className="rounded bg-sky-400/20 px-1.5 py-0.2 text-[10px] font-mono text-sky-200">
-                {stage}
-              </span>
-            )}
+            {getAgentIcon(normalizedStage)}
+            <span className="font-bold tracking-wide">{displayEngineName}</span>
+            <span className="rounded bg-sky-400/20 px-1.5 py-0.5 text-[10px] font-mono font-bold text-sky-200">
+              {normalizedStage}
+            </span>
             <Activity className="h-3 w-3 animate-pulse text-sky-400" />
           </div>
+
+          {/* Concurrent Specialist Agents Working Simultaneously */}
+          {specialistPills.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-1.5 my-1 max-w-md animate-fadeIn">
+              {specialistPills.map((ag) => (
+                <div
+                  key={ag.id}
+                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] sm:text-[11px] font-medium border border-sky-500/40 bg-sky-500/15 text-sky-200 backdrop-blur-md shadow-[0_0_10px_rgba(56,189,248,0.2)]"
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500" />
+                  </span>
+                  <span className="font-semibold text-white/95">{ag.name}</span>
+                  {ag.progress > 0 && (
+                    <span className="text-[10px] text-sky-300 font-mono font-bold">{ag.progress}%</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Role */}
           {agentRole && (

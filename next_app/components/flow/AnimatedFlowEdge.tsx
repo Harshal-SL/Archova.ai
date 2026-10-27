@@ -32,6 +32,7 @@ export const AnimatedFlowEdge = memo(
     markerEnd,
     data,
     selected,
+    animated,
   }: EdgeProps) => {
     const [edgePath, labelX, labelY] = getSmoothStepPath({
       sourceX,
@@ -45,7 +46,7 @@ export const AnimatedFlowEdge = memo(
 
     const edgeData = (data || {}) as CustomEdgeData;
     const label = edgeData.label || "";
-    const isAnimated = edgeData.animated !== false;
+    const isAnimated = typeof animated === "boolean" ? animated : edgeData.animated !== false;
 
     // Resolve the connection color - identical to the originating component!
     const theme = getEdgeTheme(source, target, edgeData.strokeColor || (style.stroke as string));
@@ -85,8 +86,8 @@ export const AnimatedFlowEdge = memo(
             ...style,
             stroke: strokeColor,
             strokeWidth: selected ? 3.4 : (style.strokeWidth || 2.4),
-            strokeDasharray: isAnimated ? "6 6" : undefined,
-            animation: isAnimated ? "dashFlow 20s linear infinite" : undefined,
+            strokeDasharray: isAnimated ? "6 6" : "none",
+            animation: isAnimated ? "dashFlow 1.8s linear infinite" : "none",
             filter: selected ? `drop-shadow(0 0 6px ${strokeColor})` : undefined,
           }}
         />
@@ -100,22 +101,24 @@ export const AnimatedFlowEdge = memo(
                 transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
                 pointerEvents: "all",
                 borderColor: strokeColor,
-                borderWidth: 1.5,
-                boxShadow: `0 2px 10px -2px ${strokeColor}44`,
-                zIndex: 25,
+                borderWidth: 1.2,
+                boxShadow: `0 2px 8px -2px ${strokeColor}44`,
+                zIndex: 20,
               }}
-              className={`nodrag nopan flex items-center gap-1.5 rounded-lg border bg-white px-2.5 py-1 text-[10px] font-mono font-bold shadow-sm backdrop-blur-md dark:bg-neutral-950/98 transition-all duration-200 ${
+              className={`nodrag nopan flex items-center gap-1.5 rounded-md border bg-white/95 px-2 py-0.5 text-[9px] font-mono font-bold shadow-xs backdrop-blur-md dark:bg-neutral-950/95 transition-all duration-150 select-none ${
                 selected ? "ring-2 ring-offset-1 scale-105" : ""
               }`}
             >
               <span
-                className="h-2 w-2 rounded-full animate-pulse shrink-0"
+                className={`h-1.5 w-1.5 rounded-full shrink-0 ${isAnimated ? "animate-pulse" : "opacity-40"}`}
                 style={{
                   backgroundColor: strokeColor,
-                  boxShadow: `0 0 6px ${strokeColor}`,
+                  boxShadow: isAnimated ? `0 0 5px ${strokeColor}` : "none",
                 }}
               />
-              <span className="truncate max-w-[200px] font-bold" style={{ color: strokeColor }}>{label}</span>
+              <span className="truncate max-w-[160px] font-bold tracking-tight" style={{ color: strokeColor }}>
+                {label}
+              </span>
             </div>
           </EdgeLabelRenderer>
         )}

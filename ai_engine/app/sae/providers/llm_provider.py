@@ -73,6 +73,8 @@ KEY_ALIASES: Dict[str, str] = {
     "containers": "container_orchestration",
     "ui_components": "components",
     "views": "pages",
+    "summary": "feature_summary",
+    "feature_description": "feature_summary",
 }
 
 
@@ -90,7 +92,7 @@ def _load_api_keys() -> List[str]:
         if single:
             keys.append(single)
 
-    return keys or [""]
+    return [k for k in keys if k.strip()]
 
 
 class OpenRouterProvider:
@@ -107,46 +109,55 @@ class OpenRouterProvider:
         debug: bool = False,
         sae_logger: Optional[Any] = None,
     ) -> None:
-        self.api_keys = api_keys or _load_api_keys()
+        self.api_keys = [k for k in (api_keys or _load_api_keys()) if k.strip()]
         self.base_url = (base_url or os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")).rstrip("/")
         self.default_model = default_model or os.getenv("LLM_MODEL", "nvidia/nemotron-3.5-lightning:free")
-        self.timeout = timeout or float(os.getenv("LLM_TIMEOUT_SECONDS", os.getenv("LLM_TIMEOUT", "60")))
-        self.max_tokens = max_tokens or int(os.getenv("LLM_MAX_TOKENS", "3072"))
+        self.timeout = timeout or float(os.getenv("LLM_TIMEOUT_SECONDS", os.getenv("OPENROUTER_TIMEOUT_SECONDS", os.getenv("LLM_TIMEOUT", "90"))))
+        self.max_tokens = max_tokens or int(os.getenv("LLM_MAX_TOKENS", "8192"))
         self.max_retries = max_retries if max_retries is not None else 3
         self.debug = debug or os.getenv("SAE_DEBUG", "false").lower() in ("true", "1", "yes")
         self.sae_logger = sae_logger
         self._rr_lock = threading.Lock()
         self._rr_counter = 0
+        self._blocked_keys: set[str] = set()
 
     def set_sae_logger(self, sae_logger: Any) -> None:
         """Set or update the active SAELogger instance."""
         self.sae_logger = sae_logger
 
     def get_api_key_for_role(self, agent_role: str = "general") -> str:
-        """Resolve the designated API key for a specific agent role or round-robin if general."""
+        """Resolve the designated API key for a specific agent role, prioritizing unblocked keys."""
+        if not self.api_keys or not any(k.strip() for k in self.api_keys):
+            self.api_keys = _load_api_keys()
         if not self.api_keys:
             return ""
+        available = [k for k in self.api_keys if k not in self._blocked_keys]
+        pool = available if available else self.api_keys
+
         norm_role = agent_role.lower().strip()
         if norm_role in DEFAULT_ROLE_KEY_INDEX:
             target_idx = DEFAULT_ROLE_KEY_INDEX[norm_role]
         else:
             with self._rr_lock:
                 target_idx = self._rr_counter
-                self._rr_counter = (self._rr_counter + 1) % len(self.api_keys)
+                self._rr_counter = (self._rr_counter + 1) % len(pool)
 
-        # Wrap around if fewer keys are provided
-        idx = target_idx % len(self.api_keys)
-        key = self.api_keys[idx]
-        logger.info("SAE OpenRouterProvider: Role '%s' assigned API Key #%d (%s...)", agent_role, idx + 1, key[:12] if key else "NONE")
+        # Wrap around available keys
+        idx = target_idx % len(pool)
+        key = pool[idx]
+        real_idx = self.api_keys.index(key) if key in self.api_keys else idx
+        logger.info("SAE OpenRouterProvider: Role '%s' assigned API Key #%d (%s...)", agent_role, real_idx + 1, key[:12] if key else "NONE")
         return key
 
     def _get_headers(self, api_key: str) -> Dict[str, str]:
-        return {
-            "Authorization": f"Bearer {api_key}",
+        headers = {
             "Content-Type": "application/json",
             "HTTP-Referer": "https://ai-architecture-platform.local",
             "X-Title": "SAE v2 Architecture Engine",
         }
+        if api_key and api_key.strip():
+            headers["Authorization"] = f"Bearer {api_key.strip()}"
+        return headers
 
     # ── Clean Parsing & Sanitization ──────────────────────────────────────────
 
@@ -157,6 +168,9 @@ class OpenRouterProvider:
         agent_name: str = "Agent",
     ) -> T:
         """Parse raw LLM response cleanly, stripping reasoning tags and extracting JSON."""
+        if not raw_text or not isinstance(raw_text, str) or not raw_text.strip():
+            logger.debug(f"[{agent_name}] Empty or non-string raw_text. Initializing default model.")
+            return response_model()
         cleaned = raw_text.strip()
 
         # 1. Strip reasoning blocks (<think>...</think>, <thought>...</thought>, ```thinking...```)
@@ -280,6 +294,25 @@ class OpenRouterProvider:
 
     # ── Async Generation ──────────────────────────────────────────────────────
 
+    @staticmethod
+    def _extract_choice_content(choice: Dict[str, Any]) -> str:
+        """Extract textual content safely from a choice dictionary, falling back to reasoning or text."""
+        if not isinstance(choice, dict):
+            return ""
+        message = choice.get("message")
+        if isinstance(message, dict):
+            content = message.get("content")
+            if content is not None and isinstance(content, str) and content.strip():
+                return content.strip()
+            # Fallback to reasoning / reasoning_content if content is None or empty
+            reasoning = message.get("reasoning") or message.get("reasoning_content")
+            if reasoning is not None and isinstance(reasoning, str) and reasoning.strip():
+                return reasoning.strip()
+        text = choice.get("text")
+        if text is not None and isinstance(text, str) and text.strip():
+            return text.strip()
+        return ""
+
     async def generate_structured_async(
         self,
         prompt: str,
@@ -292,6 +325,11 @@ class OpenRouterProvider:
         """Asynchronously call OpenRouter and return validated flat response model."""
         model = model_name or (get_model_for_capability(agent_role) if agent_role != "general" else "") or self.default_model
         api_key = self.get_api_key_for_role(agent_role)
+        if not api_key or not api_key.strip():
+            logger.warning("SAE OpenRouterProvider: Role '%s' has no OpenRouter API key configured. Utilizing default fallback model.", agent_role)
+            print(f"  [{agent_role}] ⚠️ No OpenRouter API key configured. Utilizing deterministic fallback model directly.", flush=True)
+            return response_model()
+
         headers = self._get_headers(api_key)
 
         messages = []
@@ -299,12 +337,14 @@ class OpenRouterProvider:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        reasoning_max = int(os.getenv("LLM_REASONING_MAX_TOKENS", "0"))
         payload = {
             "model": model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": self.max_tokens,
             "response_format": {"type": "json_object"},
+            "reasoning": {"max_tokens": reasoning_max},
         }
 
         key_idx = ((DEFAULT_ROLE_KEY_INDEX.get(agent_role.lower().strip(), 0) % len(self.api_keys)) + 1) if self.api_keys else 0
@@ -347,6 +387,11 @@ class OpenRouterProvider:
                     )
                     latency = round(time.perf_counter() - t0, 2)
 
+                    if resp.status_code in (401, 403):
+                        self._blocked_keys.add(active_key)
+                        print(f"  [{agent_role}] ⚠️ HTTP {resp.status_code} on Key #{active_key_idx + 1} (account/key blocked). Marked key blocked & rotating immediately to next key...", flush=True)
+                        continue
+
                     if resp.status_code == 429 or resp.status_code in (500, 502, 503, 504):
                         wait_time = 1.5 * attempt
                         # If a specific capability model is rate-limited upstream, failover to default_model
@@ -356,6 +401,16 @@ class OpenRouterProvider:
                         print(f"  [{agent_role}] ⚠️ HTTP {resp.status_code} on Key #{active_key_idx + 1} (attempt {attempt}/{self.max_retries}). Rotating key & backing off for {wait_time:.1f}s...", flush=True)
                         if attempt < self.max_retries:
                             await asyncio.sleep(wait_time)
+                        continue
+
+                    if resp.status_code == 400 and "reasoning" in payload:
+                        print(f"  [{agent_role}] ⚠️ Model {payload.get('model')} rejected reasoning param. Retrying without reasoning...", flush=True)
+                        payload.pop("reasoning", None)
+                        continue
+
+                    if resp.status_code == 400 and "response_format" in payload:
+                        print(f"  [{agent_role}] ⚠️ Model {payload.get('model')} rejected response_format. Retrying without response_format...", flush=True)
+                        payload.pop("response_format", None)
                         continue
 
                     resp.raise_for_status()
@@ -377,11 +432,17 @@ class OpenRouterProvider:
                     if not choices:
                         raise ValueError(f"Empty choices in response: {data}")
 
-                    content = choices[0].get("message", {}).get("content", "")
+                    content = self._extract_choice_content(choices[0])
+                    if not content:
+                        if attempt >= 2 and payload.get("model") != self.default_model:
+                            print(f"  [{agent_role}] 🔄 Empty response on {payload.get('model')}. Failing over to default ({self.default_model})...", flush=True)
+                            payload["model"] = self.default_model
+                        raise ValueError(f"Empty or null content returned from model {payload.get('model')}")
+
                     print(f"  [{agent_role}] ✅ Completed in {latency}s ({len(content)} chars)", flush=True)
 
                     if self.debug:
-                        resp_lines = content.strip().splitlines()
+                        resp_lines = content.splitlines()
                         print(f"\n{'━'*78}\n📥 [DEBUG: LLM RAW RESPONSE] Role: {agent_role} | Latency: {latency}s | Length: {len(content)} chars", flush=True)
                         print("│ " + "\n│ ".join(resp_lines[:50]) + ("\n│ ... (truncated raw preview)" if len(resp_lines) > 50 else ""), flush=True)
                         print(f"{'━'*78}\n", flush=True)
@@ -447,12 +508,14 @@ class OpenRouterProvider:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        reasoning_max = int(os.getenv("LLM_REASONING_MAX_TOKENS", "0"))
         payload = {
             "model": model,
             "messages": messages,
             "temperature": temperature,
             "max_tokens": self.max_tokens,
             "response_format": {"type": "json_object"},
+            "reasoning": {"max_tokens": reasoning_max},
         }
 
         key_idx = ((DEFAULT_ROLE_KEY_INDEX.get(agent_name.lower().strip(), 0) % len(self.api_keys)) + 1) if self.api_keys else 0
@@ -491,11 +554,27 @@ class OpenRouterProvider:
                     )
                     latency = round(time.perf_counter() - t0, 2)
 
+                    if resp.status_code in (401, 403):
+                        next_idx = (base_key_idx + attempt) % len(self.api_keys)
+                        print(f"  [{agent_name}] ⚠️ HTTP {resp.status_code} on Key #{((base_key_idx + attempt - 1) % len(self.api_keys)) + 1}. Rotating immediately to Key #{next_idx + 1}...", flush=True)
+                        headers = self._get_headers(self.api_keys[next_idx])
+                        continue
+
                     if resp.status_code == 429 or resp.status_code in (500, 502, 503, 504):
                         wait_time = 3.0 * attempt + 1.0
                         print(f"  [{agent_name}] ⚠️ HTTP {resp.status_code} (attempt {attempt}/{self.max_retries}). Backing off for {wait_time:.1f}s...", flush=True)
                         if attempt < self.max_retries:
                             time.sleep(wait_time)
+                        continue
+
+                    if resp.status_code == 400 and "reasoning" in payload:
+                        print(f"  [{agent_name}] ⚠️ Model {payload.get('model')} rejected reasoning param. Retrying without reasoning...", flush=True)
+                        payload.pop("reasoning", None)
+                        continue
+
+                    if resp.status_code == 400 and "response_format" in payload:
+                        print(f"  [{agent_name}] ⚠️ Model {payload.get('model')} rejected response_format. Retrying without response_format...", flush=True)
+                        payload.pop("response_format", None)
                         continue
 
                     resp.raise_for_status()
@@ -514,11 +593,14 @@ class OpenRouterProvider:
                     if not choices:
                         raise ValueError(f"Empty choices in response: {data}")
 
-                    content = choices[0].get("message", {}).get("content", "")
+                    content = self._extract_choice_content(choices[0])
+                    if not content:
+                        raise ValueError(f"Empty or null content returned from model {payload.get('model')}")
+
                     print(f"  [{agent_name}] ✅ Completed in {latency}s ({len(content)} chars)", flush=True)
 
                     if self.debug:
-                        resp_lines = content.strip().splitlines()
+                        resp_lines = content.splitlines()
                         print(f"\n{'━'*78}\n📥 [DEBUG: LLM RAW RESPONSE] Role: {agent_name} | Latency: {latency}s | Length: {len(content)} chars", flush=True)
                         print("│ " + "\n│ ".join(resp_lines[:50]) + ("\n│ ... (truncated raw preview)" if len(resp_lines) > 50 else ""), flush=True)
                         print(f"{'━'*78}\n", flush=True)

@@ -1,5 +1,21 @@
 """FastAPI Main Application Entrypoint for AI Engine."""
 
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Ensure .env is loaded into os.environ before any submodules are imported
+_app_dir = Path(__file__).resolve().parent
+_candidates = [
+    _app_dir / ".env",                 # Primary: ai_engine/app/.env
+    _app_dir.parent / ".env",          # Fallback: ai_engine/.env
+    Path.cwd() / "app" / ".env",
+    Path.cwd() / ".env",
+]
+for _env_candidate in _candidates:
+    if _env_candidate.exists():
+        load_dotenv(dotenv_path=_env_candidate, override=True)
+        break
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import api_router

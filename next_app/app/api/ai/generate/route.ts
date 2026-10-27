@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabaseClient';
 type GenerateBody = {
   session_id?: string;
   message?: string;
+  user_id?: string;
 };
 
 type OllamaGenerateResult = {
@@ -205,6 +206,30 @@ export async function POST(request: Request) {
 
       if (error) {
         console.warn("Could not insert message to Supabase:", error.message);
+      }
+
+      // Also persist to dedicated architecture_designs table (Feature 2: Prompts + Generated JSON)
+      try {
+        const designPayload: Record<string, unknown> = {
+          session_id: sessionId,
+          prompt: userMessage,
+          design_json: structuredResponse,
+          is_latest: true,
+          updated_at: new Date().toISOString(),
+        };
+        if (body.user_id) {
+          designPayload.user_id = body.user_id;
+        }
+
+        await supabase.from('architecture_designs').insert([designPayload]);
+
+        // Touch chat_sessions updated_at
+        await supabase
+          .from('chat_sessions')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', sessionId);
+      } catch (designErr) {
+        console.warn("Could not insert architecture design to Supabase:", designErr);
       }
 
       return NextResponse.json(

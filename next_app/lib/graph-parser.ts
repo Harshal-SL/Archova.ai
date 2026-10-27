@@ -2,12 +2,24 @@ import type { Node, Edge } from "@xyflow/react";
 import { getComponentTheme } from "./flow-colors";
 
 function applyColorThemesToGraph(nodes: Node[], edges: Edge[]): { nodes: Node[]; edges: Edge[] } {
-  const coloredNodes = nodes.map((n) => {
-    if (n.type === "layerGroup") return n;
-    const theme = getComponentTheme(n.id, (n.data?.label as string) || "", n.type, (n.data?.color as string) || undefined);
+  const coloredNodes = nodes.map((n, idx) => {
+    const raw = n as any;
+    const posX = typeof n.position?.x === "number" ? n.position.x : (typeof raw.x === "number" ? raw.x : 100 + (idx % 4) * 360);
+    const posY = typeof n.position?.y === "number" ? n.position.y : (typeof raw.y === "number" ? raw.y : 100 + Math.floor(idx / 4) * 220);
+    const safePos = { x: posX, y: posY };
+
+    if (n.type === "layerGroup") {
+      return {
+        ...n,
+        position: safePos,
+      };
+    }
+    const theme = getComponentTheme(n.id, (n.data?.label as string) || (raw.label as string) || (raw.name as string) || "", n.type, (n.data?.color as string) || undefined);
     return {
       ...n,
+      position: safePos,
       data: {
+        label: (raw.label as string) || (raw.name as string) || n.id || `Component ${idx + 1}`,
         ...((n.data || {}) as Record<string, unknown>),
         color: theme.primary,
         themeColor: theme.primary,
@@ -15,10 +27,13 @@ function applyColorThemesToGraph(nodes: Node[], edges: Edge[]): { nodes: Node[];
     };
   });
 
-  const coloredEdges = edges.map((e) => {
+  const coloredEdges = edges.map((e, idx) => {
     const srcTheme = getComponentTheme(e.source);
     return {
       ...e,
+      id: e.id || `edge-${idx}`,
+      type: "animatedFlow",
+      animated: true,
       style: {
         ...e.style,
         stroke: srcTheme.primary,
@@ -47,13 +62,762 @@ export interface ArchitecturalComponent {
   group?: string;
 }
 
+function toSlug(name: string): string {
+  const clean = name
+    .toLowerCase()
+    .replace(/service|layer|engine|cluster|system|component/gi, "")
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return clean || "service";
+}
+
+function toSchemaName(name: string): string {
+  const base = name.replace(/_db|_schema|service|db|layer|engine/gi, "").trim();
+  const clean = base.charAt(0).toUpperCase() + base.slice(1);
+  return `${clean || "Domain"} Schema`;
+}
+
+export function getHandleForType(type: string, direction: "top" | "bottom" | "left" | "right"): string {
+  const t = (type || "").toLowerCase();
+  if (t === "actor") return `act-${direction}`;
+  if (t === "frontend") return `fe-${direction}`;
+  if (t === "gateway") return `gw-${direction}`;
+  if (t === "service" || t === "microservice") return `svc-${direction}`;
+  if (t === "database") return `db-${direction}`;
+  if (t === "cache") return `cache-${direction}`;
+  if (t === "queue") return `q-${direction}`;
+  if (t === "devops") return `dev-${direction}`;
+  return `svc-${direction}`;
+}
+
+export function getHldNodeTier(n: Record<string, unknown>): number {
+  const rawData = (n.data as Record<string, unknown>) || {};
+  const type = String(n.type || "").toLowerCase();
+  const id = String(n.id || "").toLowerCase();
+  const label = String(rawData.label || n.label || n.name || "").toLowerCase();
+  const role = String(rawData.role || n.role || "").toLowerCase();
+
+  // Tier 0: External Actors / Stakeholders / Users
+  if (
+    type === "actor" ||
+    id.includes("user") ||
+    id.includes("actor") ||
+    id.includes("admin") ||
+    id.includes("client") ||
+    label.includes("user") ||
+    label.includes("admin") ||
+    label.includes("client") ||
+    label.includes("stakeholder") ||
+    role.includes("consumer")
+  ) {
+    return 0;
+  }
+
+  // Tier 1: Frontend Applications & User Interfaces
+  if (
+    type === "frontend" ||
+    id.includes("frontend") ||
+    id.includes("web") ||
+    id.includes("app") ||
+    label.includes("web app") ||
+    label.includes("next.js") ||
+    label.includes("react") ||
+    label.includes("frontend") ||
+    label.includes("portal")
+  ) {
+    return 1;
+  }
+
+  // Tier 2: Ingress & API Gateway Layer
+  if (
+    type === "gateway" ||
+    id.includes("gateway") ||
+    id.includes("gw") ||
+    id.includes("ingress") ||
+    id.includes("waf") ||
+    label.includes("gateway") ||
+    label.includes("ingress") ||
+    label.includes("reverse proxy") ||
+    label.includes("waf") ||
+    label.includes("alb")
+  ) {
+    return 2;
+  }
+
+  // Tier 4: Asynchronous Messaging & Event Brokers
+  if (
+    type === "queue" ||
+    id.includes("broker") ||
+    id.includes("queue") ||
+    id.includes("kafka") ||
+    id.includes("rabbitmq") ||
+    id.includes("event") ||
+    label.includes("broker") ||
+    label.includes("queue") ||
+    label.includes("kafka") ||
+    label.includes("rabbitmq") ||
+    label.includes("event bus")
+  ) {
+    return 4;
+  }
+
+  // Tier 5: Persistence, Relational DB & In-Memory Cache
+  if (
+    type === "database" ||
+    type === "cache" ||
+    id.includes("database") ||
+    id.includes("db") ||
+    id.includes("postgres") ||
+    id.includes("sql") ||
+    id.includes("cache") ||
+    id.includes("redis") ||
+    label.includes("database") ||
+    label.includes("db") ||
+    label.includes("postgres") ||
+    label.includes("sql") ||
+    label.includes("redis") ||
+    label.includes("cache")
+  ) {
+    return 5;
+  }
+
+  // Tier 6: Cloud Infrastructure, CI/CD & Observability
+  if (
+    type === "devops" ||
+    id.includes("cicd") ||
+    id.includes("github") ||
+    id.includes("k8s") ||
+    id.includes("ecs") ||
+    id.includes("docker") ||
+    id.includes("prometheus") ||
+    id.includes("grafana") ||
+    id.includes("monitoring") ||
+    label.includes("ci/cd") ||
+    label.includes("github") ||
+    label.includes("kubernetes") ||
+    label.includes("ecs") ||
+    label.includes("prometheus") ||
+    label.includes("grafana") ||
+    label.includes("monitoring")
+  ) {
+    return 6;
+  }
+
+  // Tier 3: Core Domain Microservices & Business Logic (Default)
+  return 3;
+}
+
+export function layoutHldTopDown(
+  rawNodes: Array<Record<string, unknown>>,
+  rawEdges: Array<Record<string, unknown>>
+): { nodes: Node[]; edges: Edge[] } {
+  const tier0_actors: Array<Record<string, unknown>> = [];
+  const tier1_frontend: Array<Record<string, unknown>> = [];
+  const tier2_gateway: Array<Record<string, unknown>> = [];
+  const tier3_services: Array<Record<string, unknown>> = [];
+  const tier4_broker: Array<Record<string, unknown>> = [];
+  const tier5_data: Array<Record<string, unknown>> = [];
+  const tier6_cloud: Array<Record<string, unknown>> = [];
+
+  rawNodes.forEach((n) => {
+    // Skip old layer group nodes if present in rawNodes to avoid duplicate containers
+    if (String(n.type) === "layerGroup") return;
+    const tier = getHldNodeTier(n);
+    if (tier === 0) tier0_actors.push(n);
+    else if (tier === 1) tier1_frontend.push(n);
+    else if (tier === 2) tier2_gateway.push(n);
+    else if (tier === 4) tier4_broker.push(n);
+    else if (tier === 5) tier5_data.push(n);
+    else if (tier === 6) tier6_cloud.push(n);
+    else tier3_services.push(n);
+  });
+
+  const hasTwoServiceRows = tier3_services.length > 4;
+  const tier3A = hasTwoServiceRows
+    ? tier3_services.slice(0, Math.ceil(tier3_services.length / 2))
+    : tier3_services;
+  const tier3B = hasTwoServiceRows
+    ? tier3_services.slice(Math.ceil(tier3_services.length / 2))
+    : [];
+
+  // Strictly increasing vertical tier Y coordinates (North to South Top -> Down)
+  const y0 = 60;
+  const y1 = 210;
+  const y2 = 380;
+  const y3A = 560;
+  const y3B = 740;
+  const y4 = hasTwoServiceRows ? 920 : 740;
+  const y5 = hasTwoServiceRows ? 1100 : 920;
+  const y6 = hasTwoServiceRows ? 1280 : 1100;
+
+  const positionedNodes: Node[] = [];
+  const CANVAS_CENTER = 800;
+
+  // Add clean background layer groups for tiers that have nodes
+  if (tier0_actors.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier0",
+      type: "layerGroup",
+      data: {
+        label: "Tier 0: Client & Operator Actors",
+        subtitle: "External Users · Platform Stakeholders · Administrators",
+        count: tier0_actors.length,
+      },
+      position: { x: 80, y: 30 },
+      style: { width: 1440, height: 110, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  if (tier1_frontend.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier1",
+      type: "layerGroup",
+      data: {
+        label: "Tier 1: Frontend Client Applications",
+        subtitle: "Next.js Web Application · Mobile Clients · Public Ingress",
+        count: tier1_frontend.length,
+      },
+      position: { x: 80, y: 180 },
+      style: { width: 1440, height: 155, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  if (tier2_gateway.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier2",
+      type: "layerGroup",
+      data: {
+        label: "Tier 2: Ingress & API Gateway Layer",
+        subtitle: "NGINX / Kong · TLS 1.3 · Rate Limiting · JWT Authentication",
+        count: tier2_gateway.length,
+      },
+      position: { x: 80, y: 350 },
+      style: { width: 1440, height: 155, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  if (tier3_services.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier3",
+      type: "layerGroup",
+      data: {
+        label: "Tier 3: Core Domain Microservices Cluster",
+        subtitle: "Autonomous Microservices · REST / gRPC Internal APIs",
+        count: tier3_services.length,
+      },
+      position: { x: 80, y: 530 },
+      style: { width: 1440, height: hasTwoServiceRows ? 340 : 155, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  if (tier4_broker.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier4",
+      type: "layerGroup",
+      data: {
+        label: "Tier 4: Event Messaging & Distributed Broker",
+        subtitle: "Kafka / RabbitMQ · Topic Exchanges · Dead-Letter Queues",
+        count: tier4_broker.length,
+      },
+      position: { x: 80, y: hasTwoServiceRows ? 890 : 710 },
+      style: { width: 1440, height: 155, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  if (tier5_data.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier5",
+      type: "layerGroup",
+      data: {
+        label: "Tier 5: Relational Persistence & In-Memory Cache",
+        subtitle: "PostgreSQL 16 Multi-AZ · Redis 7.2 Distributed Cache",
+        count: tier5_data.length,
+      },
+      position: { x: 80, y: hasTwoServiceRows ? 1070 : 890 },
+      style: { width: 1440, height: 155, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  if (tier6_cloud.length > 0) {
+    positionedNodes.push({
+      id: "hgroup-tier6",
+      type: "layerGroup",
+      data: {
+        label: "Tier 6: Cloud Infrastructure, CI/CD & Observability",
+        subtitle: "AWS ECS Fargate · GitHub Actions CI/CD · Prometheus & Grafana APM",
+        count: tier6_cloud.length,
+      },
+      position: { x: 80, y: hasTwoServiceRows ? 1250 : 1070 },
+      style: { width: 1440, height: 155, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+  }
+
+  function placeRow(items: Array<Record<string, unknown>>, tierY: number, cardW: number = 300, gap: number = 40) {
+    const count = items.length;
+    if (count === 0) return;
+    const totalWidth = count * cardW + (count - 1) * gap;
+    const startX = CANVAS_CENTER - totalWidth / 2;
+    items.forEach((item, idx) => {
+      const id = String(item.id || `node-${positionedNodes.length}`);
+      const rawData = (item.data as Record<string, unknown>) || {};
+      const nodeLabel = String(rawData.label || item.label || item.name || id);
+      const nodeType = String(item.type || "service");
+      const x = Math.round(startX + idx * (cardW + gap));
+
+      positionedNodes.push({
+        id,
+        type: nodeType,
+        position: { x, y: tierY },
+        data: {
+          label: nodeLabel,
+          role: String(rawData.role || item.role || ""),
+          tech: String(rawData.tech || item.tech || ""),
+          description: String(rawData.description || item.description || item.desc || ""),
+          division: String(rawData.division || item.division || nodeType),
+          ...rawData,
+        },
+      } as Node);
+    });
+  }
+
+  placeRow(tier0_actors, y0, 200, 40);
+  placeRow(tier1_frontend, y1, 300, 40);
+  placeRow(tier2_gateway, y2, 300, 40);
+  placeRow(tier3A, y3A, 300, 40);
+  if (hasTwoServiceRows) {
+    placeRow(tier3B, y3B, 300, 40);
+  }
+  placeRow(tier4_broker, y4, 300, 40);
+  placeRow(tier5_data, y5, 300, 50);
+  placeRow(tier6_cloud, y6, 300, 40);
+
+  // Map handles on explicitEdges
+  const nodeMap = new Map<string, Node>();
+  positionedNodes.forEach((n) => nodeMap.set(n.id, n));
+
+  const resolvedEdges: Edge[] = rawEdges.map((e, idx) => {
+    const srcNode = nodeMap.get(String(e.source));
+    const tgtNode = nodeMap.get(String(e.target));
+
+    let srcHandle: string | undefined = undefined;
+    let tgtHandle: string | undefined = undefined;
+
+    if (srcNode && tgtNode) {
+      const srcY = srcNode.position.y;
+      const tgtY = tgtNode.position.y;
+      const srcX = srcNode.position.x;
+      const tgtX = tgtNode.position.x;
+
+      if (srcY < tgtY - 30) {
+        srcHandle = getHandleForType(srcNode.type || "service", "bottom");
+        tgtHandle = getHandleForType(tgtNode.type || "service", "top");
+      } else if (srcY > tgtY + 30) {
+        srcHandle = getHandleForType(srcNode.type || "service", "top");
+        tgtHandle = getHandleForType(tgtNode.type || "service", "bottom");
+      } else {
+        srcHandle = getHandleForType(srcNode.type || "service", srcX < tgtX ? "right" : "left");
+        tgtHandle = getHandleForType(tgtNode.type || "service", srcX < tgtX ? "left" : "right");
+      }
+    }
+
+    return {
+      ...e,
+      id: String(e.id || `edge-${idx}`),
+      source: String(e.source),
+      target: String(e.target),
+      sourceHandle: e.sourceHandle || srcHandle,
+      targetHandle: e.targetHandle || tgtHandle,
+      type: "animatedFlow",
+      animated: true,
+      data: (e.data as Record<string, unknown>) || (e.label ? { label: String(e.label) } : {}),
+    } as Edge;
+  });
+
+  return applyColorThemesToGraph(positionedNodes, resolvedEdges);
+}
+
+/**
+ * Computes tight dynamic bounding box for an architectural layer group container
+ * so it fits exactly around its child nodes with zero unnecessary dead space.
+ */
+export function computeGroupBounds(
+  nodePositions: Array<{ y: number; height?: number }>,
+  topPadding: number = 70,
+  bottomPadding: number = 30,
+  defaultNodeHeight: number = 92
+): { y: number; height: number } {
+  if (nodePositions.length === 0) return { y: 40, height: 190 };
+  const ys = nodePositions.map((p) => p.y);
+  const minY = Math.min(...ys);
+  const maxItem = nodePositions.reduce(
+    (max, curr) => (curr.y > max.y ? curr : max),
+    nodePositions[0]
+  );
+  const lastHeight = maxItem.height || defaultNodeHeight;
+  const maxY = maxItem.y + lastHeight;
+  const y = Math.max(20, minY - topPadding);
+  const height = maxY + bottomPadding - y;
+  return { y, height: Math.max(height, 160) };
+}
+
+/**
+ * Intelligent Left-to-Right Horizontal Tree Layout for HLD
+ * Arranges architecture tiers as columns (West to East) with vertical symmetrical branching.
+ */
+export function layoutHldLeftToRight(
+  rawNodes: Array<Record<string, unknown>>,
+  rawEdges: Array<Record<string, unknown>>
+): { nodes: Node[]; edges: Edge[] } {
+  const tier0_actors: Array<Record<string, unknown>> = [];
+  const tier1_frontend: Array<Record<string, unknown>> = [];
+  const tier2_gateway: Array<Record<string, unknown>> = [];
+  const tier3_services: Array<Record<string, unknown>> = [];
+  const tier4_broker: Array<Record<string, unknown>> = [];
+  const tier5_data: Array<Record<string, unknown>> = [];
+  const tier6_cloud: Array<Record<string, unknown>> = [];
+
+  rawNodes.forEach((n) => {
+    if (String(n.type) === "layerGroup") return;
+    const tier = getHldNodeTier(n);
+    if (tier === 0) tier0_actors.push(n);
+    else if (tier === 1) tier1_frontend.push(n);
+    else if (tier === 2) tier2_gateway.push(n);
+    else if (tier === 4) tier4_broker.push(n);
+    else if (tier === 5) tier5_data.push(n);
+    else if (tier === 6) tier6_cloud.push(n);
+    else tier3_services.push(n);
+  });
+
+  const cardH = 92;
+  const gapY = 32;
+  const colPitchY = cardH + gapY;
+  const maxColItems = Math.max(
+    tier0_actors.length,
+    tier1_frontend.length,
+    tier2_gateway.length,
+    tier3_services.length,
+    tier4_broker.length,
+    tier5_data.length,
+    tier6_cloud.length,
+    1
+  );
+  const treeTotalHeight = Math.max(maxColItems * colPitchY + 100, 680);
+  const treeCenterY = Math.round(treeTotalHeight / 2);
+
+  // Column X coordinates for spacious, clean horizontal flow
+  const colX0 = 80;
+  const colX1 = 580;
+  const colX2 = 1120;
+  const colX3 = 1720;
+  const colX4 = 2360;
+  const colX5 = 2940;
+  const colX6 = 3560;
+
+  const positionedNodes: Node[] = [];
+
+  function placeColumn(
+    items: Array<Record<string, unknown>>,
+    colX: number,
+    colCardH: number = 92,
+    colGap: number = 32
+  ) {
+    const count = items.length;
+    if (count === 0) return;
+    const totalH = count * colCardH + (count - 1) * colGap;
+    const startY = Math.round(treeCenterY - totalH / 2);
+
+    items.forEach((item, idx) => {
+      const id = String(item.id || `node-${positionedNodes.length}`);
+      const rawData = (item.data as Record<string, unknown>) || {};
+      const nodeLabel = String(rawData.label || item.label || item.name || id);
+      const nodeType = String(item.type || "service");
+      const y = Math.round(startY + idx * (colCardH + colGap));
+
+      positionedNodes.push({
+        id,
+        type: nodeType,
+        position: { x: colX + 25, y },
+        data: {
+          label: nodeLabel,
+          role: String(rawData.role || item.role || ""),
+          tech: String(rawData.tech || item.tech || ""),
+          description: String(rawData.description || item.description || item.desc || ""),
+          division: String(rawData.division || item.division || nodeType),
+          ...rawData,
+        },
+      } as Node);
+    });
+  }
+
+  // Add column background layer groups for tiers with tight dynamic bounding and generous spacing
+  const tierConfigs = [
+    { tier: 0, items: tier0_actors, x: colX0, label: "Tier 0: Client & Operator Actors", subtitle: "Stakeholders & Users", w: 320 },
+    { tier: 1, items: tier1_frontend, x: colX1, label: "Tier 1: Frontend Client Apps", subtitle: "Next.js Web Application", w: 360 },
+    { tier: 2, items: tier2_gateway, x: colX2, label: "Tier 2: Ingress & API Gateway", subtitle: "NGINX / Kong · TLS 1.3 · WAF", w: 360 },
+    { tier: 3, items: tier3_services, x: colX3, label: "Tier 3: Domain Microservices Cluster", subtitle: "Autonomous Core Microservices", w: 420 },
+    { tier: 4, items: tier4_broker, x: colX4, label: "Tier 4: Event Messaging Broker", subtitle: "Kafka / RabbitMQ · DLQ", w: 360 },
+    { tier: 5, items: tier5_data, x: colX5, label: "Tier 5: Persistence & Cache", subtitle: "PostgreSQL 16 · Redis Cache", w: 400 },
+    { tier: 6, items: tier6_cloud, x: colX6, label: "Tier 6: Cloud Infrastructure & CI/CD", subtitle: "AWS ECS Fargate · Observability", w: 380 },
+  ];
+
+  tierConfigs.forEach((cfg) => {
+    if (cfg.items.length > 0) {
+      const colCardH = cfg.tier === 0 ? 70 : 92;
+      const colGap = cfg.tier === 0 ? 24 : 32;
+      const count = cfg.items.length;
+      const totalH = count * colCardH + (count - 1) * colGap;
+      const startY = Math.round(treeCenterY - totalH / 2);
+      const positions = cfg.items.map((_, idx) => ({
+        y: Math.round(startY + idx * (colCardH + colGap)),
+        height: colCardH,
+      }));
+      const bounds = computeGroupBounds(positions, 70, 30, colCardH);
+      positionedNodes.push({
+        id: `hgroup-lr-tier${cfg.tier}`,
+        type: "layerGroup",
+        data: {
+          label: cfg.label,
+          subtitle: cfg.subtitle,
+          count: cfg.items.length,
+          ...(cfg.tier === 0 ? { hideExplore: true } : {}),
+        },
+        position: { x: cfg.x - 20, y: bounds.y },
+        style: { width: cfg.w, height: bounds.height, zIndex: -1, pointerEvents: "none" },
+        draggable: false,
+        selectable: false,
+      });
+    }
+  });
+
+  placeColumn(tier0_actors, colX0, 70, 24);
+  placeColumn(tier1_frontend, colX1, 92, 32);
+  placeColumn(tier2_gateway, colX2, 92, 32);
+  placeColumn(tier3_services, colX3, 92, 32);
+  placeColumn(tier4_broker, colX4, 92, 32);
+  placeColumn(tier5_data, colX5, 92, 32);
+  placeColumn(tier6_cloud, colX6, 92, 32);
+
+  // Map handles for Left -> Right flow with proper connectivity
+  const nodeMap = new Map<string, Node>();
+  positionedNodes.forEach((n) => nodeMap.set(n.id, n));
+
+  const resolvedEdges: Edge[] = rawEdges.map((e, idx) => {
+    const srcNode = nodeMap.get(String(e.source));
+    const tgtNode = nodeMap.get(String(e.target));
+
+    let srcHandle: string | undefined = undefined;
+    let tgtHandle: string | undefined = undefined;
+
+    if (srcNode && tgtNode) {
+      const srcX = srcNode.position.x;
+      const tgtX = tgtNode.position.x;
+      const srcY = srcNode.position.y;
+      const tgtY = tgtNode.position.y;
+
+      if (srcX < tgtX - 40) {
+        srcHandle = getHandleForType(srcNode.type || "service", "right");
+        tgtHandle = getHandleForType(tgtNode.type || "service", "left");
+      } else if (srcX > tgtX + 40) {
+        srcHandle = getHandleForType(srcNode.type || "service", "left");
+        tgtHandle = getHandleForType(tgtNode.type || "service", "right");
+      } else {
+        if (srcY < tgtY) {
+          srcHandle = getHandleForType(srcNode.type || "service", "bottom");
+          tgtHandle = getHandleForType(tgtNode.type || "service", "top");
+        } else {
+          srcHandle = getHandleForType(srcNode.type || "service", "top");
+          tgtHandle = getHandleForType(tgtNode.type || "service", "bottom");
+        }
+      }
+    }
+
+    return {
+      ...e,
+      id: String(e.id || `edge-${idx}`),
+      source: String(e.source),
+      target: String(e.target),
+      sourceHandle: srcHandle || e.sourceHandle,
+      targetHandle: tgtHandle || e.targetHandle,
+      type: "animatedFlow",
+      animated: true,
+      data: (e.data as Record<string, unknown>) || (e.label ? { label: String(e.label) } : {}),
+    } as Edge;
+  });
+
+  return applyColorThemesToGraph(positionedNodes, resolvedEdges);
+}
+
+/**
+ * Universal Left-to-Right transformer for LLD graphs
+ * Groups nodes into horizontal columns and routes edges from right to left
+ */
+export function layoutLldLeftToRight(
+  inputNodes: Node[],
+  inputEdges: Edge[]
+): { nodes: Node[]; edges: Edge[] } {
+  const contentNodes = inputNodes.filter((n) => n.type !== "layerGroup");
+  const layerGroups = inputNodes.filter((n) => n.type === "layerGroup");
+
+  if (contentNodes.length === 0) {
+    return { nodes: inputNodes, edges: inputEdges };
+  }
+
+  // Find unique Y values to identify tiers
+  const yValues = contentNodes.map((n) => n.position.y);
+  yValues.sort((a, b) => a - b);
+
+  const clusters: number[][] = [];
+  yValues.forEach((y) => {
+    const existing = clusters.find((c) => Math.abs(c[0] - y) < 60);
+    if (existing) {
+      existing.push(y);
+    } else {
+      clusters.push([y]);
+    }
+  });
+
+  const tierAvgY = clusters.map((c) => c.reduce((sum, v) => sum + v, 0) / c.length).sort((a, b) => a - b);
+
+  const tierBuckets: Node[][] = tierAvgY.map(() => []);
+  contentNodes.forEach((n) => {
+    let closestTierIdx = 0;
+    let minDist = Infinity;
+    tierAvgY.forEach((avgY, idx) => {
+      const dist = Math.abs(n.position.y - avgY);
+      if (dist < minDist) {
+        minDist = dist;
+        closestTierIdx = idx;
+      }
+    });
+    tierBuckets[closestTierIdx].push(n);
+  });
+
+  const maxItemsInTier = Math.max(...tierBuckets.map((b) => b.length), 1);
+  const cardH = 92;
+  const gapY = 32;
+  const colPitchY = cardH + gapY;
+  const totalTreeHeight = Math.max(maxItemsInTier * colPitchY + 60, 560);
+  const centerY = Math.round(totalTreeHeight / 2);
+
+  const colPitchX = 380;
+  const startX = 80;
+
+  const positionedNodes: Node[] = [];
+
+  layerGroups.forEach((g, idx) => {
+    if (idx < tierBuckets.length && tierBuckets[idx].length > 0) {
+      const colX = startX + idx * colPitchX;
+      const bucket = tierBuckets[idx];
+      const count = bucket.length;
+      const totalColH = count * cardH + (count - 1) * gapY;
+      const startY = Math.round(centerY - totalColH / 2);
+      const positions = bucket.map((_, nodeIdx) => ({
+        y: Math.round(startY + nodeIdx * (cardH + gapY)),
+        height: cardH,
+      }));
+      const bounds = computeGroupBounds(positions, 70, 30, cardH);
+
+      positionedNodes.push({
+        ...g,
+        id: g.id,
+        position: { x: colX - 20, y: bounds.y },
+        style: {
+          ...g.style,
+          width: 320,
+          height: bounds.height,
+          zIndex: -1,
+          pointerEvents: "none",
+        },
+      });
+    }
+  });
+
+  tierBuckets.forEach((bucket, tierIdx) => {
+    bucket.sort((a, b) => a.position.x - b.position.x);
+
+    const colX = startX + tierIdx * colPitchX;
+    const count = bucket.length;
+    const totalColH = count * cardH + (count - 1) * gapY;
+    const startY = Math.round(centerY - totalColH / 2);
+
+    bucket.forEach((node, nodeIdx) => {
+      const y = Math.round(startY + nodeIdx * (cardH + gapY));
+      positionedNodes.push({
+        ...node,
+        position: { x: colX, y },
+      });
+    });
+  });
+
+  const nodeMap = new Map<string, Node>();
+  positionedNodes.forEach((n) => nodeMap.set(n.id, n));
+
+  const resolvedEdges: Edge[] = inputEdges.map((e, idx) => {
+    const srcNode = nodeMap.get(String(e.source));
+    const tgtNode = nodeMap.get(String(e.target));
+
+    let srcHandle: string | undefined = undefined;
+    let tgtHandle: string | undefined = undefined;
+
+    if (srcNode && tgtNode) {
+      const srcX = srcNode.position.x;
+      const tgtX = tgtNode.position.x;
+      const srcY = srcNode.position.y;
+      const tgtY = tgtNode.position.y;
+
+      if (srcX < tgtX - 40) {
+        srcHandle = getHandleForType(srcNode.type || "service", "right");
+        tgtHandle = getHandleForType(tgtNode.type || "service", "left");
+      } else if (srcX > tgtX + 40) {
+        srcHandle = getHandleForType(srcNode.type || "service", "left");
+        tgtHandle = getHandleForType(tgtNode.type || "service", "right");
+      } else {
+        if (srcY < tgtY) {
+          srcHandle = getHandleForType(srcNode.type || "service", "bottom");
+          tgtHandle = getHandleForType(tgtNode.type || "service", "top");
+        } else {
+          srcHandle = getHandleForType(srcNode.type || "service", "top");
+          tgtHandle = getHandleForType(tgtNode.type || "service", "bottom");
+        }
+      }
+    }
+
+    return {
+      ...e,
+      id: String(e.id || `edge-${idx}`),
+      sourceHandle: srcHandle || e.sourceHandle,
+      targetHandle: tgtHandle || e.targetHandle,
+      type: "animatedFlow",
+      animated: true,
+    } as Edge;
+  });
+
+  return applyColorThemesToGraph(positionedNodes, resolvedEdges);
+}
+
 /**
  * Intelligent HLD Parser & Hierarchical Layer Synthesizer
- * Converts any HLD JSON into a production-grade, multi-tier architectural topology (matching Image 2)
+ * Converts any HLD JSON into a production-grade, multi-tier architectural topology
  */
 export function parseHldToReactFlow(
   hldJson: Record<string, unknown> | null,
-  rawPrompt?: string
+  rawPrompt?: string,
+  layoutDirection: "TB" | "LR" = "TB"
 ): {
   nodes: Node[];
   edges: Edge[];
@@ -62,288 +826,443 @@ export function parseHldToReactFlow(
     return { nodes: [], edges: [] };
   }
 
-  // 1. If explicit nodes & edges are provided
-  if (
-    Array.isArray(hldJson.nodes) &&
-    hldJson.nodes.length > 0 &&
-    (hldJson.nodes[0] as Record<string, unknown>).type
-  ) {
-    const nodes = (hldJson.nodes as Node[]).map((n) => ({
-      ...n,
-      type: n.type || "service",
-    }));
-    const edges = ((hldJson.edges || []) as Edge[]).map((e, idx) => ({
-      ...e,
-      id: e.id || `edge-${idx}`,
-      type: "animatedFlow",
-      animated: true,
-    }));
-    return applyColorThemesToGraph(nodes, edges);
-  }
+  // 1. Support diagrams structure from AI Engine (e.g., diagrams[0].nodes / edges)
+  const diagrams = Array.isArray(hldJson.diagrams) ? (hldJson.diagrams as Array<Record<string, unknown>>) : null;
+  const firstDiagram = diagrams && diagrams.length > 0 ? diagrams[0] : null;
+  const explicitNodes = (
+    Array.isArray(hldJson.nodes) && hldJson.nodes.length > 0
+      ? (hldJson.nodes as Array<Record<string, unknown>>)
+      : firstDiagram && Array.isArray(firstDiagram.nodes) && firstDiagram.nodes.length > 0
+      ? (firstDiagram.nodes as Array<Record<string, unknown>>)
+      : null
+  );
 
-  // 2. Extract services from major_services or components
-  const majorServices = Array.isArray(hldJson.major_services)
+  const explicitEdges = (
+    Array.isArray(hldJson.edges)
+      ? (hldJson.edges as Array<Record<string, unknown>>)
+      : firstDiagram && Array.isArray(firstDiagram.edges)
+      ? (firstDiagram.edges as Array<Record<string, unknown>>)
+      : []
+  );
+
+
+  // 2. Extract services from major_services, components, or explicit skeleton nodes
+  const explicitServices = explicitNodes
+    ? explicitNodes.filter((n) => {
+        const type = String(n.type || "").toLowerCase();
+        const id = String(n.id || "").toLowerCase();
+        return (
+          type === "service" ||
+          type === "microservice" ||
+          type === "backend" ||
+          type === "worker" ||
+          id.includes("service") ||
+          id.includes("backend")
+        );
+      })
+    : [];
+
+  const rawDeclaredServices = Array.isArray(hldJson.major_services)
     ? (hldJson.major_services as Array<Record<string, unknown>>)
     : Array.isArray(hldJson.services)
     ? (hldJson.services as Array<Record<string, unknown>>)
     : null;
 
-  const defaultServices = [
-    { code: "SVC-01", label: "Authentication & Role Service", tech: "JWT · OAuth2 · RBAC Guard", db: "authentication_db_schema", desc: "Handles identity, credentials, tokens, and permissions." },
-    { code: "SVC-02", label: "Catalog & Search Service", tech: "Elasticsearch · Query Engine", db: "catalog_db_schema", desc: "Fast indexing, book cataloging, metadata queries, and filtering." },
-    { code: "SVC-03", label: "Circulation & Borrowing Service", tech: "ACID Transactions · Due Dates", db: "circulation_db_schema", desc: "Processes checkouts, returns, renewals, fines, and reservations." },
-    { code: "SVC-04", label: "Notification & Reminder Service", tech: "Email · SMS · Push Alerts", db: "notification_db_schema", desc: "Dispatches automated reminders for due dates, holds, and fines." },
-    { code: "SVC-05", label: "Inventory & Asset Service", tech: "RFID · Barcode Tracker", db: "inventory_db_schema", desc: "Tracks physical copy availability, shelf locations, barcodes, and damaged assets." },
-    { code: "SVC-06", label: "Reporting & Analytics Service", tech: "Aggregations · BI Pipeline", db: "reporting_db_schema", desc: "Generates circulation metrics, overdue reports, and usage trends." },
+  const majorServices = (rawDeclaredServices && rawDeclaredServices.length >= 1)
+    ? rawDeclaredServices
+    : (explicitServices.length >= 1 ? explicitServices : null);
+
+  interface MicroserviceDef {
+    code: string;
+    label: string;
+    tech: string;
+    db: string;
+    desc: string;
+    is_new?: boolean;
+    version_added?: string;
+  }
+
+  const defaultServices: MicroserviceDef[] = [
+    { code: "SVC-01", label: "Authentication & Identity Service", tech: "JWT · OAuth2 · RBAC Guard", db: "auth_schema", desc: "Handles identity, credentials, tokens, and access permissions." },
+    { code: "SVC-02", label: "Core Business Domain Service", tech: "Domain Logic · Processing Engine", db: "domain_schema", desc: "Fast execution of primary business domain logic and queries." },
+    { code: "SVC-03", label: "Workflow & Transaction Service", tech: "ACID Transactions · State Machine", db: "workflow_schema", desc: "Processes distributed transactions, lifecycle events, and mutations." },
+    { code: "SVC-04", label: "Notification & Messaging Service", tech: "Email · Push Alerts · Webhooks", db: "notification_schema", desc: "Dispatches automated reminders, event webhooks, and alerts." },
+    { code: "SVC-05", label: "Data Pipeline & Ingestion Service", tech: "Stream Processor · Storage Adapter", db: "ingestion_schema", desc: "Processes asynchronous event telemetry and asset storage." },
+    { code: "SVC-06", label: "Reporting & Analytics Service", tech: "Aggregations · BI Pipeline", db: "analytics_schema", desc: "Generates operational metrics, analytical aggregates, and usage trends." },
   ];
 
-  const microservices = majorServices && majorServices.length >= 3
-    ? majorServices.slice(0, 6).map((s, idx) => ({
-        code: String(s.service_id || `SVC-0${idx + 1}`),
-        label: String(s.name || `Service ${idx + 1}`),
-        tech: String(s.database_binding || s.responsibility || "Microservice"),
-        db: String(s.database_binding || `service_${idx + 1}_db`),
-        desc: String(s.responsibility || `${s.name} core business logic.`),
-      }))
+  const microservices: MicroserviceDef[] = majorServices && majorServices.length >= 1
+    ? majorServices.map((s, idx): MicroserviceDef => {
+        const rawS = s as any;
+        return {
+          code: String(s.service_id || s.code || `SVC-0${idx + 1}`),
+          label: String(s.name || s.label || `Service ${idx + 1}`),
+          tech: String(s.protocol || s.type || s.database_binding || "Microservice"),
+          db: String(s.database_binding || s.db || `${toSlug(String(s.name || s.label || `svc_${idx + 1}`))}_schema`),
+          desc: String(s.responsibility || s.description || `${s.name || s.label || 'Service'} core business logic.`),
+          is_new: Boolean(rawS.is_new || rawS.data?.is_new || rawS.version_added || rawS.data?.version_added),
+          version_added: rawS.version_added || rawS.data?.version_added,
+        };
+      })
     : defaultServices;
 
   const nodes: Node[] = [];
+  const edges: Edge[] = [];
 
-  // ── 4 Systematic Architecture Divisions (Spacious Master Bounding Containers) ──
-  // 1. Frontend Division (Top Center)
+  const serviceGapY = 180;
+
+  // ── Entity Nodes Placed with Clear Separation & Precision ──
+  // ── [Segment 1: Users & Stakeholders (Far Left)] ──
+  const explicitActors = explicitNodes
+    ? explicitNodes.filter((n) => {
+        const type = String(n.type || "").toLowerCase();
+        const id = String(n.id || "").toLowerCase();
+        return type === "actor" || id.includes("user") || id.includes("actor") || id.includes("client");
+      })
+    : [];
+
+  const rawActors = Array.isArray(hldJson.primary_actors)
+    ? (hldJson.primary_actors as Array<any>)
+    : Array.isArray(hldJson.actors)
+    ? (hldJson.actors as Array<any>)
+    : (explicitActors.length > 0 ? explicitActors : null);
+
+  const actor1Data = rawActors && rawActors[0]
+    ? {
+        label: typeof rawActors[0] === "string" ? rawActors[0] : String(rawActors[0].label || rawActors[0].name || "Client / End User"),
+        role: typeof rawActors[0] === "string" ? "Primary Consumer" : String(rawActors[0].role || "Primary Web & Mobile Consumer"),
+        desc: typeof rawActors[0] === "object" && rawActors[0].description ? String(rawActors[0].description) : "Consumes primary client features, services, and public workflows",
+      }
+    : {
+        label: "Client / End User",
+        role: "Primary Web & Mobile Consumer",
+        desc: "Accesses client interfaces, public APIs, and core platform workflows",
+      };
+
+  const actor2Data = rawActors && rawActors[1]
+    ? {
+        label: typeof rawActors[1] === "string" ? rawActors[1] : String(rawActors[1].label || rawActors[1].name || "System Administrator"),
+        role: typeof rawActors[1] === "string" ? "Platform Administrator" : String(rawActors[1].role || "Operations & Administration Staff"),
+        desc: typeof rawActors[1] === "object" && rawActors[1].description ? String(rawActors[1].description) : "Manages platform resources, permissions, configurations, and reporting",
+      }
+    : {
+        label: "Admin / Operator",
+        role: "Platform Operations & Staff",
+        desc: "Oversees system administration, tenant configuration, and operational reporting",
+      };
+
+  const actorBounds = computeGroupBounds([
+    { y: 340, height: 76 },
+    { y: 540, height: 76 },
+  ], 80, 35, 76);
+
+  nodes.push({
+    id: "group-actors",
+    type: "layerGroup",
+    data: {
+      label: "Users & Stakeholders",
+      division: "frontend",
+      count: 2,
+      subtitle: "Web Browser · Mobile Clients · Administrators",
+      hideExplore: true,
+    },
+    position: { x: 80, y: actorBounds.y },
+    style: { width: 360, height: actorBounds.height, zIndex: -1, pointerEvents: "none" },
+    draggable: false,
+    selectable: false,
+  });
+
+  nodes.push({
+    id: "actor-1",
+    type: "actor",
+    data: {
+      division: "frontend",
+      label: actor1Data.label,
+      role: actor1Data.role,
+      description: actor1Data.desc,
+    },
+    position: { x: 135, y: 340 },
+  });
+
+  nodes.push({
+    id: "actor-2",
+    type: "actor",
+    data: {
+      division: "frontend",
+      label: actor2Data.label,
+      role: actor2Data.role,
+      description: actor2Data.desc,
+    },
+    position: { x: 135, y: 540 },
+  });
+
+  // ── [Segment 2: Client Web Application (Next.js)] ──
+  const explicitFe = explicitNodes
+    ? explicitNodes.find((n) => {
+        const type = String(n.type || "").toLowerCase();
+        const id = String(n.id || "").toLowerCase();
+        return type === "frontend" || id.includes("front") || id.includes("web") || id.includes("app");
+      })
+    : null;
+  const feLabel = explicitFe
+    ? String((explicitFe.data as any)?.label || explicitFe.label || explicitFe.name || "React / Next.js Web Application")
+    : "React / Next.js Web Application";
+
+  const feBounds = computeGroupBounds([{ y: 440, height: 92 }], 80, 35, 92);
+
   nodes.push({
     id: "group-frontend",
     type: "layerGroup",
     data: {
-      label: "Frontend Division",
+      label: "Client Web Application Tier",
       division: "frontend",
-      count: 4,
-      subtitle: "Actors · Web App · API Gateway",
+      count: 1,
+      subtitle: "Next.js App Router · SSR & Client Hydration",
     },
-    position: { x: 550, y: 20 },
-    style: { width: 840, height: 430, zIndex: -1, pointerEvents: "none" },
+    position: { x: 620, y: feBounds.y },
+    style: { width: 380, height: feBounds.height, zIndex: -1, pointerEvents: "none" },
     draggable: false,
     selectable: false,
   });
 
-  // 2. Deployment Division (Left Column)
-  nodes.push({
-    id: "group-deployment",
-    type: "layerGroup",
-    data: {
-      label: "Deployment Division",
-      division: "deployment",
-      count: 3,
-      subtitle: "CI/CD Pipeline · Kubernetes · Observability",
-    },
-    position: { x: 40, y: 280 },
-    style: { width: 330, height: 600, zIndex: -1, pointerEvents: "none" },
-    draggable: false,
-    selectable: false,
-  });
-
-  // 3. Backend Division (Main Center & Right Flank: 2x3 Grid + Event Bus)
-  nodes.push({
-    id: "group-backend",
-    type: "layerGroup",
-    data: {
-      label: "Backend Division",
-      division: "backend",
-      count: 7,
-      subtitle: "Microservices Cluster · Event Bus Broker",
-    },
-    position: { x: 420, y: 570 },
-    style: { width: 1460, height: 450, zIndex: -1, pointerEvents: "none" },
-    draggable: false,
-    selectable: false,
-  });
-
-  // 4. Database Division (Bottom Center)
-  nodes.push({
-    id: "group-database",
-    type: "layerGroup",
-    data: {
-      label: "Database Division",
-      division: "database",
-      count: 2,
-      subtitle: "Relational Persistence & In-Memory Cache",
-    },
-    position: { x: 560, y: 1130 },
-    style: { width: 880, height: 210, zIndex: -1, pointerEvents: "none" },
-    draggable: false,
-    selectable: false,
-  });
-
-  // ── Entity Nodes Symmetrically Positioned Inside Divisions ──
-  // ── [FRONTEND DIVISION] ──
-  // Top Actors (Centered inside group-frontend)
-  nodes.push({
-    id: "actor-student",
-    type: "actor",
-    data: {
-      division: "frontend",
-      label: "Student / User",
-      role: "Primary Web & Mobile Consumer",
-      description: "Searches catalog, borrows books, views active loans",
-    },
-    position: { x: 670, y: 75 },
-  });
-
-  nodes.push({
-    id: "actor-admin",
-    type: "actor",
-    data: {
-      division: "frontend",
-      label: "Admin / Librarian",
-      role: "Library Management Staff",
-      description: "Manages catalog, inventory, fine overrides, and reporting",
-    },
-    position: { x: 1040, y: 75 },
-  });
-
-  // Frontend App (Centered inside group-frontend)
   nodes.push({
     id: "node-frontend",
     type: "frontend",
     data: {
       division: "frontend",
-      label: "React / Next.js Web Application",
+      label: feLabel,
       tech: "Next.js App Router · Tailwind CSS · React 19",
       description: "Unified web client with server-side rendering and client interactivity.",
     },
-    position: { x: 825, y: 175 },
+    position: { x: 665, y: 440 },
   });
 
-  // API Gateway (Centered inside group-frontend)
+  // ── [Segment 3: API Gateway & Ingress Segment] ──
+  const explicitGw = explicitNodes
+    ? explicitNodes.find((n) => {
+        const type = String(n.type || "").toLowerCase();
+        const id = String(n.id || "").toLowerCase();
+        return type === "gateway" || id.includes("gateway") || id.includes("gw") || id.includes("ingress");
+      })
+    : null;
+  const gwLabel = explicitGw
+    ? String((explicitGw.data as any)?.label || explicitGw.label || explicitGw.name || "API Gateway & Auth Layer")
+    : "API Gateway / Ingress NGINX";
+  const gwTech = explicitGw
+    ? String((explicitGw.data as any)?.tech || explicitGw.tech || "NGINX · TLS 1.3 · Rate Limiting · RBAC")
+    : "TLS 1.3 · Rate Limiting · RBAC Guard";
+
+  const gwBounds = computeGroupBounds([{ y: 440, height: 92 }], 80, 35, 92);
+
+  nodes.push({
+    id: "group-gateway",
+    type: "layerGroup",
+    data: {
+      label: "API Gateway & Ingress Segment",
+      division: "frontend",
+      count: 1,
+      subtitle: "Reverse Proxy · TLS 1.3 · Rate Limiter · Auth Guard",
+    },
+    position: { x: 1180, y: gwBounds.y },
+    style: { width: 380, height: gwBounds.height, zIndex: -1, pointerEvents: "none" },
+    draggable: false,
+    selectable: false,
+  });
+
   nodes.push({
     id: "node-gateway",
     type: "gateway",
     data: {
       division: "frontend",
-      label: "API Gateway / Ingress NGINX",
-      tech: "TLS 1.3 · Rate Limiting · RBAC Guard",
+      label: gwLabel,
+      tech: gwTech,
       description: "TLS termination, WAF rate limiting (100 RPS), and route orchestration.",
     },
-    position: { x: 810, y: 310 },
+    position: { x: 1225, y: 440 },
   });
 
-  // ── [BACKEND DIVISION] ──
-  // Microservices Grid (Row 1: SVC-01, SVC-02, SVC-03; Row 2: SVC-05, SVC-06, SVC-04)
-  // Row 1: Direct Ingress Domain Services
-  nodes.push({
-    id: "svc-1",
-    type: "service",
-    data: {
-      division: "backend",
-      code: microservices[0]?.code || "SVC-01",
-      label: microservices[0]?.label || "Authentication & Role Service",
-      tech: microservices[0]?.tech || "JWT · OAuth2 · RBAC",
-      protocol: "gRPC / HTTPS",
-      description: microservices[0]?.desc,
-    },
-    position: { x: 470, y: 650 },
-  });
+  // ── [Segment 4: Domain Microservices Cluster] ──
+  const svcPositions = microservices.map((_, idx) => ({ y: 120 + idx * serviceGapY, height: 92 }));
+  const svcBounds = computeGroupBounds(svcPositions, 80, 35, 92);
 
   nodes.push({
-    id: "svc-2",
-    type: "service",
+    id: "group-backend",
+    type: "layerGroup",
     data: {
+      label: "Domain Microservices Cluster",
       division: "backend",
-      code: microservices[1]?.code || "SVC-02",
-      label: microservices[1]?.label || "Catalog & Search Service",
-      tech: microservices[1]?.tech || "Elasticsearch Query Engine",
-      protocol: "REST / HTTP2",
-      description: microservices[1]?.desc,
+      count: microservices.length,
+      subtitle: "Autonomous Microservices · Domain Business Workflows",
     },
-    position: { x: 840, y: 650 },
+    position: { x: 1800, y: svcBounds.y },
+    style: { width: 440, height: svcBounds.height, zIndex: -1, pointerEvents: "none" },
+    draggable: false,
+    selectable: false,
   });
+
+  microservices.forEach((s, idx) => {
+    nodes.push({
+      id: `svc-${idx + 1}`,
+      type: "service",
+      data: {
+        division: "backend",
+        code: s.code || `SVC-0${idx + 1}`,
+        label: s.label,
+        tech: s.tech,
+        protocol: "gRPC / Internal",
+        description: s.desc,
+        is_new: s.is_new,
+        version_added: s.version_added,
+      },
+      position: { x: 1845, y: 120 + idx * serviceGapY },
+    });
+  });
+
+  // ── [Segment 5: Event Broker & Messaging] ──
+  const commPatterns =
+    hldJson.communication_patterns && typeof hldJson.communication_patterns === "object"
+      ? (hldJson.communication_patterns as Record<string, unknown>)
+      : {};
+  const isKafka = String(commPatterns.asynchronous || "").includes("Kafka");
+
+  const brokerBounds = computeGroupBounds([{ y: 440, height: 92 }], 80, 35, 92);
 
   nodes.push({
-    id: "svc-3",
-    type: "service",
+    id: "group-broker",
+    type: "layerGroup",
     data: {
+      label: "Event Streaming & Broker Segment",
       division: "backend",
-      code: microservices[2]?.code || "SVC-03",
-      label: microservices[2]?.label || "Circulation & Borrowing Service",
-      tech: microservices[2]?.tech || "ACID Transactions",
-      protocol: "gRPC / Internal",
-      description: microservices[2]?.desc,
+      count: 1,
+      subtitle: "RabbitMQ / Apache Kafka · DLQ · Asynchronous Bus",
     },
-    position: { x: 1210, y: 650 },
+    position: { x: 2460, y: brokerBounds.y },
+    style: { width: 380, height: brokerBounds.height, zIndex: -1, pointerEvents: "none" },
+    draggable: false,
+    selectable: false,
   });
 
-  // Row 2: Operational & Event-Driven Domain Services (Directly aligned under Row 1)
-  // Col 1: SVC-05 Inventory directly under SVC-01 Auth
-  nodes.push({
-    id: "svc-5",
-    type: "service",
-    data: {
-      division: "backend",
-      code: microservices[4]?.code || "SVC-05",
-      label: microservices[4]?.label || "Inventory & Asset Service",
-      tech: microservices[4]?.tech || "RFID & Barcode Tracker",
-      protocol: "REST / Internal",
-      description: microservices[4]?.desc,
-    },
-    position: { x: 470, y: 850 },
-  });
-
-  // Col 2: SVC-06 Reporting directly under SVC-02 Catalog
-  nodes.push({
-    id: "svc-6",
-    type: "service",
-    data: {
-      division: "backend",
-      code: microservices[5]?.code || "SVC-06",
-      label: microservices[5]?.label || "Reporting & Analytics Service",
-      tech: microservices[5]?.tech || "BI Aggregations",
-      protocol: "Async Consumer",
-      description: microservices[5]?.desc,
-    },
-    position: { x: 840, y: 850 },
-  });
-
-  // Col 3: SVC-04 Notification directly under SVC-03 Circulation and next to RabbitMQ
-  nodes.push({
-    id: "svc-4",
-    type: "service",
-    data: {
-      division: "backend",
-      code: microservices[3]?.code || "SVC-04",
-      label: microservices[3]?.label || "Notification & Reminder Service",
-      tech: microservices[3]?.tech || "Async Event Worker",
-      protocol: "Async Consumer",
-      description: microservices[3]?.desc,
-    },
-    position: { x: 1210, y: 850 },
-  });
-
-  // Right Flank: RabbitMQ Event Broker (Inside Backend Division)
   nodes.push({
     id: "node-rabbitmq",
     type: "queue",
     data: {
       division: "backend",
-      label: "RabbitMQ Event Broker",
+      label: isKafka ? "Apache Kafka Event Broker" : "RabbitMQ Event Broker",
       subtitle: "Event Messaging · DLQ · Retry x3",
-      description: "Asynchronous domain event streaming with dead-letter exchange and 3 retry attempts.",
+      description: "Asynchronous domain event streaming with dead-letter exchange and retry policy.",
     },
-    position: { x: 1570, y: 745 },
+    position: { x: 2505, y: 440 },
   });
 
-  // ── [DEPLOYMENT DIVISION] ──
-  // Left Column: DevOps, CI/CD, Containerization & Observability
+  // ── [Segment 6: Data Persistence & Storage] ──
+  const dataStrategy =
+    hldJson.data_strategy && typeof hldJson.data_strategy === "object"
+      ? (hldJson.data_strategy as Record<string, unknown>)
+      : {};
+
+  const explicitDb = explicitNodes
+    ? explicitNodes.find((n) => {
+        const type = String(n.type || "").toLowerCase();
+        const id = String(n.id || "").toLowerCase();
+        return type === "database" || id.includes("db") || id.includes("database") || id.includes("postgres") || id.includes("sql");
+      })
+    : null;
+
+  const explicitCache = explicitNodes
+    ? explicitNodes.find((n) => {
+        const type = String(n.type || "").toLowerCase();
+        const id = String(n.id || "").toLowerCase();
+        return type === "cache" || id.includes("cache") || id.includes("redis");
+      })
+    : null;
+
+  const primaryDb = explicitDb
+    ? String((explicitDb.data as any)?.label || explicitDb.label || explicitDb.name || "PostgreSQL Database")
+    : String(dataStrategy.primary_database || "PostgreSQL 16");
+
+  const cachingTier = explicitCache
+    ? String((explicitCache.data as any)?.label || explicitCache.label || explicitCache.name || "Redis Cache")
+    : String(dataStrategy.caching_tier || "Redis 7.2 Cluster");
+
+  const dbBounds = computeGroupBounds([
+    { y: 280, height: 92 },
+    { y: 560, height: 92 },
+  ], 80, 35, 92);
+
+  nodes.push({
+    id: "group-database",
+    type: "layerGroup",
+    data: {
+      label: "Data Persistence & Storage Segment",
+      division: "database",
+      count: 2,
+      subtitle: "PostgreSQL 16 Multi-Schema · Redis 7.2 Cluster",
+    },
+    position: { x: 3060, y: dbBounds.y },
+    style: { width: 420, height: dbBounds.height, zIndex: -1, pointerEvents: "none" },
+    draggable: false,
+    selectable: false,
+  });
+
+  nodes.push({
+    id: "node-redis",
+    type: "cache",
+    data: {
+      division: "database",
+      label: cachingTier,
+      subtitle: "Cache · Session Tokens · PubSub",
+      description: "In-memory caching for query acceleration (300s TTL) and session tokens.",
+    },
+    position: { x: 3105, y: 280 },
+  });
+
+  nodes.push({
+    id: "node-database",
+    type: "database",
+    data: {
+      division: "database",
+      engine: primaryDb,
+      label: primaryDb.includes("PostgreSQL") || primaryDb.includes("DB") ? primaryDb : `${primaryDb} Database`,
+      schema: "Multi-Schema Relational Storage",
+      description:
+        "Centralized ACID relational persistence layer with schema isolation for domain services and automated backups.",
+    },
+    position: { x: 3105, y: 560 },
+  });
+
+  // ── [Segment 7: DevOps, CI/CD & Observability] ──
+  const devBounds = computeGroupBounds([
+    { y: 180, height: 92 },
+    { y: 390, height: 92 },
+    { y: 600, height: 92 },
+  ], 80, 35, 92);
+
+  nodes.push({
+    id: "group-deployment",
+    type: "layerGroup",
+    data: {
+      label: "Platform DevOps & Observability",
+      division: "deployment",
+      count: 3,
+      subtitle: "CI/CD Pipeline · Kubernetes EKS · Prometheus",
+    },
+    position: { x: 3700, y: devBounds.y },
+    style: { width: 400, height: devBounds.height, zIndex: -1, pointerEvents: "none" },
+    draggable: false,
+    selectable: false,
+  });
+
   nodes.push({
     id: "node-github-actions",
     type: "devops",
     data: {
       division: "deployment",
-      label: "GitHub Actions",
+      label: "GitHub Actions CI/CD",
       role: "Build · Test · Scan · Deploy",
       category: "cicd",
-      description: "Automated linting, Pytest unit tests, Docker builds, and Trivy vulnerability scans.",
+      description: "Automated linting, unit tests, Docker builds, and Trivy vulnerability scans.",
     },
-    position: { x: 75, y: 350 },
+    position: { x: 3750, y: 180 },
   });
 
   nodes.push({
@@ -356,7 +1275,7 @@ export function parseHldToReactFlow(
       category: "k8s",
       description: "Container orchestration cluster with horizontal pod autoscaling (min 2, max 10).",
     },
-    position: { x: 75, y: 520 },
+    position: { x: 3750, y: 390 },
   });
 
   nodes.push({
@@ -369,877 +1288,934 @@ export function parseHldToReactFlow(
       category: "monitoring",
       description: "Real-time metrics, CloudWatch container insights, and APM tracing.",
     },
-    position: { x: 75, y: 690 },
+    position: { x: 3750, y: 600 },
   });
 
-  // ── [DATABASE DIVISION] ──
-  // Bottom Center: Persistence & Cache Tier
-  const dataStrategy =
-    hldJson.data_strategy && typeof hldJson.data_strategy === "object"
-      ? (hldJson.data_strategy as Record<string, unknown>)
-      : {};
-  const primaryDb = String(dataStrategy.primary_database || "PostgreSQL 16");
-  const cachingTier = String(dataStrategy.caching_tier || "Redis 7.2 Cluster");
-
-  nodes.push({
-    id: "node-redis",
-    type: "cache",
-    data: {
-      division: "database",
-      label: cachingTier,
-      subtitle: "Cache · Session Tokens · PubSub",
-      description: "In-memory caching for catalog search (300s TTL) and session tokens.",
-    },
-    position: { x: 620, y: 1210 },
+  // ── Connection Edges with Non-Overlapping Systematic Orthogonal Routing ──
+  // Users interacting with Next.js Client Application
+  edges.push({
+    id: "e-act1-fe",
+    source: "actor-1",
+    target: "node-frontend",
+    sourceHandle: "act-right",
+    targetHandle: "fe-left",
+    type: "animatedFlow",
+    data: { label: "Web & Mobile" },
+    animated: true,
+  });
+  edges.push({
+    id: "e-act2-fe",
+    source: "actor-2",
+    target: "node-frontend",
+    sourceHandle: "act-right",
+    targetHandle: "fe-left",
+    type: "animatedFlow",
+    data: { label: "Admin & Staff" },
+    animated: true,
   });
 
-  nodes.push({
-    id: "node-database",
-    type: "database",
-    data: {
-      division: "database",
-      engine: primaryDb,
-      label: primaryDb.includes("PostgreSQL") ? "PostgreSQL Database" : primaryDb,
-      schema: "Multi-Schema Relational Storage",
-      description:
-        "Centralized ACID relational persistence layer with schema isolation for domain services and automated backups.",
-    },
-    position: { x: 1020, y: 1210 },
+  // Client Web App to Ingress Gateway (Clean Horizontal Line on y: 440)
+  edges.push({
+    id: "e-fe-gw",
+    source: "node-frontend",
+    target: "node-gateway",
+    sourceHandle: "fe-right",
+    targetHandle: "gw-left",
+    type: "animatedFlow",
+    data: { label: "HTTPS / REST (TLS 1.3)" },
+    animated: true,
   });
 
-  // ── Connection Edges with Non-Overlapping Systematic Routing & Explicit Handles ──
-  const edges: Edge[] = [
-    // Top Actors to Frontend
-    {
-      id: "e-act1-fe",
-      source: "actor-student",
-      target: "node-frontend",
-      sourceHandle: "act-bottom",
-      targetHandle: "fe-top",
-      type: "animatedFlow",
-      animated: true,
-    },
-    {
-      id: "e-act2-fe",
-      source: "actor-admin",
-      target: "node-frontend",
-      sourceHandle: "act-bottom",
-      targetHandle: "fe-top",
-      type: "animatedFlow",
-      animated: true,
-    },
-
-    // Frontend to Gateway
-    {
-      id: "e-fe-gw",
-      source: "node-frontend",
-      target: "node-gateway",
-      sourceHandle: "fe-bottom",
-      targetHandle: "gw-top",
-      type: "animatedFlow",
-      data: { label: "HTTPS / HTTP2 REST JSON" },
-      animated: true,
-    },
-
-    // Ingress Gateway to Public Row 1 Services
-    {
-      id: "e-gw-svc1",
+  // Ingress Gateway Fan-out to Microservices (gw-right -> svc-left) with clean concise route labels
+  microservices.forEach((s, idx) => {
+    const rawSlug = toSlug(s.label || `svc_${idx + 1}`)
+      .replace(/-service/gi, "")
+      .replace(/-management/gi, "")
+      .replace(/-tracking/gi, "");
+    const shortSlug = rawSlug.split("-").slice(0, 2).join("-") || `svc${idx + 1}`;
+    edges.push({
+      id: `e-gw-svc${idx + 1}`,
       source: "node-gateway",
-      target: "svc-1",
-      sourceHandle: "gw-bottom",
-      targetHandle: "svc-top",
+      target: `svc-${idx + 1}`,
+      sourceHandle: "gw-right",
+      targetHandle: "svc-left",
       type: "animatedFlow",
-      data: { label: "/api/v1/auth" },
+      data: { label: `/api/${shortSlug}` },
       animated: true,
-    },
-    {
-      id: "e-gw-svc2",
-      source: "node-gateway",
-      target: "svc-2",
-      sourceHandle: "gw-bottom",
-      targetHandle: "svc-top",
-      type: "animatedFlow",
-      data: { label: "/api/v1/catalog" },
-      animated: true,
-    },
-    {
-      id: "e-gw-svc3",
-      source: "node-gateway",
-      target: "svc-3",
-      sourceHandle: "gw-bottom",
-      targetHandle: "svc-top",
-      type: "animatedFlow",
-      data: { label: "/api/v1/circulation" },
-      animated: true,
-    },
+    });
+  });
 
-    // Clean Vertical Inter-Service Feeds (Row 1 straight down to Row 2)
-    {
-      id: "e-svc1-svc5",
-      source: "svc-1",
-      target: "svc-5",
-      sourceHandle: "svc-bottom",
-      targetHandle: "svc-top",
-      type: "animatedFlow",
-      data: { label: "RBAC Guard" },
-      animated: true,
-    },
-    {
-      id: "e-svc2-svc6",
-      source: "svc-2",
-      target: "svc-6",
-      sourceHandle: "svc-bottom",
-      targetHandle: "svc-top",
-      type: "animatedFlow",
-      data: { label: "Search Metrics" },
-      animated: true,
-    },
-    {
-      id: "e-svc3-svc4",
-      source: "svc-3",
-      target: "svc-4",
-      sourceHandle: "svc-bottom",
-      targetHandle: "svc-top",
-      type: "animatedFlow",
-      data: { label: "Due Date Alerts" },
-      animated: true,
-    },
-
-    // Event Producers to RabbitMQ (clean rightward flow)
-    {
+  // Services publishing asynchronous events to RabbitMQ Broker (svc-right -> q-left)
+  if (microservices.length >= 3) {
+    edges.push({
       id: "e-svc3-q",
       source: "svc-3",
       target: "node-rabbitmq",
       sourceHandle: "svc-right",
       targetHandle: "q-left",
       type: "animatedFlow",
-      data: { label: "Borrow / Return Events" },
+      data: { label: "Publish Events" },
       animated: true,
-    },
-
-    // Event Consumers from RabbitMQ (clean right-to-left flow)
-    {
-      id: "e-q-svc4",
-      source: "node-rabbitmq",
-      target: "svc-4",
-      sourceHandle: "q-left",
-      targetHandle: "svc-right",
+    });
+  }
+  if (microservices.length >= 4) {
+    edges.push({
+      id: "e-svc4-q",
+      source: "svc-4",
+      target: "node-rabbitmq",
+      sourceHandle: "svc-right",
+      targetHandle: "q-left",
       type: "animatedFlow",
-      data: { label: "Send Reminders" },
+      data: { label: "Async Tasks" },
       animated: true,
-    },
-    {
-      id: "e-q-svc6",
-      source: "node-rabbitmq",
-      target: "svc-6",
-      sourceHandle: "q-bottom",
-      targetHandle: "svc-right",
-      type: "animatedFlow",
-      data: { label: "Analytics Stream" },
-      animated: true,
-    },
+    });
+  }
 
-    // In-Memory Caching Tier (Direct downward connections into Redis)
-    {
-      id: "e-svc5-redis",
-      source: "svc-5",
+  // Microservices querying Caching Tier (svc-right -> cache-left)
+  if (microservices.length >= 2) {
+    edges.push({
+      id: "e-svc2-redis",
+      source: "svc-2",
       target: "node-redis",
-      sourceHandle: "svc-bottom",
-      targetHandle: "cache-top",
+      sourceHandle: "svc-right",
+      targetHandle: "cache-left",
       type: "animatedFlow",
-      data: { label: "Session Tokens" },
+      data: { label: "Query Cache (300s)" },
       animated: true,
-    },
-    {
-      id: "e-svc6-redis",
-      source: "svc-6",
-      target: "node-redis",
-      sourceHandle: "svc-bottom",
-      targetHandle: "cache-top",
-      type: "animatedFlow",
-      data: { label: "Hot Cache (300s)" },
-      animated: true,
-    },
+    });
+  }
 
-    // Persistence Tier to PostgreSQL Database (Clean downward connections)
-    {
-      id: "e-svc5-db",
-      source: "svc-5",
+  // Primary Domain Services querying Persistence Database (svc-right -> db-left)
+  const dbServices = [0, microservices.length - 1].filter((i) => i >= 0 && i < microservices.length);
+  dbServices.forEach((svcIdx) => {
+    const rawDb = String(microservices[svcIdx]?.db || microservices[svcIdx]?.label || "domain");
+    const cleanDb = rawDb.replace(/_schema|_db|schema/gi, "").trim();
+    edges.push({
+      id: `e-svc${svcIdx + 1}-db`,
+      source: `svc-${svcIdx + 1}`,
       target: "node-database",
       sourceHandle: "svc-right",
       targetHandle: "db-left",
       type: "animatedFlow",
-      data: { label: "Inventory Schema" },
+      data: { label: `${cleanDb || "domain"}_schema` },
       animated: true,
-    },
-    {
-      id: "e-svc6-db",
-      source: "svc-6",
-      target: "node-database",
-      sourceHandle: "svc-bottom",
-      targetHandle: "db-top",
-      type: "animatedFlow",
-      data: { label: "Reporting Schema" },
-      animated: true,
-    },
-    {
-      id: "e-svc4-db",
-      source: "svc-4",
-      target: "node-database",
-      sourceHandle: "svc-bottom",
-      targetHandle: "db-top",
-      type: "animatedFlow",
-      data: { label: "Loans Schema" },
-      animated: true,
-    },
+    });
+  });
 
-    // DevOps & Observability Infrastructure (Left Flank)
-    {
-      id: "e-gh-k8s",
-      source: "node-github-actions",
-      target: "node-k8s",
-      sourceHandle: "dev-bottom",
-      targetHandle: "dev-top",
-      type: "animatedFlow",
-      data: { label: "Deploy Pipeline" },
-      animated: true,
-    },
-    {
-      id: "e-k8s-gw",
-      source: "node-k8s",
-      target: "node-gateway",
-      sourceHandle: "dev-right",
-      targetHandle: "gw-left",
-      type: "animatedFlow",
-      data: { label: "Cluster Ingress" },
-      animated: true,
-    },
-    {
-      id: "e-k8s-prom",
-      source: "node-k8s",
-      target: "node-prometheus",
-      sourceHandle: "dev-bottom",
-      targetHandle: "dev-top",
-      type: "animatedFlow",
-      data: { label: "Pod Telemetry" },
-      animated: true,
-    },
-    {
-      id: "e-svc1-prom",
-      source: "svc-1",
-      target: "node-prometheus",
-      sourceHandle: "svc-left",
-      targetHandle: "dev-right",
-      type: "animatedFlow",
-      data: { label: "Auth APM Tracing" },
-      animated: true,
-    },
-  ];
+  // Event Broker to Persistence
+  edges.push({
+    id: "e-q-db",
+    source: "node-rabbitmq",
+    target: "node-database",
+    sourceHandle: "q-right",
+    targetHandle: "db-left",
+    type: "animatedFlow",
+    data: { label: "Event Store & Telemetry" },
+    animated: true,
+  });
+
+  // DevOps & Observability Pipeline (dev-bottom -> dev-top)
+  edges.push({
+    id: "e-gh-k8s",
+    source: "node-github-actions",
+    target: "node-k8s",
+    sourceHandle: "dev-bottom",
+    targetHandle: "dev-top",
+    type: "animatedFlow",
+    data: { label: "ECR Push & Deploy" },
+    animated: true,
+  });
+  edges.push({
+    id: "e-k8s-prom",
+    source: "node-k8s",
+    target: "node-prometheus",
+    sourceHandle: "dev-bottom",
+    targetHandle: "dev-top",
+    type: "animatedFlow",
+    data: { label: "Pod Metrics & Logs" },
+    animated: true,
+  });
 
   return applyColorThemesToGraph(nodes, edges);
 }
 
 /**
- * High-Aesthetic Multi-Layer LLD Graph Synthesizers
+ * Intelligent LLD Parser & Symmetrical Architectural Synthesizer
+ * Converts low-level design JSON payloads into balanced, production-grade component blueprints.
  */
 export function parseLldToReactFlow(
   lldType: string,
-  lldData: Record<string, unknown> | null
+  lldData: Record<string, unknown> | null,
+  layoutDirection: "TB" | "LR" = "TB"
 ): { nodes: Node[]; edges: Edge[] } {
   if (!lldData || typeof lldData !== "object" || Object.keys(lldData).length === 0) {
     return { nodes: [], edges: [] };
   }
 
+  function finalizeLld(nodes: Node[], edges: Edge[]): { nodes: Node[]; edges: Edge[] } {
+    return applyColorThemesToGraph(nodes, edges);
+  }
+
   const type = lldType.toLowerCase();
 
   // ── 1. BACKEND LLD ARCHITECTURE TOPOLOGY ──
-  // Hierarchical Structure (Ingress -> Domain Services Grid -> Repositories & Models + Left Flank Infra)
+  // Spacious Horizontal Architecture Segments (Endpoints -> Security -> Domain Services -> Broker -> Repos -> Models)
   if (type === "backend") {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
-    // Left Flank Division: Security, Event Broker & DB Pooling
-    nodes.push({
-      id: "bgroup-infra",
-      type: "layerGroup",
-      data: {
-        label: "Security & Async Broker Layer",
-        subtitle: "JWT Guard · RabbitMQ Broker · PgBouncer Pool",
-        count: 3,
-      },
-      position: { x: 40, y: 30 },
-      style: { width: 340, height: 750, zIndex: -1, pointerEvents: "none" },
-      draggable: false,
-      selectable: false,
-    });
+    // ── Tier 1: Ingress Endpoints ──
+    const rawEndpoints = Array.isArray(lldData.api_endpoints)
+      ? (lldData.api_endpoints as Array<any>)
+      : Array.isArray(lldData.endpoints)
+      ? (lldData.endpoints as Array<any>)
+      : [];
 
-    // Top Center Division: API Ingress Endpoints
+    const defaultEndpoints = [
+      { method: "POST", route: "/api/v1/auth/login", protocol: "Public Ingress", desc: "Authenticate user credentials & issue RS256 JWT tokens." },
+      { method: "GET", route: "/api/v1/resources", protocol: "Public Ingress", desc: "Query indexed domain resources with filters and pagination." },
+      { method: "POST", route: "/api/v1/workflows/submit", protocol: "Protected Route", desc: "Submit domain workflow transaction with validation." },
+      { method: "POST", route: "/api/v1/tasks/process", protocol: "Protected Route", desc: "Trigger asynchronous worker pipeline task." },
+    ];
+
+    const endpoints = rawEndpoints.length >= 1
+      ? rawEndpoints.map((ep, idx) => ({
+          method: String(ep.method || "POST").toUpperCase(),
+          route: String(ep.route || ep.path || `/api/v1/endpoint-${idx + 1}`),
+          protocol: ep.auth_required ? "Protected Route" : "Public Ingress",
+          desc: String(ep.description || `${ep.route || ep.path || 'API'} endpoint operation.`),
+          is_new: Boolean(ep.is_new || ep.version_added),
+          version_added: ep.version_added,
+        }))
+      : defaultEndpoints;
+
+    // ── Tier 3: Domain Services ──
+    const rawServices = Array.isArray(lldData.services) ? (lldData.services as Array<any>) : [];
+    const defaultBackendServices = [
+      { label: "Auth & Identity Service", tech: "JWT · OAuth2 · RBAC Guard", desc: "Validates credentials and manages session tokens." },
+      { label: "Core Domain Service", tech: "Domain Logic · Processing Engine", desc: "Executes primary domain operations and business rules." },
+      { label: "Transaction Orchestrator", tech: "ACID Orchestration · State Machine", desc: "Coordinates distributed workflows and state mutations." },
+      { label: "Async Task Worker", tech: "Async Event Worker · BullMQ", desc: "Processes background tasks and event dispatch." },
+    ];
+
+    const backendServices = rawServices.length >= 1
+      ? rawServices.map((s, idx) => ({
+          label: String(s.name || `Service ${idx + 1}`),
+          tech: Array.isArray(s.dependencies) ? s.dependencies.slice(0, 2).join(" · ") : "Domain Service",
+          desc: String(s.responsibility || `${s.name} core logic.`),
+          is_new: Boolean(s.is_new || s.version_added),
+          version_added: s.version_added,
+        }))
+      : defaultBackendServices;
+
+    // ── Tier 5: Repositories ──
+    const rawRepos = Array.isArray(lldData.repositories) ? (lldData.repositories as Array<any>) : [];
+    const defaultRepos = [
+      { id: "brepo-1", label: "UserRepository", entity: "User Entity", desc: "SQLAlchemy async repo for user identities" },
+      { id: "brepo-2", label: "CoreRepository", entity: "Domain Entity", desc: "SQLAlchemy async repo for domain resources" },
+      { id: "brepo-3", label: "WorkflowRepository", entity: "Workflow Entity", desc: "SQLAlchemy async repo for workflow state" },
+    ];
+
+    const repos = rawRepos.length >= 1
+      ? rawRepos.map((r, idx) => ({
+          id: `brepo-${idx + 1}`,
+          label: String(r.name || `Repo ${idx + 1}`),
+          entity: `${String(r.entity || r.name || "Domain")} Entity`,
+          desc: `SQLAlchemy async repo for ${String(r.entity || r.name || "domain")} records`,
+          is_new: Boolean(r.is_new || r.version_added),
+          version_added: r.version_added,
+        }))
+      : defaultRepos;
+
+    // ── Tier 6: Domain Models ──
+    const rawModels = Array.isArray(lldData.domain_models)
+      ? (lldData.domain_models as Array<any>)
+      : Array.isArray(lldData.models)
+      ? (lldData.models as Array<any>)
+      : [];
+
+    const defaultModels = [
+      { id: "bmodel-1", label: "User Model", table: "users table", desc: "id, username, email, role, created_at" },
+      { id: "bmodel-2", label: "Resource Model", table: "resources table", desc: "id, name, status, config, updated_at" },
+      { id: "bmodel-3", label: "Workflow Model", table: "workflows table", desc: "id, user_id, status, payload, timestamp" },
+      { id: "bmodel-4", label: "Audit Model", table: "audit_logs table", desc: "id, action, actor_id, ip, timestamp" },
+    ];
+
+    const models = rawModels.length >= 1
+      ? rawModels.map((m, idx) => {
+          const fieldsStr =
+            m.fields && typeof m.fields === "object"
+              ? Object.keys(m.fields).slice(0, 5).join(", ")
+              : "id, name, status, created_at";
+          return {
+            id: `bmodel-${idx + 1}`,
+            label: `${String(m.name || `Model ${idx + 1}`)} Model`,
+            table: `${String(m.name || "entity").toLowerCase()}s table`,
+            desc: fieldsStr,
+            is_new: Boolean(m.is_new || m.version_added),
+            version_added: m.version_added,
+          };
+        })
+      : defaultModels;
+
+    const bBoundsEndpoints = computeGroupBounds(endpoints.map((_, idx) => ({ y: 120 + idx * 160, height: 92 })));
+    const bBoundsSecurity = computeGroupBounds([{ y: 220, height: 92 }, { y: 420, height: 92 }]);
+    const bBoundsServices = computeGroupBounds(backendServices.map((_, idx) => ({ y: 120 + idx * 170, height: 92 })));
+    const bBoundsBroker = computeGroupBounds([{ y: 380, height: 92 }]);
+    const bBoundsRepos = computeGroupBounds([{ y: 220, height: 92 }, ...repos.map((_, idx) => ({ y: 440 + idx * 160, height: 92 }))]);
+    const bBoundsModels = computeGroupBounds(models.map((_, idx) => ({ y: 120 + idx * 160, height: 92 })));
+
+    // ── 6 Systematic Architecture Segments with Dynamic Bounding & Generous Spacing ──
     nodes.push({
       id: "bgroup-endpoints",
       type: "layerGroup",
       data: {
-        label: "API Ingress & Router Endpoints",
-        subtitle: "FastAPI REST Endpoints & Route Orchestration",
-        count: 5,
+        label: "Tier 1: API Routing & Ingress Endpoints",
+        subtitle: "FastAPI REST Route Handlers · Ingress Controllers",
+        count: endpoints.length,
       },
-      position: { x: 420, y: 30 },
-      style: { width: 1080, height: 260, zIndex: -1, pointerEvents: "none" },
+      position: { x: 80, y: bBoundsEndpoints.y },
+      style: { width: 380, height: bBoundsEndpoints.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Center Division: Domain Microservices (2-Row Balanced Grid matching HLD)
+    nodes.push({
+      id: "bgroup-security",
+      type: "layerGroup",
+      data: {
+        label: "Tier 2: Ingress Security & Authentication Guard",
+        subtitle: "JWT RS256 Bearer Token Authority · WAF Rate Limiter",
+        count: 2,
+      },
+      position: { x: 640, y: bBoundsSecurity.y },
+      style: { width: 360, height: bBoundsSecurity.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+
     nodes.push({
       id: "bgroup-services",
       type: "layerGroup",
       data: {
-        label: "Domain Microservices Logic Layer",
+        label: "Tier 3: Domain Microservices & Business Logic",
         subtitle: "Core Business Workflows · ACID State Machines",
-        count: 5,
+        count: backendServices.length,
       },
-      position: { x: 420, y: 310 },
-      style: { width: 1080, height: 260, zIndex: -1, pointerEvents: "none" },
+      position: { x: 1200, y: bBoundsServices.y },
+      style: { width: 400, height: bBoundsServices.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Bottom Center Division: Persistence & Domain Entities (Repos & Models)
+    nodes.push({
+      id: "bgroup-broker",
+      type: "layerGroup",
+      data: {
+        label: "Tier 4: Asynchronous Messaging & Event Streaming",
+        subtitle: "RabbitMQ / Kafka Topic Exchange · Dead Letter Queue",
+        count: 1,
+      },
+      position: { x: 1800, y: bBoundsBroker.y },
+      style: { width: 360, height: bBoundsBroker.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+
     nodes.push({
       id: "bgroup-repos",
       type: "layerGroup",
       data: {
-        label: "Repository & Domain Model Layer",
-        subtitle: "SQLAlchemy 2.0 Async Repositories & Relational Schemas",
-        count: 8,
+        label: "Tier 5: Data Access Repositories & Connection Pooling",
+        subtitle: "SQLAlchemy 2.0 Async Repositories · PgBouncer Pool",
+        count: repos.length + 1,
       },
-      position: { x: 420, y: 590 },
-      style: { width: 1080, height: 350, zIndex: -1, pointerEvents: "none" },
+      position: { x: 2360, y: bBoundsRepos.y },
+      style: { width: 400, height: bBoundsRepos.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // ── Left Flank Nodes ──
+    nodes.push({
+      id: "bgroup-models",
+      type: "layerGroup",
+      data: {
+        label: "Tier 6: Relational Domain Models & Persistence Schemas",
+        subtitle: "PostgreSQL Relational Schema Tables · Entity Mapping",
+        count: models.length,
+      },
+      position: { x: 2960, y: bBoundsModels.y },
+      style: { width: 400, height: bBoundsModels.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+
+    // ── Tier 1 Nodes: Ingress Endpoints ──
+    endpoints.forEach((ep: any, idx: number) => {
+      nodes.push({
+        id: `bep-${idx + 1}`,
+        type: "service",
+        data: {
+          code: ep.method,
+          label: ep.route,
+          tech: "FastAPI Route",
+          protocol: ep.protocol,
+          description: ep.desc,
+          is_new: ep.is_new,
+          version_added: ep.version_added,
+        },
+        position: { x: 125, y: 120 + idx * 160 },
+      });
+    });
+
+    // ── Tier 2 Nodes: Security Middleware ──
     nodes.push({
       id: "bnode-jwt",
       type: "gateway",
-      parentId: "bgroup-infra",
       data: {
         label: "JWT RS256 Auth Middleware",
         tech: "OAuth2 Bearer · PyJWT · RBAC",
         description: "Validates incoming bearer tokens and injects authenticated principal context.",
       },
-      position: { x: 70, y: 100 },
+      position: { x: 675, y: 220 },
     });
 
+    nodes.push({
+      id: "bnode-waf",
+      type: "gateway",
+      data: {
+        label: "API Rate Limiter & WAF Guard",
+        tech: "100 RPS Limit · IP Filtering",
+        description: "Enforces rate limiting and blocks malicious payloads before reaching services.",
+      },
+      position: { x: 675, y: 440 },
+    });
+
+    // ── Tier 3 Nodes: Domain Services ──
+    const svcCodes = ["SVC-01", "SVC-02", "SVC-03", "SVC-04"];
+    backendServices.forEach((s: any, idx: number) => {
+      nodes.push({
+        id: `bsvc-${idx + 1}`,
+        type: "service",
+        data: {
+          code: svcCodes[idx] || `SVC-${idx + 1}`,
+          label: s.label,
+          tech: s.tech,
+          protocol: "Domain Service",
+          description: s.desc,
+          is_new: s.is_new,
+          version_added: s.version_added,
+        },
+        position: { x: 1235, y: 120 + idx * 160 },
+      });
+    });
+
+    // ── Tier 4 Node: Event Broker ──
     nodes.push({
       id: "bnode-queue",
       type: "queue",
-      parentId: "bgroup-infra",
       data: {
-        label: "RabbitMQ Event Broker",
-        subtitle: "AMQP 0-9-1 · Topic Exchange",
-        description: "Asynchronous domain event streaming for due date reminders and loan lifecycle events.",
+        label: "RabbitMQ / Kafka Event Broker",
+        subtitle: "AMQP 0-9-1 · Topic Exchange · DLQ",
+        description: "Asynchronous domain event streaming for decoupled worker jobs and event distribution.",
       },
-      position: { x: 70, y: 350 },
+      position: { x: 1835, y: 340 },
     });
 
-    nodes.push({
-      id: "bnode-pool",
-      type: "gateway",
-      parentId: "bgroup-infra",
-      data: {
-        label: "PgBouncer Connection Pool",
-        tech: "SQLAlchemy 2.0 Asyncpg · 50 Max",
-        description: "Maintains reusable async database socket pool with Read Committed transaction isolation.",
-      },
-      position: { x: 70, y: 600 },
-    });
-
-    // ── Endpoints (Layer 1 - Balanced 2 Rows) ──
-    nodes.push({
-      id: "bep-1",
-      type: "service",
-      parentId: "bgroup-endpoints",
-      data: {
-        code: "POST",
-        label: "/api/v1/auth/login",
-        tech: "FastAPI Public Route",
-        protocol: "Public Ingress",
-        description: "Authenticate user or staff credentials and issue RS256 JWT tokens.",
-      },
-      position: { x: 480, y: 85 },
-    });
-
-    nodes.push({
-      id: "bep-2",
-      type: "service",
-      parentId: "bgroup-endpoints",
-      data: {
-        code: "GET",
-        label: "/api/v1/search-books",
-        tech: "Elasticsearch Query Router",
-        protocol: "Public Ingress",
-        description: "Fast indexed catalog search with pagination, filters, and availability status.",
-      },
-      position: { x: 800, y: 85 },
-    });
-
-    nodes.push({
-      id: "bep-3",
-      type: "service",
-      parentId: "bgroup-endpoints",
-      data: {
-        code: "POST",
-        label: "/api/v1/borrow-books",
-        tech: "FastAPI Protected Route",
-        protocol: "Public Ingress",
-        description: "Checkout borrow transaction with ACID row-level locking.",
-      },
-      position: { x: 1120, y: 85 },
-    });
-
-    nodes.push({
-      id: "bep-4",
-      type: "service",
-      parentId: "bgroup-endpoints",
-      data: {
-        code: "POST",
-        label: "/api/v1/return-books",
-        tech: "FastAPI Protected Route",
-        protocol: "Public Ingress",
-        description: "Check-in book return, fine assessment, and loan status update.",
-      },
-      position: { x: 640, y: 180 },
-    });
-
-    nodes.push({
-      id: "bep-5",
-      type: "service",
-      parentId: "bgroup-endpoints",
-      data: {
-        code: "DELETE",
-        label: "/api/v1/manage-catalog",
-        tech: "Librarian RBAC Route",
-        protocol: "Public Ingress",
-        description: "Administrative catalog lifecycle management to retire or update items.",
-      },
-      position: { x: 960, y: 180 },
-    });
-
-    // ── Domain Services (Layer 2 - Balanced 2 Rows matching HLD) ──
-    nodes.push({
-      id: "bsvc-1",
-      type: "service",
-      parentId: "bgroup-services",
-      data: {
-        code: "SVC-01",
-        label: "Authentication & Role Service",
-        tech: "JWT · OAuth2 · RBAC Guard",
-        protocol: "Domain Service",
-        description: "Handles identity, token issuance, and granular permission checks.",
-      },
-      position: { x: 480, y: 360 },
-    });
-
-    nodes.push({
-      id: "bsvc-2",
-      type: "service",
-      parentId: "bgroup-services",
-      data: {
-        code: "SVC-02",
-        label: "Catalog & Search Service",
-        tech: "Elasticsearch · Query Engine",
-        protocol: "Domain Service",
-        description: "Fast indexing, book cataloging, metadata queries, and availability filters.",
-      },
-      position: { x: 800, y: 360 },
-    });
-
-    nodes.push({
-      id: "bsvc-3",
-      type: "service",
-      parentId: "bgroup-services",
-      data: {
-        code: "SVC-03",
-        label: "Circulation & Borrowing Service",
-        tech: "ACID Orchestration · State Machine",
-        protocol: "Domain Service",
-        description: "Coordinates checkouts and returns using distributed transactions.",
-      },
-      position: { x: 1120, y: 360 },
-    });
-
-    nodes.push({
-      id: "bsvc-5",
-      type: "service",
-      parentId: "bgroup-services",
-      data: {
-        code: "SVC-05",
-        label: "Inventory & Asset Service",
-        tech: "RFID · Barcode Tracker",
-        protocol: "Domain Service",
-        description: "Tracks physical book copies, shelf allocation, and stock counts.",
-      },
-      position: { x: 640, y: 470 },
-    });
-
-    nodes.push({
-      id: "bsvc-4",
-      type: "service",
-      parentId: "bgroup-services",
-      data: {
-        code: "SVC-04",
-        label: "Notification & Reminder Service",
-        tech: "Async Event Worker · BullMQ",
-        protocol: "Async Consumer",
-        description: "Dispatches automated overdue notices and hold alerts.",
-      },
-      position: { x: 960, y: 470 },
-    });
-
-    // ── Repositories & Domain Models (Layer 3 - Paired Columns) ──
-    const repos = [
-      { id: "brepo-1", label: "UserRepository", entity: "User Entity", desc: "SQLAlchemy async repo for user identities" },
-      { id: "brepo-2", label: "BooksRepository", entity: "Books Entity", desc: "SQLAlchemy async repo for catalog books" },
-      { id: "brepo-4", label: "BorrowRepository", entity: "Borrow Entity", desc: "SQLAlchemy async repo for borrow logs" },
-      { id: "brepo-5", label: "ReturnRepository", entity: "Return Entity", desc: "SQLAlchemy async repo for return logs" },
-    ];
-
-    const models = [
-      { id: "bmodel-1", label: "User Model", table: "users table", desc: "id, username, email, hashed_password, role" },
-      { id: "bmodel-2", label: "Books Model", table: "books table", desc: "id, user_id, name, status, description" },
-      { id: "bmodel-4", label: "Borrow Model", table: "borrows table", desc: "id, user_id, name, status, borrow_date" },
-      { id: "bmodel-5", label: "Return Model", table: "returns table", desc: "id, user_id, name, status, return_date" },
-    ];
-
-    const repoX = [460, 720, 980, 1240];
-
-    repos.forEach((repo, idx) => {
+    // ── Tier 5 Nodes: Repositories & Connection Pool ──
+    repos.forEach((repo: any, idx: number) => {
       nodes.push({
         id: repo.id,
         type: "database",
-        parentId: "bgroup-repos",
         data: {
           engine: "SQLAlchemy ORM",
           label: repo.label,
           schema: repo.entity,
           description: repo.desc,
+          is_new: repo.is_new,
+          version_added: repo.version_added,
         },
-        position: { x: repoX[idx], y: 645 },
+        position: { x: 2395, y: 120 + idx * 160 },
       });
     });
 
-    models.forEach((model, idx) => {
+    nodes.push({
+      id: "bnode-pool",
+      type: "gateway",
+      data: {
+        label: "PgBouncer Connection Pool",
+        tech: "SQLAlchemy 2.0 Asyncpg · 50 Max",
+        description: "Maintains reusable async database socket pool with Read Committed transaction isolation.",
+      },
+      position: { x: 2395, y: 120 + repos.length * 160 },
+    });
+
+    // ── Tier 6 Nodes: Domain Models & Tables ──
+    models.forEach((model: any, idx: number) => {
       nodes.push({
         id: model.id,
         type: "database",
-        parentId: "bgroup-repos",
         data: {
           engine: "PostgreSQL 16",
           label: model.label,
           schema: model.table,
           description: model.desc,
+          is_new: model.is_new,
+          version_added: model.version_added,
         },
-        position: { x: repoX[idx], y: 775 },
+        position: { x: 2995, y: 120 + idx * 160 },
       });
     });
 
-    // ── Edges: Pristine Hierarchical Flow ──
-    // Endpoints -> Services
-    edges.push({ id: "be-ep1-s1", source: "bep-1", target: "bsvc-1", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-ep2-s2", source: "bep-2", target: "bsvc-2", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-ep3-s3", source: "bep-3", target: "bsvc-3", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-ep4-s3", source: "bep-4", target: "bsvc-3", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-ep5-s2", source: "bep-5", target: "bsvc-2", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
+    // ── Edges: Pure Left-to-Right Orthogonal Systematic Flow ──
+    // Tier 1 -> Tier 2
+    edges.push({ id: "be-ep1-jwt", source: "bep-1", target: "bnode-jwt", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", animated: true });
+    if (endpoints.length >= 2) edges.push({ id: "be-ep2-jwt", source: "bep-2", target: "bnode-jwt", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", animated: true });
+    if (endpoints.length >= 3) edges.push({ id: "be-ep3-waf", source: "bep-3", target: "bnode-waf", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", animated: true });
+    if (endpoints.length >= 4) edges.push({ id: "be-ep4-waf", source: "bep-4", target: "bnode-waf", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", animated: true });
 
-    // Endpoints & Services -> Left Flank Infrastructure
-    edges.push({ id: "be-ep1-jwt", source: "bep-1", target: "bnode-jwt", sourceHandle: "svc-left", targetHandle: "gw-right", type: "animatedFlow", data: { label: "Verify Bearer" }, animated: true });
-    edges.push({ id: "be-s3-queue", source: "bsvc-3", target: "bnode-queue", sourceHandle: "svc-left", targetHandle: "q-right", type: "animatedFlow", data: { label: "Emit Domain Event" }, animated: true });
-    edges.push({ id: "be-queue-s4", source: "bnode-queue", target: "bsvc-4", sourceHandle: "q-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Consume Task" }, animated: true });
-    edges.push({ id: "be-s3-s5", source: "bsvc-3", target: "bsvc-5", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", data: { label: "Stock Decrement" }, animated: true });
+    // Tier 2 -> Tier 3
+    edges.push({ id: "be-jwt-s1", source: "bnode-jwt", target: "bsvc-1", sourceHandle: "gw-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Verify Claims" }, animated: true });
+    if (backendServices.length >= 2) edges.push({ id: "be-jwt-s2", source: "bnode-jwt", target: "bsvc-2", sourceHandle: "gw-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Principal Context" }, animated: true });
+    if (backendServices.length >= 3) edges.push({ id: "be-waf-s3", source: "bnode-waf", target: "bsvc-3", sourceHandle: "gw-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Rate Checked" }, animated: true });
+    if (backendServices.length >= 4) edges.push({ id: "be-waf-s4", source: "bnode-waf", target: "bsvc-4", sourceHandle: "gw-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Ingress Guard" }, animated: true });
 
-    // Services -> Repositories
-    edges.push({ id: "be-s1-r1", source: "bsvc-1", target: "brepo-1", sourceHandle: "svc-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-s2-r2", source: "bsvc-2", target: "brepo-2", sourceHandle: "svc-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-s3-r4", source: "bsvc-3", target: "brepo-4", sourceHandle: "svc-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-s3-r5", source: "bsvc-3", target: "brepo-5", sourceHandle: "svc-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
+    // Tier 3 -> Tier 4
+    if (backendServices.length >= 3) {
+      edges.push({ id: "be-s3-q", source: "bsvc-3", target: "bnode-queue", sourceHandle: "svc-right", targetHandle: "q-left", type: "animatedFlow", data: { label: "Publish Events" }, animated: true });
+    }
 
-    // Repositories -> Models
-    edges.push({ id: "be-r1-m1", source: "brepo-1", target: "bmodel-1", sourceHandle: "db-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-r2-m2", source: "brepo-2", target: "bmodel-2", sourceHandle: "db-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-r4-m4", source: "brepo-4", target: "bmodel-4", sourceHandle: "db-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "be-r5-m5", source: "brepo-5", target: "bmodel-5", sourceHandle: "db-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
+    // Tier 4 -> Tier 3 Worker
+    if (backendServices.length >= 4) {
+      edges.push({ id: "be-q-s4", source: "bnode-queue", target: "bsvc-4", sourceHandle: "q-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Consume Tasks" }, animated: true });
+    }
 
-    // Repositories -> Connection Pool
-    edges.push({ id: "be-r1-pool", source: "brepo-1", target: "bnode-pool", sourceHandle: "db-left", targetHandle: "gw-right", type: "animatedFlow", data: { label: "Pool Session" }, animated: true });
+    // Tier 3 -> Tier 5
+    edges.push({ id: "be-s1-r1", source: "bsvc-1", target: "brepo-1", sourceHandle: "svc-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+    if (backendServices.length >= 2 && repos.length >= 2) edges.push({ id: "be-s2-r2", source: "bsvc-2", target: "brepo-2", sourceHandle: "svc-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+    if (backendServices.length >= 3 && repos.length >= 3) edges.push({ id: "be-s3-r3", source: "bsvc-3", target: "brepo-3", sourceHandle: "svc-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+    if (backendServices.length >= 4) edges.push({ id: "be-s4-pool", source: "bsvc-4", target: "bnode-pool", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", data: { label: "Pool Conns" }, animated: true });
 
-    return applyColorThemesToGraph(nodes, edges);
+    // Tier 5 -> Tier 6
+    edges.push({ id: "be-r1-m1", source: "brepo-1", target: "bmodel-1", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+    if (repos.length >= 2 && models.length >= 2) edges.push({ id: "be-r2-m2", source: "brepo-2", target: "bmodel-2", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+    if (repos.length >= 3 && models.length >= 3) edges.push({ id: "be-r3-m3", source: "brepo-3", target: "bmodel-3", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+    if (models.length >= 4) edges.push({ id: "be-pool-m4", source: "bnode-pool", target: "bmodel-4", sourceHandle: "gw-right", targetHandle: "db-left", type: "animatedFlow", animated: true });
+
+    return finalizeLld(nodes, edges);
   }
 
   // ── 2. DATABASE LLD ARCHITECTURE TOPOLOGY ──
-  // Hierarchical Structure (Master Relational Schema Tables + Flank Cache & Connection Pool)
+  // Spacious Horizontal Architecture Segments (Pooling -> Master Tables -> Child Tables -> Cache -> Migrations/Recovery)
   if (type === "database") {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
-    // Left Container: Relational Schema Tables (PostgreSQL 16 Multi-AZ)
+    // ── Database Tables (Dynamic from lldData.tables) ──
+    const rawTables = Array.isArray(lldData.tables) ? (lldData.tables as Array<any>) : [];
+    const defaultTables = [
+      { name: "users", schema: "id (UUID PK) · username · email · role · password_hash", desc: "User accounts, authentication credentials, and roles." },
+      { name: "domain_entities", schema: "id (UUID PK) · user_id (FK) · name · status · config", desc: "Master domain entity records and operational configuration." },
+      { name: "catalog_items", schema: "id (UUID PK) · category · metadata · version · active", desc: "Indexed catalog definitions, system options, and presets." },
+      { name: "workflow_runs", schema: "id (UUID PK) · entity_id (FK) · status · metrics · created_at", desc: "Workflow execution lifecycle logs and telemetry." },
+      { name: "audit_records", schema: "id (UUID PK) · actor_id · action · ip_address · recorded_at", desc: "Immutable security compliance audit trail." },
+    ];
+
+    const tables = rawTables.length >= 1
+      ? rawTables.map((t, idx) => {
+          let colSummary = "id (UUID PK)";
+          let hasNewCol = false;
+          let colVersion: string | undefined = undefined;
+          if (Array.isArray(t.columns) && t.columns.length > 0) {
+            colSummary = t.columns.slice(0, 5).map((c: any) => {
+              const colName = typeof c === "string" ? c : (c.name || c.column_name || "col");
+              const isPk = typeof c === "object" && c.primary_key ? " PK" : "";
+              const isFk = typeof c === "object" && c.foreign_key ? " FK" : "";
+              if (typeof c === "object" && (c.is_new || c.version_added)) {
+                hasNewCol = true;
+                if (!colVersion) colVersion = c.version_added;
+              }
+              return `${colName}${isPk}${isFk}`;
+            }).join(" · ");
+          }
+          return {
+            name: String(t.table_name || t.name || `table_${idx + 1}`),
+            schema: colSummary,
+            desc: String(t.description || `${t.table_name || t.name || 'Database'} table record storage.`),
+            is_new: Boolean(t.is_new || t.version_added || hasNewCol),
+            version_added: t.version_added || colVersion,
+          };
+        })
+      : defaultTables;
+
+    const primaryCount = Math.min(tables.length, 3);
+    const dependentCount = Math.max(0, tables.length - 3);
+
+    const dbBoundsTier1 = computeGroupBounds([{ y: 220, height: 92 }, { y: 440, height: 92 }]);
+    const dbBoundsTier2 = computeGroupBounds(Array.from({ length: primaryCount }, (_, i) => ({ y: 120 + i * 180, height: 92 })));
+    const dbBoundsTier3 = dependentCount > 0
+      ? computeGroupBounds(Array.from({ length: dependentCount }, (_, relIdx) => ({ y: 120 + relIdx * 180, height: 92 })))
+      : { y: 120, height: 180 };
+    const dbBoundsTier4 = computeGroupBounds([{ y: 220, height: 92 }, { y: 440, height: 92 }]);
+    const dbBoundsTier5 = computeGroupBounds([{ y: 220, height: 92 }, { y: 440, height: 92 }]);
+
+    // ── 5 Systematic Architecture Segments with Tight Dynamic Bounding & Generous Spacing ──
     nodes.push({
-      id: "dbgroup-tables",
+      id: "dbgroup-tier1",
       type: "layerGroup",
       data: {
-        label: "Relational Schema Tables (PostgreSQL 16 Multi-AZ)",
-        subtitle: "Primary-Foreign Key Relationships · ACID Transactions",
-        count: 5,
+        label: "Tier 1: Connection Pooling & Ingress Routing",
+        subtitle: "PgBouncer Connection Pooler · Asyncpg Driver · Read-Write Query Router",
+        count: 2,
       },
-      position: { x: 30, y: 30 },
-      style: { width: 1060, height: 500, zIndex: -1, pointerEvents: "none" },
+      position: { x: 80, y: dbBoundsTier1.y },
+      style: { width: 360, height: dbBoundsTier1.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Right Flank Container: Performance, Pooling & Migrations
     nodes.push({
-      id: "dbgroup-pooling",
+      id: "dbgroup-tier2",
       type: "layerGroup",
       data: {
-        label: "Cache, Pooling & Migrations",
-        subtitle: "Redis 7.2 · PgBouncer Pool · Alembic Migrations",
-        count: 3,
+        label: "Tier 2: Primary Entity Master Tables",
+        subtitle: "PostgreSQL 16 Multi-AZ · Primary-Foreign Key Relationships",
+        count: primaryCount,
       },
-      position: { x: 1120, y: 30 },
-      style: { width: 380, height: 500, zIndex: -1, pointerEvents: "none" },
+      position: { x: 620, y: dbBoundsTier2.y },
+      style: { width: 440, height: dbBoundsTier2.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Database Tables - Symmetrical Hierarchical Order
-    // Row 1 (Master Entities)
+    if (dependentCount > 0) {
+      nodes.push({
+        id: "dbgroup-tier3",
+        type: "layerGroup",
+        data: {
+          label: "Tier 3: Dependent Transaction & Event Tables",
+          subtitle: "Execution Logs · Foreign Key Child Records · Telemetry",
+          count: dependentCount,
+        },
+        position: { x: 1260, y: dbBoundsTier3.y },
+        style: { width: 440, height: dbBoundsTier3.height, zIndex: -1, pointerEvents: "none" },
+        draggable: false,
+        selectable: false,
+      });
+    }
+
     nodes.push({
-      id: "dtbl-users",
-      type: "database",
-      parentId: "dbgroup-tables",
+      id: "dbgroup-tier4",
+      type: "layerGroup",
       data: {
-        engine: "PostgreSQL 16",
-        label: "Table: users",
-        schema: "id (UUID PK) · username · email · role · password",
-        description: "User accounts, auth credentials, and role memberships.",
+        label: "Tier 4: Distributed Cache & Session Acceleration",
+        subtitle: "Redis 7.2 Cluster · Write-Through Invalidation · Pub/Sub",
+        count: 2,
       },
-      position: { x: 60, y: 90 },
+      position: { x: 1900, y: dbBoundsTier4.y },
+      style: { width: 380, height: dbBoundsTier4.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
     });
 
     nodes.push({
-      id: "dtbl-loans",
-      type: "database",
-      parentId: "dbgroup-tables",
+      id: "dbgroup-tier5",
+      type: "layerGroup",
       data: {
-        engine: "PostgreSQL 16",
-        label: "Table: book_loans",
-        schema: "id (UUID PK) · user_id (FK) · name · status · dates",
-        description: "Central junction table: active and historical book loan records.",
+        label: "Tier 5: Schema Versioning & Disaster Recovery",
+        subtitle: "Alembic Versioned Revisions · Continuous S3 WAL-G Recovery",
+        count: 2,
       },
-      position: { x: 410, y: 90 },
+      position: { x: 2480, y: dbBoundsTier5.y },
+      style: { width: 380, height: dbBoundsTier5.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
     });
 
-    nodes.push({
-      id: "dtbl-books",
-      type: "database",
-      parentId: "dbgroup-tables",
-      data: {
-        engine: "PostgreSQL 16",
-        label: "Table: books",
-        schema: "id (UUID PK) · user_id (FK) · name · status · desc",
-        description: "Book catalog master items and availability status.",
-      },
-      position: { x: 760, y: 90 },
-    });
-
-    // Row 2 (Transaction Records)
-    nodes.push({
-      id: "dtbl-borrows",
-      type: "database",
-      parentId: "dbgroup-tables",
-      data: {
-        engine: "PostgreSQL 16",
-        label: "Table: borrows",
-        schema: "id (UUID PK) · user_id (FK) · name · borrow_date",
-        description: "Book checkout transaction events and audit history.",
-      },
-      position: { x: 235, y: 320 },
-    });
-
-    nodes.push({
-      id: "dtbl-returns",
-      type: "database",
-      parentId: "dbgroup-tables",
-      data: {
-        engine: "PostgreSQL 16",
-        label: "Table: returns",
-        schema: "id (UUID PK) · user_id (FK) · name · return_date",
-        description: "Book check-in transaction events and fine assessments.",
-      },
-      position: { x: 585, y: 320 },
-    });
-
-    // Right Flank: Performance & Tooling Nodes
-    nodes.push({
-      id: "dnode-redis",
-      type: "cache",
-      parentId: "dbgroup-pooling",
-      data: {
-        label: "Redis 7.2 Cluster",
-        subtitle: "search (300s) · session (900s) · loans (120s)",
-        description: "Write-through invalidation and multi-instance Pub/Sub fan-out.",
-      },
-      position: { x: 1150, y: 90 },
-    });
-
+    // ── Tier 1 Nodes: Connection Pooling ──
     nodes.push({
       id: "dnode-pgbouncer",
       type: "gateway",
-      parentId: "dbgroup-pooling",
       data: {
-        label: "PgBouncer Pool",
+        label: "PgBouncer Connection Pool",
         tech: "20 min, 50 max · Asyncpg Driver",
         description: "Transaction pooling with Read Committed isolation and row-level locking.",
       },
-      position: { x: 1150, y: 230 },
+      position: { x: 115, y: 220 },
     });
 
     nodes.push({
+      id: "dnode-router",
+      type: "gateway",
+      data: {
+        label: "Query Router & Read Split",
+        tech: "Primary Write · Multi-AZ Replica Read",
+        description: "Routes write transactions to Primary PostgreSQL instance and read traffic to replicas.",
+      },
+      position: { x: 115, y: 440 },
+    });
+
+    // ── Tier 2 Nodes: Primary Master Tables (indices 0, 1, 2) ──
+    for (let i = 0; i < primaryCount; i++) {
+      const tbl: any = tables[i];
+      nodes.push({
+        id: `dtbl-${i + 1}`,
+        type: "database",
+        data: {
+          engine: "PostgreSQL 16",
+          label: `Table: ${tbl.name}`,
+          schema: tbl.schema,
+          description: tbl.desc,
+          is_new: tbl.is_new,
+          version_added: tbl.version_added,
+        },
+        position: { x: 655, y: 120 + i * 180 },
+      });
+    }
+
+    // ── Tier 3 Nodes: Dependent & Evolved Tables (idx 3 onwards) ──
+    for (let i = 3; i < tables.length; i++) {
+      const tbl: any = tables[i];
+      const relIdx = i - 3;
+      nodes.push({
+        id: `dtbl-${i + 1}`,
+        type: "database",
+        data: {
+          engine: "PostgreSQL 16",
+          label: `Table: ${tbl.name}`,
+          schema: tbl.schema,
+          description: tbl.desc,
+          is_new: tbl.is_new,
+          version_added: tbl.version_added,
+        },
+        position: { x: 1295, y: 120 + relIdx * 180 },
+      });
+    }
+
+    // ── Tier 4 Nodes: In-Memory Cache ──
+    nodes.push({
+      id: "dnode-redis",
+      type: "cache",
+      data: {
+        label: "Redis 7.2 Cluster",
+        subtitle: "entity_cache (300s) · search_index (120s) · Pub/Sub",
+        description: "Write-through caching with proactive key invalidation on entity mutations.",
+      },
+      position: { x: 1935, y: 220 },
+    });
+
+    nodes.push({
+      id: "dnode-session",
+      type: "cache",
+      data: {
+        label: "Fast Session & Token Store",
+        subtitle: "session_state (900s) · rate_tokens (60s)",
+        description: "Ephemeral user session tokens and hot rate-limit sliding windows.",
+      },
+      position: { x: 1935, y: 440 },
+    });
+
+    // ── Tier 5 Nodes: Migrations & Reliability ──
+    nodes.push({
       id: "dnode-alembic",
       type: "devops",
-      parentId: "dbgroup-pooling",
       data: {
         label: "Alembic Versioned Migrations",
-        role: "Sequential Revision Tracking",
+        role: "Sequential Revision Tracking & Rollback",
         category: "cicd",
         description: "Automated schema migrations executed in pre-deployment CI/CD hooks.",
       },
-      position: { x: 1150, y: 370 },
+      position: { x: 2515, y: 220 },
     });
 
-    // Clean Database Relationships
-    edges.push({ id: "de-u-loans", source: "dtbl-users", target: "dtbl-loans", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "1:N FK (user_id)" }, animated: true });
-    edges.push({ id: "de-b-loans", source: "dtbl-books", target: "dtbl-loans", sourceHandle: "db-left", targetHandle: "db-right", type: "animatedFlow", data: { label: "1:N FK (book_id)" }, animated: true });
-    edges.push({ id: "de-l-borrows", source: "dtbl-loans", target: "dtbl-borrows", sourceHandle: "db-bottom", targetHandle: "db-top", type: "animatedFlow", data: { label: "1:N FK Checkout" }, animated: true });
-    edges.push({ id: "de-l-returns", source: "dtbl-loans", target: "dtbl-returns", sourceHandle: "db-bottom", targetHandle: "db-top", type: "animatedFlow", data: { label: "1:N FK Return" }, animated: true });
-    edges.push({ id: "de-books-cache", source: "dtbl-books", target: "dnode-redis", sourceHandle: "db-right", targetHandle: "cache-left", type: "animatedFlow", data: { label: "Cache Invalidate" }, animated: true });
-    edges.push({ id: "de-pgb-loans", source: "dnode-pgbouncer", target: "dtbl-loans", sourceHandle: "gw-left", targetHandle: "db-right", type: "animatedFlow", data: { label: "Pool Conns" }, animated: true });
-    edges.push({ id: "de-alembic-returns", source: "dnode-alembic", target: "dtbl-returns", sourceHandle: "dev-left", targetHandle: "db-right", type: "animatedFlow", data: { label: "Auto Migrate" }, animated: true });
+    nodes.push({
+      id: "dnode-backup",
+      type: "devops",
+      data: {
+        label: "Automated WAL-G Backup & PITR",
+        role: "Continuous Archiving · S3 7-Day PITR",
+        category: "monitoring",
+        description: "Continuous PostgreSQL write-ahead log shipping to encrypted S3 with Point-In-Time recovery.",
+      },
+      position: { x: 2515, y: 440 },
+    });
 
-    return applyColorThemesToGraph(nodes, edges);
+    // ── Edges: Pure Left-to-Right Orthogonal Systematic Flow ──
+    // Tier 1 -> Tier 2
+    edges.push({ id: "de-pgb-t1", source: "dnode-pgbouncer", target: "dtbl-1", sourceHandle: "gw-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "Pool Conns" }, animated: true });
+    if (tables.length >= 2) edges.push({ id: "de-pgb-t2", source: "dnode-pgbouncer", target: "dtbl-2", sourceHandle: "gw-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "ACID Conns" }, animated: true });
+    if (tables.length >= 3) edges.push({ id: "de-router-t3", source: "dnode-router", target: "dtbl-3", sourceHandle: "gw-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "Replica Reads" }, animated: true });
+
+    // Tier 2 -> Tier 3
+    if (tables.length >= 4) {
+      edges.push({ id: "de-t1-t4", source: "dtbl-1", target: "dtbl-4", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "1:N FK (user_id)" }, animated: true });
+      edges.push({ id: "de-t2-t4", source: "dtbl-2", target: "dtbl-4", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "1:N FK (entity_id)" }, animated: true });
+    }
+    if (tables.length >= 5) {
+      edges.push({ id: "de-t2-t5", source: "dtbl-2", target: "dtbl-5", sourceHandle: "db-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "1:N FK (audit)" }, animated: true });
+    }
+
+    // Tier 3 -> Tier 4
+    if (tables.length >= 4) {
+      edges.push({ id: "de-t4-redis", source: "dtbl-4", target: "dnode-redis", sourceHandle: "db-right", targetHandle: "cache-left", type: "animatedFlow", data: { label: "Cache Invalidation" }, animated: true });
+    }
+    if (tables.length >= 5) {
+      edges.push({ id: "de-t5-session", source: "dtbl-5", target: "dnode-session", sourceHandle: "db-right", targetHandle: "cache-left", type: "animatedFlow", data: { label: "Session Audit Log" }, animated: true });
+    }
+
+    // Tier 4 -> Tier 5
+    edges.push({ id: "de-redis-alembic", source: "dnode-redis", target: "dnode-alembic", sourceHandle: "cache-right", targetHandle: "dev-left", type: "animatedFlow", data: { label: "Pre-Deploy Hook" }, animated: true });
+    edges.push({ id: "de-session-backup", source: "dnode-session", target: "dnode-backup", sourceHandle: "cache-right", targetHandle: "dev-left", type: "animatedFlow", data: { label: "WAL Archive" }, animated: true });
+
+    return finalizeLld(nodes, edges);
   }
 
   // ── 3. FRONTEND LLD ARCHITECTURE TOPOLOGY ──
-  // Hierarchical Structure (App Router & Routes -> Modular Components + Left Flank Reactive State & Transport)
+  // Spacious Horizontal Architecture Segments (App Shell -> Screens -> Components -> Client State/Cache -> Transport)
   if (type === "frontend") {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
-    // Left Flank Division: Reactive Client State, Cache & API Transport (matching HLD left column)
+    interface FrontendPageItem {
+      label: string;
+      tech: string;
+      desc: string;
+      is_new?: boolean;
+      version_added?: string;
+    }
+
+    const rawPages = Array.isArray(lldData.pages) ? (lldData.pages as Array<any>) : [];
+    const defaultPages: FrontendPageItem[] = [
+      { label: "LoginPage", tech: "/login", desc: "Authentication entry with credentials form and OAuth2 identity provider redirects." },
+      { label: "DashboardPage", tech: "/dashboard", desc: "Central user dashboard with key metrics and action shortcuts." },
+      { label: "ResourceOverviewPage", tech: "/resources", desc: "Interactive resource explorer with dynamic search, filters, and status cards." },
+    ];
+
+    const pages: FrontendPageItem[] = rawPages.length >= 1
+      ? rawPages.slice(0, 3).map((p, idx) => ({
+          label: String(p.name || p.label || defaultPages[idx]?.label || `Page ${idx + 1}`),
+          tech: String(p.path || p.route || defaultPages[idx]?.tech || `/page-${idx + 1}`),
+          desc: String(p.description || defaultPages[idx]?.desc || `${p.name || 'Page'} view`),
+          is_new: Boolean(p.is_new || p.version_added),
+          version_added: p.version_added,
+        }))
+      : defaultPages;
+
+    const defaultFeaturePages: FrontendPageItem[] = [
+      { label: "WorkflowExecutionPage", tech: "/workflows", desc: "Multi-step workflow execution and real-time processing view." },
+      { label: "AdministrationPage", tech: "/admin", desc: "Role-based tenant administration, configuration controls, and audit logs." },
+    ];
+
+    const featurePages: FrontendPageItem[] = rawPages.length > 3
+      ? rawPages.slice(3).map((p, idx) => ({
+          label: String(p.name || p.label || `FeaturePage ${idx + 1}`),
+          tech: String(p.path || p.route || `/feature-${idx + 1}`),
+          desc: String(p.description || "Feature execution screen"),
+          is_new: Boolean(p.is_new || p.version_added),
+          version_added: p.version_added,
+        }))
+      : defaultFeaturePages;
+
+    const allPages: FrontendPageItem[] = [...pages, ...featurePages];
+
+    const rawComponents = Array.isArray(lldData.components) ? (lldData.components as Array<any>) : [];
+    const defaultComponents: FrontendPageItem[] = [
+      { label: "ResourceCard", tech: "React 19 · Tailwind CSS", desc: "Reusable presentation card for domain items with status badges." },
+      { label: "ActionDialogModal", tech: "React 19 · Dialog Portal", desc: "Interactive dialog confirming transactions and workflow triggers." },
+      { label: "ProcessMonitorTile", tech: "React 19 · Live Telemetry", desc: "Live status indicator showing processing stage, telemetry, and health." },
+    ];
+
+    const components: FrontendPageItem[] = rawComponents.length >= 1
+      ? rawComponents.map((c, idx) => ({
+          label: String(c.name || c.label || `Component ${idx + 1}`),
+          tech: String(c.tech || "React 19 · Tailwind CSS"),
+          desc: String(c.description || `${c.name || 'UI'} component.`),
+          is_new: Boolean(c.is_new || c.version_added),
+          version_added: c.version_added,
+        }))
+      : defaultComponents;
+
+    const fBoundsTier1 = computeGroupBounds([{ y: 340, height: 92 }]);
+    const fBoundsTier2 = computeGroupBounds(allPages.map((_, idx) => ({ y: 120 + idx * 150, height: 92 })));
+    const fBoundsTier3 = computeGroupBounds(components.map((_, idx) => ({ y: 120 + idx * 150, height: 92 })));
+    const fBoundsTier4 = computeGroupBounds([{ y: 220, height: 92 }, { y: 440, height: 92 }]);
+    const fBoundsTier5 = computeGroupBounds([{ y: 220, height: 92 }, { y: 440, height: 92 }]);
+
+    // ── 5 Systematic Architecture Segments with Tight Dynamic Bounding & Generous Spacing ──
     nodes.push({
-      id: "fgroup-state-api",
+      id: "fgroup-tier1",
       type: "layerGroup",
       data: {
-        label: "Client State, Cache & API Transport",
-        subtitle: "Zustand · TanStack Query · Axios · Zod",
-        count: 4,
+        label: "Tier 1: Global App Shell & Navigation",
+        subtitle: "Global App Shell · Auth Guards · Dynamic Route Segments",
+        count: 1,
       },
-      position: { x: 40, y: 30 },
-      style: { width: 340, height: 680, zIndex: -1, pointerEvents: "none" },
+      position: { x: 80, y: fBoundsTier1.y },
+      style: { width: 360, height: fBoundsTier1.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Top Center Division: Next.js 16 App Router & Navigation Shell
     nodes.push({
-      id: "fgroup-pages",
+      id: "fgroup-tier2",
       type: "layerGroup",
       data: {
-        label: "Next.js 16 App Router (Pages & Routes)",
-        subtitle: "App Shell · Auth Entry · Dynamic Route Handlers",
-        count: 5,
+        label: "Tier 2: Interactive Screens & Feature Views",
+        subtitle: "Next.js Route Segments · Role-Based Execution Views",
+        count: allPages.length,
       },
-      position: { x: 420, y: 30 },
-      style: { width: 1080, height: 330, zIndex: -1, pointerEvents: "none" },
+      position: { x: 620, y: fBoundsTier2.y },
+      style: { width: 400, height: fBoundsTier2.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Bottom Center Division: Modular Tailwind UI Components (aligned directly under corresponding pages)
     nodes.push({
-      id: "fgroup-components",
+      id: "fgroup-tier3",
       type: "layerGroup",
       data: {
-        label: "Modular Tailwind UI Components",
-        subtitle: "Presentation Tiles · Interactive Dialogs · Paginated Tables",
-        count: 4,
+        label: "Tier 3: Modular UI Components",
+        subtitle: "Presentation Tiles · Interactive Dialog Portals · Live Telemetry",
+        count: components.length,
       },
-      position: { x: 420, y: 380 },
-      style: { width: 1080, height: 330, zIndex: -1, pointerEvents: "none" },
+      position: { x: 1220, y: fBoundsTier3.y },
+      style: { width: 400, height: fBoundsTier3.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // ── Left Flank Nodes: Client State & Transport Stack ──
     nodes.push({
-      id: "fnode-zustand",
-      type: "cache",
-      parentId: "fgroup-state-api",
+      id: "fgroup-tier4",
+      type: "layerGroup",
       data: {
-        label: "Zustand Global Store",
-        subtitle: "AuthSession · UIState · Theme",
-        description: "Lightweight reactive client store managing active user session, auth token, and theme.",
+        label: "Tier 4: Reactive Client State & Server Query Cache",
+        subtitle: "Zustand Global Store · TanStack Query Stale-While-Revalidate",
+        count: 2,
       },
-      position: { x: 70, y: 100 },
+      position: { x: 1820, y: fBoundsTier4.y },
+      style: { width: 380, height: fBoundsTier4.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
     });
 
     nodes.push({
-      id: "fnode-tanstack",
+      id: "fgroup-tier5",
+      type: "layerGroup",
+      data: {
+        label: "Tier 5: Form Validation Schemas & HTTP API Transport",
+        subtitle: "Zod Schema Parsers · Axios Interceptors · JWT Bearer Injection",
+        count: 2,
+      },
+      position: { x: 2400, y: fBoundsTier5.y },
+      style: { width: 380, height: fBoundsTier5.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+
+    // ── Tier 1 Node: App Shell ──
+    nodes.push({
+      id: "fcmp-shell",
       type: "service",
-      parentId: "fgroup-state-api",
-      data: {
-        code: "React Query",
-        label: "TanStack Query Cache",
-        tech: "Auto Invalidation & Refetch",
-        protocol: "Server State",
-        description: "Cached API queries with background revalidation and optimistic mutation updates.",
-      },
-      position: { x: 70, y: 250 },
-    });
-
-    nodes.push({
-      id: "fnode-axios",
-      type: "gateway",
-      parentId: "fgroup-state-api",
-      data: {
-        label: "Axios API Interceptor",
-        tech: "Bearer Token Injection · Error Toasts",
-        description: "Centralized HTTP client with automatic Authorization header injection and 401 refresh handling.",
-      },
-      position: { x: 70, y: 400 },
-    });
-
-    nodes.push({
-      id: "fnode-zod",
-      type: "service",
-      parentId: "fgroup-state-api",
-      data: {
-        code: "Zod Validator",
-        label: "React Hook Form + Zod",
-        tech: "Strict Client Schema Validation",
-        protocol: "Form State",
-        description: "Type-safe form inputs and field-level validation schemas before API submission.",
-      },
-      position: { x: 70, y: 550 },
-    });
-
-    // ── Top Center Division: App Shell & Pages ──
-    // Tier 1 (Root Shell & Auth Entry)
-    nodes.push({
-      id: "fcmp-1",
-      type: "service",
-      parentId: "fgroup-pages",
       data: {
         code: "App Shell",
         label: "Navbar & AuthStatus",
@@ -1247,570 +2223,689 @@ export function parseLldToReactFlow(
         protocol: "Global Header",
         description: "Global header with navigation links, active route indicators, and user token state.",
       },
-      position: { x: 580, y: 90 },
+      position: { x: 115, y: 340 },
     });
 
+    // ── Tier 2 Nodes: Pages & Feature Screens ──
+    allPages.forEach((p, idx) => {
+      nodes.push({
+        id: `fpg-${idx + 1}`,
+        type: "frontend",
+        data: {
+          label: p.label,
+          tech: p.tech,
+          description: p.desc,
+          is_new: p.is_new,
+          version_added: p.version_added,
+        },
+        position: { x: 655, y: 120 + idx * 150 },
+      });
+    });
+
+    // ── Tier 3 Nodes: Modular Components ──
+    components.forEach((c, idx) => {
+      nodes.push({
+        id: `fcmp-${idx + 2}`,
+        type: "service",
+        data: {
+          code: "UI Component",
+          label: c.label,
+          tech: c.tech,
+          protocol: "Client View",
+          description: c.desc,
+          is_new: c.is_new,
+          version_added: c.version_added,
+        },
+        position: { x: 1255, y: 120 + idx * 150 },
+      });
+    });
+
+    // ── Tier 4 Nodes: Client State & Cache ──
     nodes.push({
-      id: "fpg-1",
-      type: "frontend",
-      parentId: "fgroup-pages",
+      id: "fnode-zustand",
+      type: "cache",
       data: {
-        label: "LoginPage",
-        tech: "/login",
-        description: "Authentication entry with role-based credentials form (Student / Librarian / Admin).",
+        label: "Zustand Global Store",
+        subtitle: "AuthSession · UIState · Theme",
+        description: "Lightweight reactive client store managing active user session, auth token, and theme.",
       },
-      position: { x: 980, y: 90 },
-    });
-
-    // Tier 2 (Core Application Route Pages)
-    nodes.push({
-      id: "fpg-2",
-      type: "frontend",
-      parentId: "fgroup-pages",
-      data: {
-        label: "SearchBooksPage",
-        tech: "/search-books",
-        description: "Dynamic catalog search, availability filters, and card presentations.",
-      },
-      position: { x: 450, y: 230 },
+      position: { x: 1855, y: 220 },
     });
 
     nodes.push({
-      id: "fpg-3",
-      type: "frontend",
-      parentId: "fgroup-pages",
-      data: {
-        label: "BorrowBooksPage",
-        tech: "/borrow-books",
-        description: "Circulation checkout & active loan management workflow view.",
-      },
-      position: { x: 720, y: 230 },
-    });
-
-    nodes.push({
-      id: "fpg-4",
-      type: "frontend",
-      parentId: "fgroup-pages",
-      data: {
-        label: "ReturnBooksPage",
-        tech: "/return-books",
-        description: "Book return scanning and check-in confirmation workflow view.",
-      },
-      position: { x: 990, y: 230 },
-    });
-
-    nodes.push({
-      id: "fpg-5",
-      type: "frontend",
-      parentId: "fgroup-pages",
-      data: {
-        label: "CatalogAdminPage",
-        tech: "/manage-catalog",
-        description: "Librarian administrative catalog CRUD and inventory asset management.",
-      },
-      position: { x: 1260, y: 230 },
-    });
-
-    // ── Bottom Center Division: Modular UI Components (Aligned under Pages) ──
-    nodes.push({
-      id: "fcmp-2",
+      id: "fnode-tanstack",
       type: "service",
-      parentId: "fgroup-components",
       data: {
-        code: "UI Component",
-        label: "BookCatalogCard",
-        tech: "React 19 · Tailwind CSS",
-        protocol: "Client View",
-        description: "Reusable presentation card for book catalog search results.",
+        code: "React Query",
+        label: "TanStack Query Cache",
+        tech: "Auto Invalidation & Refetch · SWR",
+        protocol: "Server State",
+        description: "Cached API queries with background revalidation and optimistic mutation updates.",
       },
-      position: { x: 450, y: 470 },
+      position: { x: 1855, y: 440 },
+    });
+
+    // ── Tier 5 Nodes: Validation & Transport ──
+    nodes.push({
+      id: "fnode-zod",
+      type: "service",
+      data: {
+        code: "Zod Validator",
+        label: "React Hook Form + Zod",
+        tech: "Strict Client Schema Validation",
+        protocol: "Form State",
+        description: "Type-safe form inputs and field-level validation schemas before API submission.",
+      },
+      position: { x: 2435, y: 220 },
     });
 
     nodes.push({
-      id: "fcmp-3",
-      type: "service",
-      parentId: "fgroup-components",
+      id: "fnode-axios",
+      type: "gateway",
       data: {
-        code: "UI Component",
-        label: "BorrowConfirmModal",
-        tech: "React 19 · Dialog Portal",
-        protocol: "Client View",
-        description: "Interactive modal dialog confirming loan due dates and checkout.",
+        label: "Axios API Interceptor",
+        tech: "Bearer Token Injection · Error Toasts",
+        description: "Centralized HTTP client with automatic Authorization header injection and 401 refresh handling.",
       },
-      position: { x: 720, y: 470 },
+      position: { x: 2435, y: 440 },
     });
 
-    nodes.push({
-      id: "fcmp-4",
-      type: "service",
-      parentId: "fgroup-components",
-      data: {
-        code: "UI Component",
-        label: "ReturnScannerModal",
-        tech: "React 19 · Barcode Scanner",
-        protocol: "Client View",
-        description: "Barcode and RFID scanner dialog for book return check-in.",
-      },
-      position: { x: 990, y: 470 },
+    // ── Edges: Pure Left-to-Right Orthogonal Systematic Flow ──
+    // Tier 1 -> Tier 2
+    allPages.slice(0, 3).forEach((_, idx) => {
+      edges.push({
+        id: `fe-shell-p${idx + 1}`,
+        source: "fcmp-shell",
+        target: `fpg-${idx + 1}`,
+        sourceHandle: "svc-right",
+        targetHandle: "fe-left",
+        type: "animatedFlow",
+        data: { label: "App Route" },
+        animated: true,
+      });
     });
 
-    nodes.push({
-      id: "fcmp-5",
-      type: "service",
-      parentId: "fgroup-components",
-      data: {
-        code: "UI Component",
-        label: "LoanHistoryTable",
-        tech: "React 19 · TanStack Table",
-        protocol: "Client View",
-        description: "Paginated table showing active and past book loan records.",
-      },
-      position: { x: 1260, y: 470 },
-    });
+    // Tier 2 -> Tier 3
+    if (allPages.length >= 3 && components.length >= 1) {
+      edges.push({ id: "fe-p3-c2", source: "fpg-3", target: "fcmp-2", sourceHandle: "fe-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Render Cards" }, animated: true });
+    }
+    if (allPages.length >= 2 && components.length >= 2) {
+      edges.push({ id: "fe-p2-c3", source: "fpg-2", target: "fcmp-3", sourceHandle: "fe-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Action Modal" }, animated: true });
+    }
+    if (allPages.length >= 4 && components.length >= 3) {
+      edges.push({ id: "fe-p4-c4", source: "fpg-4", target: "fcmp-4", sourceHandle: "fe-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Telemetry Stream" }, animated: true });
+    }
 
-    // ── Edges: Clean Hierarchical Parent-to-Child & State Connections ──
-    // Shell & Auth Entry Hierarchy
-    edges.push({ id: "fe-login-nav", source: "fpg-1", target: "fcmp-1", sourceHandle: "fe-left", targetHandle: "svc-right", type: "animatedFlow", data: { label: "On Auth Success" }, animated: true });
-    edges.push({ id: "fe-login-zustand", source: "fpg-1", target: "fnode-zustand", sourceHandle: "fe-left", targetHandle: "cache-right", type: "animatedFlow", data: { label: "Store Session" }, animated: true });
-    edges.push({ id: "fe-nav-zustand", source: "fcmp-1", target: "fnode-zustand", sourceHandle: "svc-left", targetHandle: "cache-right", type: "animatedFlow", data: { label: "Read User" }, animated: true });
+    // Tier 3 -> Tier 4
+    if (components.length >= 1) {
+      edges.push({ id: "fe-c2-tanstack", source: "fcmp-2", target: "fnode-tanstack", sourceHandle: "svc-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "useQuery(resources)" }, animated: true });
+    }
+    if (components.length >= 2) {
+      edges.push({ id: "fe-c3-zustand", source: "fcmp-3", target: "fnode-zustand", sourceHandle: "svc-right", targetHandle: "cache-left", type: "animatedFlow", data: { label: "Session State" }, animated: true });
+    }
+    if (components.length >= 3) {
+      edges.push({ id: "fe-c4-tanstack", source: "fcmp-4", target: "fnode-tanstack", sourceHandle: "svc-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Live Query Poll" }, animated: true });
+    }
 
-    // Navigation Shell -> Route Pages
-    edges.push({ id: "fe-nav-search", source: "fcmp-1", target: "fpg-2", sourceHandle: "svc-bottom", targetHandle: "fe-top", type: "animatedFlow", data: { label: "/search-books" }, animated: true });
-    edges.push({ id: "fe-nav-borrow", source: "fcmp-1", target: "fpg-3", sourceHandle: "svc-bottom", targetHandle: "fe-top", type: "animatedFlow", data: { label: "/borrow-books" }, animated: true });
-    edges.push({ id: "fe-login-return", source: "fpg-1", target: "fpg-4", sourceHandle: "fe-bottom", targetHandle: "fe-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "fe-login-admin", source: "fpg-1", target: "fpg-5", sourceHandle: "fe-bottom", targetHandle: "fe-top", data: { label: "Admin RBAC" }, animated: true });
+    // Tier 4 -> Tier 5
+    edges.push({ id: "fe-zustand-zod", source: "fnode-zustand", target: "fnode-zod", sourceHandle: "cache-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Validate Form Input" }, animated: true });
+    edges.push({ id: "fe-tanstack-axios", source: "fnode-tanstack", target: "fnode-axios", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", data: { label: "HTTP GET Fetch" }, animated: true });
+    edges.push({ id: "fe-zod-axios", source: "fnode-zod", target: "fnode-axios", sourceHandle: "svc-right", targetHandle: "gw-left", type: "animatedFlow", data: { label: "POST Validated Payload" }, animated: true });
 
-    // Pages -> Modular UI Components (Direct Vertical Flow)
-    edges.push({ id: "fe-p2-c2", source: "fpg-2", target: "fcmp-2", sourceHandle: "fe-bottom", targetHandle: "svc-top", type: "animatedFlow", data: { label: "Render Tile" }, animated: true });
-    edges.push({ id: "fe-p3-c3", source: "fpg-3", target: "fcmp-3", sourceHandle: "fe-bottom", targetHandle: "svc-top", type: "animatedFlow", data: { label: "Checkout Modal" }, animated: true });
-    edges.push({ id: "fe-p4-c4", source: "fpg-4", target: "fcmp-4", sourceHandle: "fe-bottom", targetHandle: "svc-top", type: "animatedFlow", data: { label: "Scanner Modal" }, animated: true });
-    edges.push({ id: "fe-p5-c5", source: "fpg-5", target: "fcmp-5", sourceHandle: "fe-bottom", targetHandle: "svc-top", type: "animatedFlow", data: { label: "History Grid" }, animated: true });
-
-    // UI Components -> Client State & API Transport (Left Flank)
-    edges.push({ id: "fe-c2-tanstack", source: "fcmp-2", target: "fnode-tanstack", sourceHandle: "svc-left", targetHandle: "svc-right", type: "animatedFlow", data: { label: "useQuery(books)" }, animated: true });
-    edges.push({ id: "fe-tanstack-axios", source: "fnode-tanstack", target: "fnode-axios", sourceHandle: "svc-bottom", targetHandle: "gw-top", type: "animatedFlow", data: { label: "HTTP GET" }, animated: true });
-    edges.push({ id: "fe-c3-zod", source: "fcmp-3", target: "fnode-zod", sourceHandle: "svc-left", targetHandle: "svc-right", type: "animatedFlow", data: { label: "Validate Form" }, animated: true });
-    edges.push({ id: "fe-zod-axios", source: "fnode-zod", target: "fnode-axios", sourceHandle: "svc-top", targetHandle: "gw-bottom", type: "animatedFlow", data: { label: "Submit Payload" }, animated: true });
-    edges.push({ id: "fe-c4-axios", source: "fcmp-4", target: "fnode-axios", sourceHandle: "svc-left", targetHandle: "gw-right", type: "animatedFlow", data: { label: "POST /return" }, animated: true });
-    edges.push({ id: "fe-c5-tanstack", source: "fcmp-5", target: "fnode-tanstack", sourceHandle: "svc-left", targetHandle: "svc-right", type: "animatedFlow", data: { label: "useQuery(loans)" }, animated: true });
-
-    return applyColorThemesToGraph(nodes, edges);
+    return finalizeLld(nodes, edges);
   }
 
   // ── 4. CLOUD LLD ARCHITECTURE TOPOLOGY (AWS ECS Fargate) ──
-  // Hierarchical Structure (Edge & Ingress -> ECS Fargate Compute -> Managed Storage + Left Flank DevOps)
+  // Spacious 5-Tier Left-to-Right Architectural Flow matching User Reference Architecture:
+  // Col 1: DNS & Global Edge Network (Route 53 & CloudFront)
+  // Col 2: Ingress Protection & Load Balancing (AWS WAF & ALB)
+  // Col 3: VPC Private Container Compute Cluster (ECS Fargate Tasks)
+  // Col 4: Managed Data Persistence & Cache (RDS, ElastiCache, S3)
+  // Col 5: DevOps Automation & Observability (GitHub Actions, CloudWatch)
   if (type === "cloud") {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
-    // Left Flank Division: DevOps, CI/CD & Observability Pipeline
+    const rawServices = Array.isArray(lldData.services) ? (lldData.services as Array<any>) : [];
+    const defaultTaskNames = ["Auth & Identity", "Core Domain Engine", "Workflow Execution", "Background Worker"];
+    const taskList = rawServices.length > 0
+      ? rawServices.map((s, idx) => ({
+          name: String(s.name || defaultTaskNames[idx] || `Service ${idx + 1}`),
+          is_new: Boolean(s.is_new || s.version_added),
+          version_added: s.version_added,
+        }))
+      : defaultTaskNames.map((name) => ({ name, is_new: false, version_added: undefined }));
+
+    const cBoundsTier1 = computeGroupBounds([{ y: 200, height: 92 }, { y: 440, height: 92 }]);
+    const cBoundsTier2 = computeGroupBounds([{ y: 200, height: 92 }, { y: 440, height: 92 }]);
+    const cBoundsTier3 = computeGroupBounds(taskList.map((_, idx) => ({ y: 120 + idx * 175, height: 92 })));
+    const cBoundsTier4 = computeGroupBounds([{ y: 150, height: 92 }, { y: 350, height: 92 }, { y: 550, height: 92 }]);
+    const cBoundsTier5 = computeGroupBounds([{ y: 220, height: 92 }, { y: 460, height: 92 }]);
+
+    // Col 1: Tier 1 - Global Edge Network & Authoritative DNS (x = 80, width = 360)
     nodes.push({
-      id: "cgroup-devops",
+      id: "cgroup-tier1",
       type: "layerGroup",
       data: {
-        label: "DevOps & Monitoring Pipeline",
-        subtitle: "GitHub Actions CI/CD · CloudWatch Container Insights",
+        label: "Tier 1: Global Edge Network & DNS",
+        subtitle: "Amazon Route 53 DNS · CloudFront Edge CDN · Anycast PoP Routing",
         count: 2,
       },
-      position: { x: 40, y: 30 },
-      style: { width: 340, height: 750, zIndex: -1, pointerEvents: "none" },
+      position: { x: 80, y: cBoundsTier1.y },
+      style: { width: 360, height: cBoundsTier1.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Top Center Division: Edge & Ingress Routing
+    // Col 2: Tier 2 - Ingress Protection & Application Load Balancing (x = 620, width = 360)
     nodes.push({
-      id: "cgroup-edge",
+      id: "cgroup-tier2",
       type: "layerGroup",
       data: {
-        label: "Edge & Ingress Routing Tier",
-        subtitle: "AWS Route 53 DNS · CloudFront CDN · Application Load Balancer",
+        label: "Tier 2: Ingress Protection & Load Balancing",
+        subtitle: "AWS WAF Managed Rules · Application Load Balancer Target Groups",
+        count: 2,
+      },
+      position: { x: 620, y: cBoundsTier2.y },
+      style: { width: 360, height: cBoundsTier2.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+
+    // Col 3: Tier 3 - AWS ECS Fargate Serverless Compute Cluster (x = 1180, width = 440)
+    nodes.push({
+      id: "cgroup-tier3",
+      type: "layerGroup",
+      data: {
+        label: "Tier 3: AWS ECS Fargate Compute Cluster",
+        subtitle: "Stateless Microservice Tasks · Target Tracking Auto-Scaling (min 2, max 10)",
+        count: taskList.length,
+      },
+      position: { x: 1180, y: cBoundsTier3.y },
+      style: { width: 440, height: cBoundsTier3.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
+    });
+
+    // Col 4: Tier 4 - Managed Data Persistence & In-Memory Cache (x = 1820, width = 400)
+    nodes.push({
+      id: "cgroup-tier4",
+      type: "layerGroup",
+      data: {
+        label: "Tier 4: Managed Persistence & In-Memory Cache",
+        subtitle: "AWS RDS PostgreSQL Multi-AZ · ElastiCache Redis Cluster · Encrypted S3",
         count: 3,
       },
-      position: { x: 420, y: 30 },
-      style: { width: 1040, height: 260, zIndex: -1, pointerEvents: "none" },
+      position: { x: 1820, y: cBoundsTier4.y },
+      style: { width: 400, height: cBoundsTier4.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Center Division: Serverless Container Tasks (ECS on Fargate)
+    // Col 5: Tier 5 - DevOps Automation & Observability (x = 2420, width = 400)
     nodes.push({
-      id: "cgroup-compute",
+      id: "cgroup-tier5",
       type: "layerGroup",
       data: {
-        label: "Serverless Container Tasks (AWS ECS on Fargate)",
-        subtitle: "Auto-Scaling Microservices (min 2, max 10)",
-        count: 6,
-      },
-      position: { x: 420, y: 310 },
-      style: { width: 1040, height: 270, zIndex: -1, pointerEvents: "none" },
-      draggable: false,
-      selectable: false,
-    });
-
-    // Bottom Center Division: Managed Persistence & Storage Tier
-    nodes.push({
-      id: "cgroup-storage",
-      type: "layerGroup",
-      data: {
-        label: "Managed Storage Tier",
-        subtitle: "AWS RDS PostgreSQL Multi-AZ & ElastiCache Redis 7.2",
+        label: "Tier 5: CI/CD & Observability Infrastructure",
+        subtitle: "GitHub Actions Container CI/CD · CloudWatch Container Insights & Alarms",
         count: 2,
       },
-      position: { x: 420, y: 600 },
-      style: { width: 1040, height: 180, zIndex: -1, pointerEvents: "none" },
+      position: { x: 2420, y: cBoundsTier5.y },
+      style: { width: 400, height: cBoundsTier5.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Left Flank Nodes
-    nodes.push({
-      id: "cnode-github",
-      type: "devops",
-      parentId: "cgroup-devops",
-      data: {
-        label: "GitHub Actions CI/CD",
-        role: "Ruff · Pytest · Docker · Trivy · ECR",
-        category: "cicd",
-        description: "Automated test gating, vulnerability scans, and ECS rolling deployments.",
-      },
-      position: { x: 75, y: 160 },
-    });
-
-    nodes.push({
-      id: "cnode-cloudwatch",
-      type: "devops",
-      parentId: "cgroup-devops",
-      data: {
-        label: "AWS CloudWatch & SNS Alerts",
-        role: "Container Insights · SNS Alerts",
-        category: "monitoring",
-        description: "Task CPU/Memory tracking, 5xx error rate alarms, and SNS push alerts.",
-      },
-      position: { x: 75, y: 460 },
-    });
-
-    // Edge & DNS (Layer 1)
+    // ── Tier 1 Nodes: Edge & DNS (Col 1, x = 115) ──
     nodes.push({
       id: "cnode-route53",
-      type: "devops",
-      parentId: "cgroup-edge",
+      type: "gateway",
       data: {
-        label: "AWS Route 53 + ACM",
-        role: "DNS & TLS 1.3 Termination",
-        category: "cicd",
-        description: "Public hosted zone with automated TLS 1.3 certificates.",
+        label: "Amazon Route 53 DNS",
+        tech: "Latency-Based Routing · Health Checks",
+        description: "Authoritative global DNS service resolving custom domains to CloudFront distributions.",
       },
-      position: { x: 580, y: 85 },
+      position: { x: 115, y: 200 },
     });
 
     nodes.push({
       id: "cnode-cloudfront",
-      type: "devops",
-      parentId: "cgroup-edge",
+      type: "gateway",
       data: {
-        label: "CloudFront CDN + S3 Bucket",
-        role: "Static Assets & Media",
-        category: "cicd",
-        description: "Global edge CDN fronting private S3 bucket.",
+        label: "CloudFront CDN Edge",
+        tech: "Edge Locations · TLS 1.3 Termination",
+        description: "Global content delivery network caching static assets and terminating client TLS.",
       },
-      position: { x: 960, y: 85 },
+      position: { x: 115, y: 440 },
+    });
+
+    // ── Tier 2 Nodes: Ingress & Load Balancing (Col 2, x = 655) ──
+    nodes.push({
+      id: "cnode-waf",
+      type: "gateway",
+      data: {
+        label: "AWS WAF Managed Guard",
+        tech: "OWASP Top 10 · 100 RPS Rate Limit",
+        description: "Inspects HTTP traffic, drops SQL injection/XSS attempts before reaching ALB.",
+      },
+      position: { x: 655, y: 200 },
     });
 
     nodes.push({
       id: "cnode-alb",
       type: "gateway",
-      parentId: "cgroup-edge",
       data: {
-        label: "AWS Application Load Balancer",
-        tech: "WAF Associated · 100 RPS Rate Limit · Multi-AZ",
-        description: "Dual-AZ Public Subnet Ingress Load Balancer with path routing.",
+        label: "Application Load Balancer",
+        tech: "Path-Based Routing · Target Groups",
+        description: "Distributes incoming traffic across private ECS service tasks with automated health checks.",
       },
-      position: { x: 770, y: 195 },
+      position: { x: 655, y: 440 },
     });
 
-    // ECS Fargate Tasks (Layer 2 - 2 rows x 3 columns)
-    nodes.push({
-      id: "cecs-1",
-      type: "service",
-      parentId: "cgroup-compute",
-      data: { code: "ECS Task", label: "svc-auth Fargate Task", tech: "0.5 vCPU, 1 GB RAM", protocol: "Fargate Task", desc: "Auto Scaling (min 2, max 10)" },
-      position: { x: 460, y: 360 },
+    // ── Tier 3 Nodes: ECS Fargate Tasks (Col 3, x = 1215) ──
+    taskList.forEach((tItem: any, idx: number) => {
+      nodes.push({
+        id: `cecs-${idx + 1}`,
+        type: "service",
+        data: {
+          code: "ECS Task",
+          label: `${tItem.name} Task`,
+          tech: "0.5 vCPU, 1 GB RAM · Fargate",
+          protocol: "Fargate Task",
+          description: "Containerized task running in private subnets with auto-scaling (min 2, max 10).",
+          is_new: tItem.is_new,
+          version_added: tItem.version_added,
+        },
+        position: { x: 1215, y: 120 + idx * 175 },
+      });
     });
 
-    nodes.push({
-      id: "cecs-2",
-      type: "service",
-      parentId: "cgroup-compute",
-      data: { code: "ECS Task", label: "svc-catalog Fargate Task", tech: "0.5 vCPU, 1 GB RAM", protocol: "Fargate Task", desc: "Auto Scaling (min 2, max 10)" },
-      position: { x: 780, y: 360 },
-    });
-
-    nodes.push({
-      id: "cecs-3",
-      type: "service",
-      parentId: "cgroup-compute",
-      data: { code: "ECS Task", label: "svc-circulation Fargate Task", tech: "0.5 vCPU, 1 GB RAM", protocol: "Fargate Task", desc: "Auto Scaling (min 2, max 10)" },
-      position: { x: 1100, y: 360 },
-    });
-
-    nodes.push({
-      id: "cecs-4",
-      type: "service",
-      parentId: "cgroup-compute",
-      data: { code: "ECS Task", label: "svc-notification Fargate Task", tech: "0.5 vCPU, 1 GB RAM", protocol: "Fargate Task", desc: "Auto Scaling (min 2, max 10)" },
-      position: { x: 460, y: 475 },
-    });
-
-    nodes.push({
-      id: "cecs-5",
-      type: "service",
-      parentId: "cgroup-compute",
-      data: { code: "ECS Task", label: "svc-inventory Fargate Task", tech: "0.5 vCPU, 1 GB RAM", protocol: "Fargate Task", desc: "Auto Scaling (min 2, max 10)" },
-      position: { x: 780, y: 475 },
-    });
-
-    nodes.push({
-      id: "cecs-6",
-      type: "service",
-      parentId: "cgroup-compute",
-      data: { code: "ECS Task", label: "svc-reporting Fargate Task", tech: "0.5 vCPU, 1 GB RAM", protocol: "Fargate Task", desc: "Auto Scaling (min 2, max 10)" },
-      position: { x: 1100, y: 475 },
-    });
-
-    // Managed Storage (Layer 3)
+    // ── Tier 4 Nodes: Managed Storage & Persistence (Col 4, x = 1855) ──
     nodes.push({
       id: "cnode-rds",
       type: "database",
-      parentId: "cgroup-storage",
       data: {
         engine: "AWS RDS PostgreSQL 16",
         label: "RDS db.t4g.medium Multi-AZ",
         schema: "100 GB gp3 · 7-day PITR",
         description: "Automated daily snapshots and Multi-AZ failover across Availability Zones.",
       },
-      position: { x: 600, y: 655 },
+      position: { x: 1855, y: 150 },
     });
 
     nodes.push({
       id: "cnode-elasticache",
       type: "cache",
-      parentId: "cgroup-storage",
       data: {
-        label: "ElastiCache Redis 7.2",
+        label: "ElastiCache Redis 7.2 Cluster",
         subtitle: "cache.t4g.small · Multi-AZ",
         description: "In-memory caching and session clustering with automated failover.",
       },
-      position: { x: 960, y: 655 },
+      position: { x: 1855, y: 350 },
     });
 
-    // Clean Cloud Pipeline Edges
-    edges.push({ id: "ce-r53-alb", source: "cnode-route53", target: "cnode-alb", sourceHandle: "dev-bottom", targetHandle: "gw-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-cf-alb", source: "cnode-cloudfront", target: "cnode-alb", sourceHandle: "dev-bottom", targetHandle: "gw-top", type: "animatedFlow", animated: true });
+    nodes.push({
+      id: "cnode-s3",
+      type: "database",
+      data: {
+        engine: "AWS S3 Standard",
+        label: "Encrypted Blob Store",
+        schema: "AES-256 SSE-S3 · Lifecycle Policies",
+        description: "Secure object storage for uploaded assets, export artifacts, and audit archives.",
+      },
+      position: { x: 1855, y: 550 },
+    });
 
-    edges.push({ id: "ce-alb-ecs1", source: "cnode-alb", target: "cecs-1", sourceHandle: "gw-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-alb-ecs2", source: "cnode-alb", target: "cecs-2", sourceHandle: "gw-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-alb-ecs3", source: "cnode-alb", target: "cecs-3", sourceHandle: "gw-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
+    // ── Tier 5 Nodes: DevOps & Observability (Col 5, x = 2455) ──
+    nodes.push({
+      id: "cnode-github",
+      type: "devops",
+      data: {
+        label: "GitHub Actions CI/CD Pipeline",
+        role: "Build · Test · Push ECR · Deploy",
+        category: "cicd",
+        description: "Automated multi-stage pipelines triggering ECR container push and ECS task definition update.",
+      },
+      position: { x: 2455, y: 220 },
+    });
 
-    edges.push({ id: "ce-ecs1-ecs4", source: "cecs-1", target: "cecs-4", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-ecs2-ecs5", source: "cecs-2", target: "cecs-5", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-ecs3-ecs6", source: "cecs-3", target: "cecs-6", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
+    nodes.push({
+      id: "cnode-cloudwatch",
+      type: "devops",
+      data: {
+        label: "AWS CloudWatch Container Insights",
+        role: "Logs · Metrics · Alarms",
+        category: "monitoring",
+        description: "Aggregates container stdout logs and triggers SNS alerts when CPU > 75% for 3 periods.",
+      },
+      position: { x: 1915, y: 460 },
+    });
 
-    edges.push({ id: "ce-ecs-rds", source: "cecs-4", target: "cnode-rds", sourceHandle: "svc-bottom", targetHandle: "db-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-ecs-cache", source: "cecs-5", target: "cnode-elasticache", sourceHandle: "svc-bottom", targetHandle: "cache-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "ce-gh-ecs", source: "cnode-github", target: "cecs-2", sourceHandle: "dev-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Deploy ECR/ECS" }, animated: true });
-    edges.push({ id: "ce-ecs-cw", source: "cecs-6", target: "cnode-cloudwatch", sourceHandle: "svc-left", targetHandle: "dev-right", type: "animatedFlow", data: { label: "Telemetry & Logs" }, animated: true });
+    // ── Edges: Pure Left-to-Right Architectural Flow with Zero Crisscross ──
+    // Col 1 -> Col 2
+    edges.push({ id: "ce-r53-waf", source: "cnode-route53", target: "cnode-waf", sourceHandle: "gw-right", targetHandle: "gw-left", type: "animatedFlow", data: { label: "Authoritative Ingress" }, animated: true });
+    edges.push({ id: "ce-cf-alb", source: "cnode-cloudfront", target: "cnode-alb", sourceHandle: "gw-right", targetHandle: "gw-left", type: "animatedFlow", data: { label: "CDN Cached Traffic" }, animated: true });
+    // Inside Col 2: WAF inspected traffic to ALB
+    edges.push({ id: "ce-waf-alb", source: "cnode-waf", target: "cnode-alb", sourceHandle: "gw-bottom", targetHandle: "gw-top", type: "animatedFlow", data: { label: "OWASP Inspected" }, animated: true });
 
-    return applyColorThemesToGraph(nodes, edges);
+    // Col 2 (ALB) -> Col 3 (ECS Tasks)
+    taskList.forEach((_, idx) => {
+      edges.push({
+        id: `ce-alb-ecs${idx + 1}`,
+        source: "cnode-alb",
+        target: `cecs-${idx + 1}`,
+        sourceHandle: "gw-right",
+        targetHandle: "svc-left",
+        type: "animatedFlow",
+        data: { label: `Target Group /route-${idx + 1}` },
+        animated: true,
+      });
+    });
+
+    // Col 3 (ECS Tasks) -> Col 4 (Databases & Cache)
+    if (taskList.length >= 1) {
+      edges.push({ id: "ce-ecs1-rds", source: "cecs-1", target: "cnode-rds", sourceHandle: "svc-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "Transactional Queries" }, animated: true });
+    }
+    if (taskList.length >= 2) {
+      edges.push({ id: "ce-ecs2-cache", source: "cecs-2", target: "cnode-elasticache", sourceHandle: "svc-right", targetHandle: "cache-left", type: "animatedFlow", data: { label: "Cache Read/Write" }, animated: true });
+    }
+    if (taskList.length >= 3) {
+      edges.push({ id: "ce-ecs3-s3", source: "cecs-3", target: "cnode-s3", sourceHandle: "svc-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "Artifacts & Media" }, animated: true });
+    }
+    if (taskList.length >= 4) {
+      edges.push({ id: "ce-ecs4-rds", source: "cecs-4", target: "cnode-rds", sourceHandle: "svc-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "Worker Sync State" }, animated: true });
+    }
+
+    // Col 4 (Databases & Cache) -> Col 5 (Observability & DevOps)
+    edges.push({ id: "ce-rds-cw", source: "cnode-rds", target: "cnode-cloudwatch", sourceHandle: "db-right", targetHandle: "dev-left", type: "animatedFlow", data: { label: "RDS CloudWatch Metrics" }, animated: true });
+    edges.push({ id: "ce-cache-cw", source: "cnode-elasticache", target: "cnode-cloudwatch", sourceHandle: "cache-right", targetHandle: "dev-left", type: "animatedFlow", data: { label: "Cache Telemetry" }, animated: true });
+    edges.push({ id: "ce-s3-gh", source: "cnode-s3", target: "cnode-github", sourceHandle: "db-right", targetHandle: "dev-left", type: "animatedFlow", data: { label: "Artifact Deployments" }, animated: true });
+
+    return finalizeLld(nodes, edges);
   }
 
   // ── 5. SECURITY LLD ARCHITECTURE TOPOLOGY ──
-  // Hierarchical Structure (Perimeter Guard -> Identity & Tokens -> RBAC Enforcement + Left Flank Audit/KMS)
+  // Spacious 6-Tier Left-to-Right Architectural Flow matching User Reference Architecture:
+  // Col 1: Perimeter Shield & Ingress Gateway (WAF + TLS 1.3)
+  // Col 2: Identity Provider & Cryptographic Token Authority (OAuth2 PKCE + RS256 JWT)
+  // Col 3: Fine-Grained Authorization & RBAC Enforcement (RBAC Enforcer)
+  // Col 4: Real-time Session & Revocation (Redis Token Blacklist)
+  // Col 5: Envelope Encryption & Key Management (AWS KMS AES-256)
+  // Col 6: Forensic Audit Logging & Security Trail (Audit Trail + Dynamic Policies)
   if (type === "security") {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
 
-    // Left Flank Division: Cryptographic Key Management & Audit Trail
-    nodes.push({
-      id: "secgroup-storage",
-      type: "layerGroup",
-      data: {
-        label: "Audit & Key Management Guard",
-        subtitle: "AWS KMS Customer Keys · Immutable Audit Trail · Token Blacklist",
-        count: 3,
-      },
-      position: { x: 40, y: 30 },
-      style: { width: 340, height: 640, zIndex: -1, pointerEvents: "none" },
-      draggable: false,
-      selectable: false,
-    });
+    // Dynamic roles from lldData.authorization
+    const authz = lldData.authorization && typeof lldData.authorization === "object"
+      ? (lldData.authorization as Record<string, unknown>)
+      : {};
+    const rawRoles = Array.isArray(authz.roles)
+      ? (authz.roles as Array<string>)
+      : Array.isArray(lldData.roles)
+      ? (lldData.roles as Array<string>)
+      : ["End User", "Operator", "Administrator"];
+    const rolesStr = rawRoles.slice(0, 3).join(" · ");
 
-    // Top Center Division: Perimeter & Ingress Security Guard
+    const rawControls = Array.isArray(lldData.security_controls)
+      ? (lldData.security_controls as Array<any>)
+      : Array.isArray(lldData.controls)
+      ? (lldData.controls as Array<any>)
+      : [];
+
+    const secBoundsTier1 = computeGroupBounds([{ y: 200, height: 92 }, { y: 440, height: 92 }]);
+    const secBoundsTier2 = computeGroupBounds([{ y: 200, height: 92 }, { y: 440, height: 92 }]);
+    const secBoundsTier3 = computeGroupBounds([{ y: 320, height: 92 }]);
+    const secBoundsTier4 = computeGroupBounds([{ y: 320, height: 92 }]);
+    const secBoundsTier5 = computeGroupBounds([{ y: 320, height: 92 }]);
+    const secBoundsTier6 = computeGroupBounds([
+      { y: 160, height: 92 },
+      ...rawControls.map((_, idx) => ({ y: 340 + idx * 160, height: 92 })),
+    ]);
+
+    // Tier 1: Perimeter Shield & Transport Layer Security (Col 1, x = 80, width = 380)
     nodes.push({
-      id: "secgroup-ingress",
+      id: "secgroup-tier1",
       type: "layerGroup",
       data: {
-        label: "Perimeter & Ingress Security Guard",
-        subtitle: "WAF Rate Limiting · TLS 1.3 Strict Ingress",
+        label: "Tier 1: Perimeter Shield & TLS",
+        subtitle: "AWS WAF Rate Limiting · TLS 1.3 Strict Ingress Guard · Anti-DDoS",
         count: 2,
       },
-      position: { x: 420, y: 30 },
-      style: { width: 840, height: 180, zIndex: -1, pointerEvents: "none" },
+      position: { x: 80, y: secBoundsTier1.y },
+      style: { width: 380, height: secBoundsTier1.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Center Division: Authentication & Cryptographic Token Engine
+    // Tier 2: Identity Provider & Cryptographic Token Authority (Col 2, x = 640, width = 380)
     nodes.push({
-      id: "secgroup-identity",
+      id: "secgroup-tier2",
       type: "layerGroup",
       data: {
-        label: "Authentication & Cryptographic Token Engine",
-        subtitle: "OAuth2 PKCE Flow · RS256 Asymmetric Signing",
+        label: "Tier 2: Identity & Token Authority",
+        subtitle: "OAuth2 & PKCE Flow · RS256 Asymmetric Token Authority",
         count: 2,
       },
-      position: { x: 420, y: 230 },
-      style: { width: 840, height: 180, zIndex: -1, pointerEvents: "none" },
+      position: { x: 640, y: secBoundsTier2.y },
+      style: { width: 380, height: secBoundsTier2.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Bottom Center Division: Authorization & RBAC Enforcement
+    // Tier 3: Fine-Grained Authorization & RBAC Enforcement (Col 3, x = 1220, width = 380)
     nodes.push({
-      id: "secgroup-authz",
+      id: "secgroup-tier3",
       type: "layerGroup",
       data: {
-        label: "Authorization & RBAC Permission Enforcer",
-        subtitle: "Student · Librarian · Administrator Policies",
+        label: "Tier 3: RBAC Policy Enforcer",
+        subtitle: `${rolesStr} Policy Enforcer · Route Guard`,
         count: 1,
       },
-      position: { x: 420, y: 430 },
-      style: { width: 840, height: 180, zIndex: -1, pointerEvents: "none" },
+      position: { x: 1220, y: secBoundsTier3.y },
+      style: { width: 380, height: secBoundsTier3.height, zIndex: -1, pointerEvents: "none" },
       draggable: false,
       selectable: false,
     });
 
-    // Left Flank Nodes
+    // Tier 4: Real-time Session Invalidation & Token Revocation (Col 4, x = 1800, width = 380)
     nodes.push({
-      id: "secnode-kms",
-      type: "database",
-      parentId: "secgroup-storage",
+      id: "secgroup-tier4",
+      type: "layerGroup",
       data: {
-        engine: "AWS KMS",
-        label: "AES-256 Encryption at Rest",
-        schema: "Customer Managed Keys (CMK)",
-        description: "Transparent envelope encryption for RDS databases and S3 storage.",
+        label: "Tier 4: Token Revocation & Session Invalidation",
+        subtitle: "Redis Token Blacklist · Instant Session Eviction · JTI Kill Switch",
+        count: 1,
       },
-      position: { x: 70, y: 100 },
+      position: { x: 1800, y: secBoundsTier4.y },
+      style: { width: 380, height: secBoundsTier4.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
     });
 
+    // Tier 5: Envelope Encryption & Customer Master Keys (AWS KMS) (Col 5, x = 2380, width = 380)
     nodes.push({
-      id: "secnode-blacklist",
-      type: "cache",
-      parentId: "secgroup-storage",
+      id: "secgroup-tier5",
+      type: "layerGroup",
       data: {
-        label: "Redis Token Blacklist",
-        subtitle: "Instant Session Revocation",
-        description: "Maintains revoked JWT IDs for immediate logout enforcement.",
+        label: "Tier 5: KMS Envelope Encryption",
+        subtitle: "AWS KMS AES-256 Envelope Encryption · Customer Managed Keys (CMK)",
+        count: 1,
       },
-      position: { x: 70, y: 300 },
+      position: { x: 2380, y: secBoundsTier5.y },
+      style: { width: 380, height: secBoundsTier5.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
     });
 
+    // Tier 6: Forensic Audit Logging & Security Trail (Col 6, x = 2960, width = 420)
     nodes.push({
-      id: "secnode-audit",
-      type: "devops",
-      parentId: "secgroup-storage",
+      id: "secgroup-tier6",
+      type: "layerGroup",
       data: {
-        label: "Immutable Audit Trail",
-        role: "Append-only Transaction Logs",
-        category: "monitoring",
-        description: "3-year tamper-evident audit logging for all checkout and administrative actions.",
+        label: "Tier 6: Forensic Audit & Security Trail",
+        subtitle: "Immutable Audit Trail · Tamper-Evident Records · SOC2 / ISO 27001",
+        count: 1 + rawControls.length,
       },
-      position: { x: 70, y: 500 },
+      position: { x: 2960, y: secBoundsTier6.y },
+      style: { width: 420, height: secBoundsTier6.height, zIndex: -1, pointerEvents: "none" },
+      draggable: false,
+      selectable: false,
     });
 
-    // Perimeter (Layer 1)
+    // ── Tier 1 Nodes: Perimeter (Col 1, x = 115) ──
     nodes.push({
       id: "secnode-waf",
       type: "gateway",
-      parentId: "secgroup-ingress",
       data: {
         label: "AWS WAF + Rate Limiter",
         tech: "OWASP Top 10 · 100 RPS Threshold",
-        description: "Inspects HTTP traffic, drops SQL injection/XSS attempts.",
+        description: "Inspects incoming HTTP payloads, drops SQL injection, XSS, and anomalous bot requests.",
       },
-      position: { x: 470, y: 85 },
+      position: { x: 115, y: 200 },
     });
 
     nodes.push({
       id: "secnode-tls",
       type: "gateway",
-      parentId: "secgroup-ingress",
       data: {
         label: "TLS 1.3 Strict Ingress Guard",
         tech: "Strict Transport Security (HSTS)",
-        description: "Full end-to-end cryptographic transport encryption.",
+        description: "Full end-to-end cryptographic transport encryption with forward secrecy and OCSP stapling.",
       },
-      position: { x: 860, y: 85 },
+      position: { x: 115, y: 440 },
     });
 
-    // Identity Engine (Layer 2)
+    // ── Tier 2 Nodes: Identity Engine (Col 2, x = 675) ──
     nodes.push({
       id: "secnode-oauth",
       type: "service",
-      parentId: "secgroup-identity",
       data: {
         code: "OAuth2 / PKCE",
         label: "OAuth2 & PKCE Gateway",
         tech: "Auth Code Flow · Zero Plaintext",
         protocol: "Authorization",
-        description: "Authorizes student and admin login flows.",
+        description: "Authorizes user and staff authentication flows with asymmetric key validation.",
       },
-      position: { x: 470, y: 285 },
+      position: { x: 675, y: 200 },
     });
 
     nodes.push({
       id: "secnode-jwt",
       type: "service",
-      parentId: "secgroup-identity",
       data: {
         code: "JWT RS256",
         label: "JWT Asymmetric Token Authority",
         tech: "15m Access Token · 7d Refresh Token",
         protocol: "Token Authority",
-        description: "Issues cryptographically signed RS256 JWT tokens.",
+        description: "Issues cryptographically signed RS256 JWT tokens with active key rotation.",
       },
-      position: { x: 860, y: 285 },
+      position: { x: 675, y: 440 },
     });
 
-    // Authorization (Layer 3)
+    // ── Tier 3 Nodes: Authorization (Col 3, x = 1255) ──
     nodes.push({
       id: "secnode-rbac",
       type: "service",
-      parentId: "secgroup-authz",
       data: {
         code: "RBAC Guard",
         label: "RBAC Permission Enforcer",
-        tech: "Student · Librarian · Administrator",
+        tech: rolesStr,
         protocol: "Policy Engine",
-        description: "Validates granular route permissions on every microservice call.",
+        description: "Validates granular route permissions and role policies on every microservice invocation.",
       },
-      position: { x: 665, y: 485 },
+      position: { x: 1255, y: 320 },
     });
 
-    // Pristine Symmetrical Defense-in-Depth Edges
-    edges.push({ id: "sece-waf-oauth", source: "secnode-waf", target: "secnode-oauth", sourceHandle: "gw-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "sece-tls-jwt", source: "secnode-tls", target: "secnode-jwt", sourceHandle: "gw-bottom", targetHandle: "svc-top", type: "animatedFlow", animated: true });
-    edges.push({ id: "sece-oauth-jwt", source: "secnode-oauth", target: "secnode-jwt", sourceHandle: "svc-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "PKCE Verify" }, animated: true });
-    edges.push({ id: "sece-jwt-rbac", source: "secnode-jwt", target: "secnode-rbac", sourceHandle: "svc-bottom", targetHandle: "svc-top", type: "animatedFlow", data: { label: "Token Verify" }, animated: true });
-    edges.push({ id: "sece-jwt-redis", source: "secnode-jwt", target: "secnode-blacklist", sourceHandle: "svc-left", targetHandle: "cache-right", type: "animatedFlow", data: { label: "Revocation Check" }, animated: true });
-    edges.push({ id: "sece-rbac-kms", source: "secnode-rbac", target: "secnode-kms", sourceHandle: "svc-left", targetHandle: "db-right", type: "animatedFlow", data: { label: "CMK Decrypt" }, animated: true });
-    edges.push({ id: "sece-rbac-audit", source: "secnode-rbac", target: "secnode-audit", sourceHandle: "svc-left", targetHandle: "dev-right", type: "animatedFlow", data: { label: "Audit Event" }, animated: true });
+    // ── Tier 4 Nodes: Token Revocation (Col 4, x = 1835) ──
+    nodes.push({
+      id: "secnode-blacklist",
+      type: "cache",
+      data: {
+        label: "Redis Token Blacklist",
+        subtitle: "Instant Session Revocation · JTI TTL",
+        description: "Maintains revoked JWT IDs for immediate logout enforcement and kill switch revocation.",
+      },
+      position: { x: 1835, y: 320 },
+    });
 
-    return applyColorThemesToGraph(nodes, edges);
+    // ── Tier 5 Nodes: KMS Envelope Encryption (Col 5, x = 2415) ──
+    nodes.push({
+      id: "secnode-kms",
+      type: "database",
+      data: {
+        engine: "AWS KMS",
+        label: "AES-256 Envelope Encryption",
+        schema: "Customer Managed Keys (CMK)",
+        description: "Transparent envelope encryption protecting database tables, credentials, and S3 data at rest.",
+      },
+      position: { x: 2415, y: 320 },
+    });
+
+    // ── Tier 6 Nodes: Forensic Audit Logging (Col 6, x = 2995) ──
+    nodes.push({
+      id: "secnode-audit",
+      type: "devops",
+      data: {
+        label: "Immutable Security Audit Trail",
+        role: "Append-only Transaction Logs",
+        category: "monitoring",
+        description: "Tamper-evident audit logging for all critical transactions, auth changes, and access grants.",
+      },
+      position: { x: 2995, y: 160 },
+    });
+
+    // Dynamic & Evolved Security Controls (Col 6, stacked vertically)
+    rawControls.forEach((ctrl, idx) => {
+      const isNew = Boolean(ctrl.is_new || ctrl.version_added);
+      nodes.push({
+        id: `secnode-ctrl-${idx + 1}`,
+        type: "service",
+        data: {
+          code: "SEC-POL",
+          label: String(ctrl.name || ctrl.label || ctrl.control || `Security Policy ${idx + 1}`),
+          tech: String(ctrl.tech || ctrl.type || "Enforced Policy"),
+          protocol: "Compliance",
+          description: String(ctrl.description || "Active security enforcement control."),
+          is_new: isNew,
+          version_added: ctrl.version_added,
+        },
+        position: { x: 2995, y: 340 + idx * 160 },
+      });
+      edges.push({
+        id: `sece-audit-ctrl-${idx + 1}`,
+        source: "secnode-audit",
+        target: `secnode-ctrl-${idx + 1}`,
+        sourceHandle: "dev-bottom",
+        targetHandle: "svc-top",
+        type: "animatedFlow",
+        data: { label: "Audited Control" },
+        animated: true,
+      });
+    });
+
+    // ── Edges: Pure Left-to-Right Architectural Flow with Zero Crisscross ──
+    // Col 1 -> Col 2
+    edges.push({ id: "sece-waf-oauth", source: "secnode-waf", target: "secnode-oauth", sourceHandle: "gw-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Screened Ingress" }, animated: true });
+    edges.push({ id: "sece-tls-jwt", source: "secnode-tls", target: "secnode-jwt", sourceHandle: "gw-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "TLS Decrypted Stream" }, animated: true });
+
+    // Col 2 -> Col 3
+    edges.push({ id: "sece-oauth-rbac", source: "secnode-oauth", target: "secnode-rbac", sourceHandle: "svc-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Principal Context" }, animated: true });
+    edges.push({ id: "sece-jwt-rbac", source: "secnode-jwt", target: "secnode-rbac", sourceHandle: "svc-right", targetHandle: "svc-left", type: "animatedFlow", data: { label: "Verified Claims" }, animated: true });
+
+    // Col 3 -> Col 4
+    edges.push({ id: "sece-rbac-blacklist", source: "secnode-rbac", target: "secnode-blacklist", sourceHandle: "svc-right", targetHandle: "cache-left", type: "animatedFlow", data: { label: "JTI Revocation Check" }, animated: true });
+
+    // Col 4 -> Col 5
+    edges.push({ id: "sece-blacklist-kms", source: "secnode-blacklist", target: "secnode-kms", sourceHandle: "cache-right", targetHandle: "db-left", type: "animatedFlow", data: { label: "CMK Decrypt Key" }, animated: true });
+
+    // Col 5 -> Col 6
+    edges.push({ id: "sece-kms-audit", source: "secnode-kms", target: "secnode-audit", sourceHandle: "db-right", targetHandle: "dev-left", type: "animatedFlow", data: { label: "Signed Audit Record" }, animated: true });
+
+    return finalizeLld(nodes, edges);
   }
 
   // Fallback for custom objects
-  return parseHldToReactFlow(lldData);
+  return parseHldToReactFlow(lldData, undefined, layoutDirection);
 }
-

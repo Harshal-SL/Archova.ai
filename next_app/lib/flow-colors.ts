@@ -293,7 +293,8 @@ export function getEdgeTheme(
  * Layer group container accent theme
  */
 export function getLayerGroupTheme(label?: string, id?: string): ComponentColorTheme {
-  const text = `${id || ""} ${label || ""}`.toLowerCase();
+  const text = `${label || ""} ${id || ""}`.toLowerCase();
+  if (text.includes("user") || text.includes("actor") || text.includes("stakeholder")) return PALETTE_MAP.get("amber")!;
   if (text.includes("frontend") || text.includes("page")) return PALETTE_MAP.get("sky")!;
   if (text.includes("backend") || text.includes("service") || text.includes("microservice") || text.includes("domain")) return PALETTE_MAP.get("emerald")!;
   if (text.includes("database") || text.includes("data") || text.includes("persistence") || text.includes("schema") || text.includes("model")) return PALETTE_MAP.get("indigo")!;

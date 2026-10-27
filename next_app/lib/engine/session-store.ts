@@ -6,7 +6,6 @@
 import { generateInterviewQuestions, synthesizeArsrsDocument, type InterviewQuestionData } from "./ree";
 import { synthesizeHldArchitecture, type HldData } from "./sae";
 import { generateLldSpecification } from "./lld";
-import { dummyHld, dummyAllLlds } from "../dummy-data";
 
 export type LldType = "backend" | "frontend" | "database" | "security" | "cloud";
 export type LldStatusType = "NOT_STARTED" | "GENERATING" | "READY" | "FAILED";
@@ -198,15 +197,14 @@ export async function generateArchitecture(session: GenerationSession) {
     "INFO"
   );
 
-  // 2. HLD (Using exact rich dummy HLD payload)
+  // 2. HLD (Synthesizing dynamic HLD architecture)
   addSessionLog(
     session,
     "SAE",
     "Synthesizing High-Level Design (HLD) topology and component connections...",
     "INFO"
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  session.hld = dummyHld as any;
+  session.hld = synthesizeHldArchitecture(session.prompt, session.arsrs || {}) as any;
   session.status = "COMPLETED";
 
   addSessionLog(
@@ -242,15 +240,15 @@ async function triggerParallelLldSynthesis(session: GenerationSession) {
 
     await new Promise((resolve) => setTimeout(resolve, 400));
 
-    // Provide exact dummy payload for each LLD type
-    const dummyPayload = dummyAllLlds[lldType] || generateLldSpecification(
+    // Synthesize domain LLD specification
+    const generatedPayload = generateLldSpecification(
       lldType,
       session.prompt,
       session.arsrs || {},
       session.hld ? { ...session.hld } : {}
     );
 
-    session.lld_data[lldType] = dummyPayload as Record<string, unknown>;
+    session.lld_data[lldType] = generatedPayload as Record<string, unknown>;
     session.lld_status[lldType] = "READY";
 
     addSessionLog(

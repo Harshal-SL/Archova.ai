@@ -11,11 +11,15 @@ import {
   AlertCircle,
   ArrowLeft,
   ChevronUp,
+  Code2,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { aiEngineApi, type LldType } from "@/lib/ai-engine-client";
 import LLDGraph from "./LLDGraph";
+import JsonViewer from "./JsonViewer";
+import { dummyAllLldData } from "@/lib/mock-data";
 import clsx from "clsx";
+import Select, { type TSelectData } from "@/components/ui/select";
 
 const LLD_TABS: Array<{
   type: LldType;
@@ -47,20 +51,12 @@ export default function LldsView({ onBackToHld }: Props = {}) {
     setHldWorkspaceTab,
     isValidating,
     runCorrectionWorkflow,
+    activeModelId,
   } = useAppStore();
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isArchova = !activeModelId || activeModelId === "archova";
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as unknown as HTMLElement)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const [viewMode, setViewMode] = useState<"visual" | "json">("visual");
 
   const fetchSpecificLld = useCallback(
     async (type: LldType) => {
@@ -80,10 +76,10 @@ export default function LldsView({ onBackToHld }: Props = {}) {
   );
 
   useEffect(() => {
-    if (generationId && !lldData[activeLldType]) {
+    if (isArchova && generationId && !lldData[activeLldType]) {
       fetchSpecificLld(activeLldType);
     }
-  }, [generationId, activeLldType, lldData, fetchSpecificLld]);
+  }, [isArchova, generationId, activeLldType, lldData, fetchSpecificLld]);
 
   const currentStatus = lldStatus[activeLldType] || "NOT_STARTED";
   const currentData = lldData[activeLldType];
@@ -93,47 +89,57 @@ export default function LldsView({ onBackToHld }: Props = {}) {
 
   return (
     <div className="flex h-full flex-col bg-transparent text-black dark:text-white transition-colors">
-      {/* Main Content Area (Diagram view) */}
-      <div className="relative flex-1 overflow-hidden bg-transparent text-black dark:text-white">
-        {currentStatus === "GENERATING" && (
-          <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white">
-              <Loader2 className="h-6 w-6 animate-spin" />
-            </div>
-            <h4 className="text-sm font-bold text-black dark:text-white">
-              Generating {activeLldType.toUpperCase()} LLD...
-            </h4>
-            <p className="mt-1 max-w-sm text-xs text-neutral-500 dark:text-neutral-400">
-              {currentMessage || "Multi-agent engine is synthesizing the low-level modules and schemas."}
-            </p>
-          </div>
-        )}
+      {/* Main Content Area (Diagram view or Raw JSON) */}
+      <div key={`${activeLldType}-${viewMode}`} className="relative flex-1 overflow-hidden bg-transparent text-black dark:text-white animate-in fade-in duration-300">
+        {viewMode === "json" ? (
+          <JsonViewer
+            defaultTab={activeLldType}
+            customData={currentData}
+            title={`${activeTabObj.label} JSON`}
+          />
+        ) : (
+          <>
+            {currentStatus === "GENERATING" && (
+              <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+                <h4 className="text-sm font-bold text-black dark:text-white">
+                  Generating {activeLldType.toUpperCase()} LLD...
+                </h4>
+                <p className="mt-1 max-w-sm text-xs text-neutral-500 dark:text-neutral-400">
+                  {currentMessage || "Multi-agent engine is synthesizing the low-level modules and schemas."}
+                </p>
+              </div>
+            )}
 
-        {currentStatus === "FAILED" && (
-          <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white">
-              <AlertCircle className="h-6 w-6" />
-            </div>
-            <h4 className="text-sm font-bold text-black dark:text-white">
-              {activeLldType.toUpperCase()} LLD Generation Failed
-            </h4>
-            <p className="mt-1 max-w-sm text-xs text-neutral-500 dark:text-neutral-400">
-              {currentMessage || "An error occurred during multi-agent synthesis."}
-            </p>
-          </div>
-        )}
+            {currentStatus === "FAILED" && (
+              <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-200 text-black dark:bg-neutral-800 dark:text-white">
+                  <AlertCircle className="h-6 w-6" />
+                </div>
+                <h4 className="text-sm font-bold text-black dark:text-white">
+                  {activeLldType.toUpperCase()} LLD Generation Failed
+                </h4>
+                <p className="mt-1 max-w-sm text-xs text-neutral-500 dark:text-neutral-400">
+                  {currentMessage || "An error occurred during multi-agent synthesis."}
+                </p>
+              </div>
+            )}
 
-        {currentStatus === "NOT_STARTED" && (
-          <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-            <Server className="mb-2 h-10 w-10 text-neutral-400 dark:text-neutral-600" />
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              {activeLldType.toUpperCase()} LLD has not started yet. Complete the interview to generate.
-            </p>
-          </div>
-        )}
+            {currentStatus === "NOT_STARTED" && !currentData && !(dummyAllLldData as any)?.[activeLldType] && (
+              <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                <Server className="mb-2 h-10 w-10 text-neutral-400 dark:text-neutral-600" />
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {activeLldType.toUpperCase()} LLD has not started yet. Complete the interview to generate.
+                </p>
+              </div>
+            )}
 
-        {currentStatus === "READY" && currentData && (
-          <LLDGraph customLldType={activeLldType} customLldData={currentData} />
+            {(currentData || (dummyAllLldData as any)?.[activeLldType]) && currentStatus !== "GENERATING" && currentStatus !== "FAILED" && (
+              <LLDGraph customLldType={activeLldType} customLldData={currentData || (dummyAllLldData as any)?.[activeLldType]} />
+            )}
+          </>
         )}
       </div>
 
@@ -154,99 +160,33 @@ export default function LldsView({ onBackToHld }: Props = {}) {
           <span>Back to Visual HLD</span>
         </button>
 
-        {/* Right: Step Tracker & Bottom-Right LLD Navigation Dropdown */}
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-neutral-500 dark:text-neutral-400 hidden sm:inline">
-            Step 4 of 4 • Low-Level Designs
-          </span>
-
-          {/* Bottom-Right LLD Navigation Dropdown Menu */}
-          <div className="relative" ref={dropdownRef}>
-            {dropdownOpen && (
-              <div className="absolute bottom-full right-0 mb-2 w-64 rounded-xl border border-neutral-200 bg-white/95 p-1.5 shadow-xl backdrop-blur-xl dark:border-neutral-800 dark:bg-neutral-950/95 z-50">
-                <div className="px-2 py-1 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                    Switch LLD
-                  </span>
-                  <span className="text-[9px] font-mono text-neutral-400">
-                    5 Topologies
-                  </span>
-                </div>
-
-                <div className="space-y-0.5">
-                  {LLD_TABS.map((item) => {
-                    const ItemIcon = item.icon;
-                    const isCurrent = activeLldType === item.type;
-                    return (
-                      <button
-                        key={item.type}
-                        type="button"
-                        onClick={() => {
-                          setActiveLldType(item.type);
-                          fetchSpecificLld(item.type);
-                          setDropdownOpen(false);
-                        }}
-                        className={clsx(
-                          "flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors cursor-pointer",
-                          isCurrent
-                            ? "bg-neutral-900 text-white dark:bg-white dark:text-black font-semibold"
-                            : "text-neutral-700 hover:bg-neutral-100 hover:text-black dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-white"
-                        )}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <ItemIcon
-                            className={clsx(
-                              "h-3.5 w-3.5 shrink-0",
-                              isCurrent
-                                ? "text-white dark:text-black"
-                                : "text-neutral-400 dark:text-neutral-500"
-                            )}
-                          />
-                          <span className="truncate">{item.label}</span>
-                        </div>
-                        {isCurrent && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shrink-0" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Small Dropdown Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setDropdownOpen((prev) => !prev)}
-              className="flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:border-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-400 cursor-pointer transition-colors"
-              title="Navigate between Low-Level Designs"
-            >
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
-              <ActiveIcon className="h-3.5 w-3.5 text-neutral-600 dark:text-neutral-400" />
-              <span>{activeTabObj.label}</span>
-              <ChevronUp
-                className={clsx(
-                  "h-3 w-3 text-neutral-400 transition-transform duration-200 ml-0.5",
-                  dropdownOpen && "rotate-180"
-                )}
-              />
-            </button>
-
-            {/* Validation & AI Correction Action Button */}
-            <button
-              type="button"
-              onClick={() => {
-                setHldWorkspaceTab("validation");
-                runCorrectionWorkflow(2);
-              }}
-              disabled={isValidating}
-              className="flex items-center gap-1.5 rounded-lg border border-indigo-500/40 bg-indigo-50/90 px-3 py-1.5 text-xs font-bold text-indigo-700 shadow-2xs hover:bg-indigo-100 hover:border-indigo-600 dark:border-indigo-500/40 dark:bg-indigo-950/60 dark:text-indigo-300 dark:hover:bg-indigo-900/80 cursor-pointer transition-all disabled:opacity-50"
-              title="Run Independent Validator Engine & Automated AI Correction Workflow"
-            >
-              <ShieldCheck className={clsx("h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400", isValidating && "animate-spin")} />
-              <span>{isValidating ? "Validating & Correcting..." : "Validate & Auto-Correct →"}</span>
-            </button>
-          </div>
+        {/* Right: Only keep the dropdown menu of selecting the LLD designs */}
+        <div className="flex items-center gap-3">
+          <Select
+            id="lld-view-select"
+            title="Switch Low-Level Design"
+            value={activeLldType}
+            onChange={(type) => {
+              setActiveLldType(type as LldType);
+              fetchSpecificLld(type as LldType);
+            }}
+            data={LLD_TABS.map((tab) => ({
+              id: tab.type,
+              label: tab.label,
+              value: tab.type,
+              description: tab.description,
+              icon:
+                tab.type === "backend"
+                  ? "⚙️"
+                  : tab.type === "frontend"
+                  ? "💻"
+                  : tab.type === "database"
+                  ? "🗄️"
+                  : tab.type === "security"
+                  ? "🛡️"
+                  : "☁️",
+            }))}
+          />
         </div>
       </div>
     </div>

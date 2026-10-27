@@ -23,6 +23,12 @@ import {
   Layers,
   FileCode2,
   Workflow,
+  Terminal,
+  Activity,
+  Network,
+  MonitorIcon,
+  ShieldCheck,
+  Database,
 } from "lucide-react";
 import BubbleBg from "@/components/BubbleBg";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -662,95 +668,273 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
             </form>
           </motion.div>
 
-          {/* ════ Right Side: Clean Monochrome Showcase ════ */}
+          {/* ════ Right Side: Interactive Architecture Showcase ════ */}
           <motion.div
-            className="lg:col-span-5 hidden lg:flex flex-col justify-between p-8 sm:p-10 border-l border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/40 backdrop-blur-md relative overflow-hidden"
+            className="lg:col-span-5 hidden lg:flex flex-col justify-between p-6 sm:p-8 border-l border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40 backdrop-blur-xl relative overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
           >
-            {/* Top Showcase Meta Badge */}
-            <div className="relative z-10 flex items-center justify-between">
-              <span className="inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-3.5 py-1 text-xs font-semibold text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 shadow-2xs">
-                <Sparkles className="h-3 w-3 text-neutral-600 dark:text-neutral-400" />
-                <span>ArchAI Multi-Agent v2.5</span>
-              </span>
-              <span className="text-[11px] font-mono text-neutral-500 uppercase tracking-widest font-semibold">
-                SOC 2 Ready
-              </span>
-            </div>
-
-            {/* Center Graphic & Mission Statement */}
-            <div className="relative z-10 my-auto py-8 text-center space-y-6">
-              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-black text-white dark:bg-white dark:text-black shadow-lg">
-                <Cpu className="h-10 w-10" />
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="font-heading text-xl sm:text-2xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
-                  Automated System Architecture
-                </h2>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 max-w-xs mx-auto leading-relaxed">
-                  Transform requirements into interactive HLD graphs, 5 concurrent LLD blueprints, and formal IEEE/ISO specifications.
-                </p>
-              </div>
-
-              {/* Feature Highlights Grid */}
-              <div className="space-y-2.5 text-left max-w-xs mx-auto">
-                <div className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white/90 p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900/60 backdrop-blur-sm">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white">
-                    <Workflow className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                      Interactive Visual HLD
-                    </div>
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                      Zoomable React Flow topology graphs
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white/90 p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900/60 backdrop-blur-sm">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white">
-                    <Layers className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                      5 Domain LLD Blueprints
-                    </div>
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                      Backend, Frontend, DB, Security & Cloud
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white/90 p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900/60 backdrop-blur-sm">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white">
-                    <FileCode2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-neutral-900 dark:text-white">
-                      ARSRS Specification Synthesis
-                    </div>
-                    <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                      Formal IEEE/ISO software engineering format
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Showcase Footer */}
-            <div className="relative z-10 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 pt-4 text-[11px] text-neutral-500">
-              <span>Next.js 16 • React 19 • Supabase</span>
-              <span className="flex items-center gap-1.5 text-neutral-900 dark:text-neutral-100 font-semibold">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Auth Online
-              </span>
-            </div>
+            <LiveArchitectureShowcase />
           </motion.div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function LiveArchitectureShowcase() {
+  const [activeActivityIndex, setActiveActivityIndex] = useState(0);
+  const [activeTierHover, setActiveTierHover] = useState<number | null>(null);
+
+  const activities = [
+    {
+      agent: "REE Engine",
+      task: "Interview SLA calculated: 99.999% • RTO: 30s • 42k req/s",
+      color: "text-amber-500 dark:text-amber-400",
+      badge: "Requirements",
+    },
+    {
+      agent: "SAE Engine",
+      task: "Synthesized 14 verified nodes & 19 edges in React Flow DAG",
+      color: "text-sky-500 dark:text-sky-400",
+      badge: "Topology",
+    },
+    {
+      agent: "Security LLD",
+      task: "Enforced zero-trust API boundaries, Kong OIDC & JWT guard",
+      color: "text-emerald-500 dark:text-emerald-400",
+      badge: "Security",
+    },
+    {
+      agent: "Database LLD",
+      task: "Compiled PostgreSQL 16 schema, partitioned B-Trees & Redis",
+      color: "text-purple-500 dark:text-purple-400",
+      badge: "Persistence",
+    },
+    {
+      agent: "ARSRS Engine",
+      task: "Generated formal IEEE/ISO-29148 architecture specification",
+      color: "text-cyan-500 dark:text-cyan-400",
+      badge: "Standard",
+    },
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveActivityIndex((prev) => (prev + 1) % activities.length);
+    }, 3200);
+    return () => clearInterval(timer);
+  }, [activities.length]);
+
+  const currentActivity = activities[activeActivityIndex];
+
+  return (
+    <div className="relative flex flex-col justify-between h-full space-y-5">
+      {/* ── Ambient Background Glows ── */}
+      <div className="pointer-events-none absolute -top-10 -right-10 w-64 h-64 rounded-full bg-sky-500/10 dark:bg-sky-500/15 blur-3xl animate-pulse" />
+      <div className="pointer-events-none absolute bottom-10 -left-10 w-64 h-64 rounded-full bg-purple-500/10 dark:bg-purple-500/15 blur-3xl" />
+
+      {/* ── Top Header Badge & Live Status ── */}
+      <div className="relative z-10 flex items-center justify-between">
+        <div className="inline-flex items-center gap-2 rounded-full border border-neutral-300/80 bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900/90 dark:text-neutral-200 shadow-2xs backdrop-blur-md">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span>ArchAI Multi-Agent v2.5</span>
+        </div>
+        <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-widest font-semibold">
+          SOC 2 • ISO 29148
+        </span>
+      </div>
+
+      {/* ── Central Reactor Core & Title ── */}
+      <div className="relative z-10 text-center space-y-3">
+        {/* Holographic Glowing Reactor Core */}
+        <div className="relative mx-auto flex h-18 w-18 items-center justify-center">
+          {/* Outer dashed spinning orbit */}
+          <div className="absolute inset-0 rounded-full border border-dashed border-sky-400/50 animate-spin [animation-duration:16s]" />
+          {/* Inner counter-rotating ring */}
+          <div className="absolute inset-2 rounded-full border border-purple-500/40 animate-spin [animation-duration:10s] [animation-direction:reverse]" />
+          {/* Ambient radial blur glow */}
+          <div className="absolute inset-3 rounded-full bg-gradient-to-tr from-sky-500/25 via-blue-500/20 to-purple-500/25 blur-md animate-pulse" />
+
+          {/* Central Core Box */}
+          <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-xl border border-white/20 dark:border-neutral-800 transition-transform hover:scale-105 duration-300">
+            <Cpu className="h-6 w-6 text-sky-400 dark:text-sky-600 animate-pulse" />
+          </div>
+
+          {/* Satellite Badge */}
+          <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-sky-500 text-white text-[8px] font-black shadow-md animate-bounce">
+            ⚡
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <h2 className="font-heading text-lg sm:text-xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+            Automated System Architecture
+          </h2>
+          <p className="text-xs text-neutral-600 dark:text-neutral-400 max-w-xs mx-auto leading-relaxed">
+            Deterministic multi-agent synthesis from natural language to formal enterprise topology.
+          </p>
+        </div>
+
+        {/* ── Mini Interactive Topology Visualizer (4 Connected Nodes) ── */}
+        <div className="rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs dark:border-neutral-800/90 dark:bg-neutral-950/60 backdrop-blur-md">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <div className="flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-wider text-neutral-500">
+              <Network className="h-3 w-3 text-sky-500" />
+              <span>Multi-Tier Topology Map</span>
+            </div>
+            <span className="text-[9.5px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+              14 Verified Nodes
+            </span>
+          </div>
+
+          {/* 4 Interactive Flow Nodes in a row */}
+          <div className="grid grid-cols-4 gap-1.5 relative">
+            {[
+              { label: "Client", sub: "Next.js 16", icon: MonitorIcon, color: "text-sky-500", bg: "bg-sky-500/10 border-sky-500/20" },
+              { label: "Gateway", sub: "Kong + OIDC", icon: ShieldCheck, color: "text-indigo-500", bg: "bg-indigo-500/10 border-indigo-500/20" },
+              { label: "Agents", sub: "5x LLD Mesh", icon: Workflow, color: "text-purple-500", bg: "bg-purple-500/10 border-purple-500/20" },
+              { label: "Storage", sub: "Postgres+Redis", icon: Database, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
+            ].map((node, idx) => (
+              <div
+                key={node.label}
+                onMouseEnter={() => setActiveTierHover(idx)}
+                onMouseLeave={() => setActiveTierHover(null)}
+                className={cn(
+                  "relative flex flex-col items-center justify-center rounded-xl p-1.5 text-center border transition-all cursor-pointer group",
+                  activeTierHover === idx
+                    ? "bg-white dark:bg-neutral-900 border-black dark:border-white shadow-md scale-105"
+                    : "bg-neutral-50/80 dark:bg-neutral-900/40 border-neutral-200/80 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
+                )}
+              >
+                <div className={cn("flex h-6 w-6 items-center justify-center rounded-lg mb-1 border", node.bg)}>
+                  <node.icon className={cn("h-3.5 w-3.5", node.color)} />
+                </div>
+                <div className="text-[10px] font-bold text-neutral-900 dark:text-white leading-tight">
+                  {node.label}
+                </div>
+                <div className="text-[8.5px] text-neutral-500 dark:text-neutral-400 truncate max-w-full font-mono">
+                  {node.sub}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3 Interactive Pillar Feature Cards ── */}
+      <div className="relative z-10 space-y-2 text-left">
+        {/* Card 1: Visual HLD */}
+        <div className="group flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs transition-all hover:bg-white hover:border-sky-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-sky-500/40 dark:hover:bg-neutral-900/90 backdrop-blur-md cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20 group-hover:scale-105 transition-transform">
+              <Workflow className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <span>Interactive Visual HLD</span>
+                <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300">
+                  React Flow
+                </span>
+              </div>
+              <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                Zoomable DAG topology with protocol-level edge verification
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 2: 5 Domain LLD */}
+        <div className="group flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs transition-all hover:bg-white hover:border-purple-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-purple-500/40 dark:hover:bg-neutral-900/90 backdrop-blur-md cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 border border-purple-500/20 group-hover:scale-105 transition-transform">
+              <Layers className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <span>5 Domain LLD Blueprints</span>
+                <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300">
+                  Parallel Agents
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-0.5">
+                {["Backend", "Database", "Security", "Cloud", "Frontend"].map((d) => (
+                  <span
+                    key={d}
+                    className="text-[9px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/80 px-1.5 py-0.2 rounded"
+                  >
+                    {d}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: ARSRS Spec */}
+        <div className="group flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs transition-all hover:bg-white hover:border-emerald-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-emerald-500/40 dark:hover:bg-neutral-900/90 backdrop-blur-md cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 group-hover:scale-105 transition-transform">
+              <FileCode2 className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+                <span>ARSRS Specification Synthesis</span>
+                <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
+                  ISO-29148
+                </span>
+              </div>
+              <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                Formal IEEE/ISO software engineering specification documents
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Live Agent Activity Console Ticker ── */}
+      <div className="relative z-10 rounded-2xl border border-neutral-200/80 bg-neutral-950 p-2.5 text-white shadow-md">
+        <div className="flex items-center justify-between text-[9.5px] font-mono text-neutral-400 border-b border-neutral-800 pb-1.5 mb-1.5">
+          <div className="flex items-center gap-1.5">
+            <Terminal className="h-3 w-3 text-sky-400" />
+            <span className="font-bold text-neutral-200">Autonomous Engine Stream</span>
+          </div>
+          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
+            <Activity className="h-3 w-3 animate-pulse" />
+            <span>Active</span>
+          </span>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentActivity.agent}
+            initial={{ opacity: 0, y: 3 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -3 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-start gap-1.5 text-xs"
+          >
+            <span className={cn("font-mono font-bold text-[10.5px] shrink-0", currentActivity.color)}>
+              [{currentActivity.agent}]
+            </span>
+            <span className="text-neutral-300 text-[10.5px] leading-tight truncate">
+              {currentActivity.task}
+            </span>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* ── Bottom Showcase Footer ── */}
+      <div className="relative z-10 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 pt-2.5 text-[10.5px] text-neutral-500 dark:text-neutral-400">
+        <span className="font-mono">Next.js 16 • React 19 • Supabase</span>
+        <span className="flex items-center gap-1.5 text-neutral-900 dark:text-neutral-100 font-bold">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          Auth Engine Online
+        </span>
       </div>
     </div>
   );

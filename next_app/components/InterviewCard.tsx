@@ -164,10 +164,9 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
     try {
       const response = await aiEngineApi.generateArchitecture(generationId);
 
-      const hldObj = response.hld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
       const parsedHld = response.hld ? parseHldToReactFlow(response.hld as Record<string, unknown>) : { nodes: [], edges: [] };
-      const initialNodes = (hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0) ? hldObj.nodes : parsedHld.nodes;
-      const initialEdges = (hldObj?.edges && (hldObj.edges as unknown[]).length > 0) ? hldObj.edges : parsedHld.edges;
+      const initialNodes = parsedHld.nodes;
+      const initialEdges = parsedHld.edges;
 
       useAppStore.setState({
         arsrsData: response.arsrs || null,

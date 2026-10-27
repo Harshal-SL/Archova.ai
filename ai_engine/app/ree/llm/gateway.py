@@ -117,6 +117,7 @@ class LLMGateway:
             temperature=temperature,
             system_prompt=system_prompt,
             json_mode=True,
+            agent_name=agent_name,
         )
 
         # ── Case C & D: HTTP Error or Empty Response ─────────────────────────
@@ -129,6 +130,7 @@ class LLMGateway:
                 temperature=temperature,
                 system_prompt=system_prompt,
                 json_mode=True,
+                agent_name=agent_name,
             )
             if not raw or not raw.strip():
                 ree_logger.debug(f"LLMGateway: retry failed for {model_id} — failover to fallback model {fallback_model}")
@@ -139,6 +141,7 @@ class LLMGateway:
                     temperature=temperature,
                     system_prompt=system_prompt,
                     json_mode=True,
+                    agent_name=agent_name,
                 )
                 if raw and raw.strip():
                     parsed = _parse_json(raw, agent_name=agent_name, model_id=fallback_model)
@@ -168,6 +171,7 @@ class LLMGateway:
                 temperature=temperature,
                 system_prompt=system_prompt,
                 json_mode=True,
+                agent_name=agent_name,
             )
             if raw_retry and raw_retry.strip():
                 parsed = _parse_json(raw_retry, agent_name=agent_name, model_id=model_id)
@@ -184,6 +188,7 @@ class LLMGateway:
                 temperature=temperature,
                 system_prompt=system_prompt,
                 json_mode=True,
+                agent_name=agent_name,
             )
             if raw_fb and raw_fb.strip():
                 parsed = _parse_json(raw_fb, agent_name=agent_name, model_id=fallback_model)
@@ -207,6 +212,7 @@ class LLMGateway:
                 max_tokens=max_tokens,
                 temperature=temperature,
                 json_mode=True,
+                agent_name=agent_name,
             )
             if raw_repair and raw_repair.strip():
                 parsed = _parse_json(raw_repair, agent_name=agent_name, model_id=model_id)
@@ -223,6 +229,7 @@ class LLMGateway:
                 temperature=temperature,
                 system_prompt=system_prompt,
                 json_mode=True,
+                agent_name=agent_name,
             )
             if raw_fb and raw_fb.strip():
                 parsed = _parse_json(raw_fb, agent_name=agent_name, model_id=fallback_model)
@@ -266,6 +273,7 @@ class LLMGateway:
             temperature=temperature,
             system_prompt=system_prompt,
             json_mode=False,
+            agent_name=agent_name,
         )
         if res:
             ree_logger.print_agent_status(agent_name, model_id, "Success")

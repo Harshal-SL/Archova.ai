@@ -28,7 +28,7 @@ _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from backend.rag.config import (
+from app.rag.config import (
     COLLECTION_NAME,
     ENABLE_QUERY_EXPANSION,
     FETCH_K,
@@ -168,7 +168,7 @@ def _run_ingestion(manager: QdrantManager) -> bool:
     print(_c("  This runs once and typically takes 2–5 minutes.", _DIM))
     print()
     try:
-        from backend.rag.ingestion import IngestionPipeline
+        from app.rag.ingestion import IngestionPipeline
         pipeline = IngestionPipeline(qdrant_manager=manager)
         stats = pipeline.ingest_all(force_recreate=True)
         print()
