@@ -139,14 +139,14 @@ export default function Sidebar() {
           <ShimmerButton
             onClick={() => createSession()}
             borderRadius="16px"
-            shimmerColor="#38bdf8"
+            shimmerColor="#005dff"
             shimmerDuration="2.5s"
             shimmerSize="2px"
-            background="#141416"
-            className="w-full py-2.5 px-4 text-xs sm:text-sm font-bold text-white border border-neutral-800/80 dark:border-white/10 hover:border-neutral-700 transition-all cursor-pointer shadow-xs"
+            background="#0D0D0F"
+            className="w-full py-2.5 px-4 text-xs sm:text-sm font-bold text-white border border-[#262626] hover:border-[#005dff]/50 transition-all cursor-pointer shadow-xs"
           >
             <div className="flex items-center justify-center gap-2 text-white font-bold">
-              <Plus className="h-4 w-4 text-sky-400" />
+              <Plus className="h-4 w-4 text-[#005dff]" />
               <span>New Architecture</span>
             </div>
           </ShimmerButton>

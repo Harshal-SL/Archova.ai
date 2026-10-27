@@ -95,14 +95,14 @@ export default function ChatPage() {
             <ShimmerButton
               onClick={() => createSession()}
               borderRadius="12px"
-              shimmerColor="#38bdf8"
+              shimmerColor="#005dff"
               shimmerDuration="2.5s"
               shimmerSize="1.5px"
-              background="#141416"
-              className="px-3 py-1.5 text-xs font-bold text-white border border-neutral-800/80 dark:border-white/10 hover:border-neutral-700 transition-all cursor-pointer shadow-xs"
+              background="#0D0D0F"
+              className="px-3 py-1.5 text-xs font-bold text-white border border-[#262626] hover:border-[#005dff]/50 transition-all cursor-pointer shadow-xs"
             >
               <div className="flex items-center gap-1.5 text-white font-bold">
-                <Plus className="h-3.5 w-3.5 text-sky-400" />
+                <Plus className="h-3.5 w-3.5 text-[#005dff]" />
                 <span className="hidden sm:inline">New Architecture</span>
               </div>
             </ShimmerButton>
