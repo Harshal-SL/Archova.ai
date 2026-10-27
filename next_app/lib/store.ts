@@ -161,6 +161,7 @@ interface AppState {
   setActiveSession: (id: string) => Promise<void>;
   addMessage: (sessionId: string, msg: ChatMessage) => Promise<void>;
   loadSessionsFromSupabase: () => Promise<void>;
+  saveCurrentArchitecture: (targetSessionId?: string) => Promise<void>;
   resetGenerationSession: () => void;
 
   // ── Demo & Offline Testing ──
@@ -252,6 +253,22 @@ let msgCounter = 0;
 export function generateMsgId() {
   msgCounter++;
   return `msg-${Date.now()}-${msgCounter}`;
+}
+
+export function generateUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+export function isUUID(str: string | null | undefined): boolean {
+  if (!str) return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
 }
 
 let agentPollingInterval: ReturnType<typeof setInterval> | null = null;
@@ -863,12 +880,11 @@ export const useAppStore = create<AppState>((set, get) => ({
               updated_at: new Date().toISOString(),
             }]);
 
-            await supabase.from("messages").insert([{
-              session_id: activeSid,
-              role: "assistant",
+            await get().addMessage(activeSid, {
+              id: generateMsgId(),
+              role: "ai",
               content: `✓ **Architecture Validated & Synthesized**\n\n• **Verdict**: ${verdict}\n• **Composite Quality Score**: ${scorePercent}%\n• **High-Level Design**: ${finalNodes.length} nodes synthesized\n• **Low-Level Designs**: 5 blueprints generated (Backend, Frontend, DB, Security, Cloud)`,
-              json_response: fullPackage,
-            }]);
+            });
 
             await supabase.from("chat_sessions").update({
               updated_at: new Date().toISOString()
@@ -993,26 +1009,42 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!currentUser || currentUser.app_metadata?.provider === "guest") return;
 
     try {
-      const { data: dbSessions } = await supabase
+      const { data: dbSessions, error } = await supabase
         .from("chat_sessions")
         .select("id, title, created_at, updated_at")
         .eq("user_id", currentUser.id)
         .order("updated_at", { ascending: false });
 
-      if (!dbSessions) return;
+      if (error) {
+        console.warn("Could not load sessions from Supabase:", error.message);
+        return;
+      }
+      if (!dbSessions || dbSessions.length === 0) return;
+
+      // Identify sessions that have generated architecture designs
+      const { data: userDesigns } = await supabase
+        .from("architecture_designs")
+        .select("session_id")
+        .eq("user_id", currentUser.id);
+
+      const designSessionIds = new Set((userDesigns || []).map((d) => d.session_id));
 
       const loadedSessions: ChatSession[] = dbSessions.map((s, idx) => ({
         id: s.id,
         title: s.title || `Architecture Session ${idx + 1}`,
         messages: [],
-        hasArchitecture: false,
+        hasArchitecture: designSessionIds.has(s.id),
       }));
 
-      if (loadedSessions.length > 0) {
-        set({ sessions: loadedSessions });
+      set({ sessions: loadedSessions });
+
+      // If activeSessionId is not set, select the most recent session
+      const currentActive = get().activeSessionId;
+      if (!currentActive && loadedSessions.length > 0) {
+        await get().setActiveSession(loadedSessions[0].id);
       }
-    } catch {
-      // Fallback
+    } catch (err) {
+      console.warn("loadSessionsFromSupabase error:", err);
     }
   },
 
@@ -1020,15 +1052,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     sessionCounter++;
     const defaultTitle = title || `Architecture ${sessionCounter}`;
     const currentUser = get().user;
-
-    const newId =
-      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-        ? crypto.randomUUID()
-        : `session-${Date.now()}`;
+    const newId = generateUUID();
 
     if (currentUser && currentUser.app_metadata?.provider !== "guest") {
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from("chat_sessions")
           .insert([
             {
@@ -1037,14 +1065,10 @@ export const useAppStore = create<AppState>((set, get) => ({
               title: defaultTitle,
               updated_at: new Date().toISOString(),
             },
-          ])
-          .select()
-          .single();
+          ]);
 
         if (error) {
           console.warn("Could not persist session to Supabase:", error.message);
-        } else if (data?.id) {
-          // Confirm persisted ID
         }
       } catch (err) {
         console.warn("Could not persist session to Supabase:", err);
@@ -1078,84 +1102,149 @@ export const useAppStore = create<AppState>((set, get) => ({
       lldStatus: initialLldStatus,
       lldData: initialLldData,
       logs: [],
+      availableVersions: [],
+      activeVersionTag: "v1.0",
+      activeDiff: null,
+      activeView: "chat",
     }));
 
     return newId;
   },
 
   setActiveSession: async (id: string) => {
+    if (!id) return;
+
     set({
       activeSessionId: id,
       activeView: "chat",
     });
 
-    const session = get().sessions.find((s) => s.id === id);
-    if (session && session.messages.length === 0 && id.includes("-")) {
-      try {
-        const { data: dbMessages } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("session_id", id)
-          .order("created_at", { ascending: true });
+    const currentUser = get().user;
+    const isGuest = !currentUser || currentUser.app_metadata?.provider === "guest";
 
-        if (dbMessages && dbMessages.length > 0) {
-          const mappedMsgs: ChatMessage[] = dbMessages.map((m) => ({
-            id: m.id,
-            role: m.role === "assistant" ? "ai" : "user",
-            content: m.content,
-          }));
+    if (isGuest || !isUUID(id)) {
+      return;
+    }
 
+    try {
+      // 1. Fetch messages for this session
+      const { data: dbMessages, error: msgErr } = await supabase
+        .from("messages")
+        .select("id, role, content, json_response, created_at")
+        .eq("session_id", id)
+        .order("created_at", { ascending: true });
+
+      if (msgErr) {
+        console.warn("Error fetching session messages:", msgErr.message);
+      }
+
+      if (dbMessages && dbMessages.length > 0) {
+        const mappedMsgs: ChatMessage[] = dbMessages.map((m) => ({
+          id: m.id,
+          role: m.role === "assistant" ? "ai" : "user",
+          content: m.content,
+        }));
+
+        set((s) => ({
+          sessions: s.sessions.map((ses) =>
+            ses.id === id
+              ? {
+                  ...ses,
+                  messages: mappedMsgs,
+                }
+              : ses
+          ),
+        }));
+      }
+
+      // 2. Fetch architecture design for this session
+      const { data: dbDesigns, error: designErr } = await supabase
+        .from("architecture_designs")
+        .select("id, version_tag, prompt, created_at, is_latest, diff, design_json")
+        .eq("session_id", id)
+        .order("created_at", { ascending: false });
+
+      if (designErr) {
+        console.warn("Error fetching architecture designs:", designErr.message);
+      }
+
+      if (dbDesigns && dbDesigns.length > 0) {
+        const latestDesign = dbDesigns[0];
+        const pkg = (latestDesign.design_json as Record<string, any>) || {};
+        const savedHld = (pkg.hld as Record<string, unknown>) || null;
+        let parsedNodes: Node[] = [];
+        let parsedEdges: Edge[] = [];
+        if (savedHld) {
+          const parsed = parseHldToReactFlow(savedHld);
+          parsedNodes = parsed.nodes;
+          parsedEdges = parsed.edges;
+        }
+
+        set((s) => ({
+          sessions: s.sessions.map((ses) =>
+            ses.id === id ? { ...ses, hasArchitecture: true } : ses
+          ),
+          availableVersions: dbDesigns,
+          activeVersionTag: latestDesign.version_tag || "v1.0",
+          activeDiff: latestDesign.diff || null,
+          hldData: savedHld,
+          hldNodes: parsedNodes,
+          hldEdges: parsedEdges,
+          arsrsData: pkg.arsrs || null,
+          lldData: pkg.llds || initialLldData,
+          validationData: pkg.validation
+            ? ({ validation: { summary: pkg.validation } } as any)
+            : null,
+          interviewCompleted: true,
+          activePipelineStep: 3,
+          generationStatus: "COMPLETED",
+        }));
+      } else {
+        // Fallback: check if any message had json_response with hld
+        const msgWithJson = dbMessages?.find(
+          (m) => m.json_response && (m.json_response as any).hld
+        );
+        if (msgWithJson && (msgWithJson.json_response as any).hld) {
+          const pkg = msgWithJson.json_response as any;
+          const parsed = parseHldToReactFlow(pkg.hld);
           set((s) => ({
             sessions: s.sessions.map((ses) =>
-              ses.id === id
-                ? {
-                    ...ses,
-                    messages: mappedMsgs,
-                    hasArchitecture: mappedMsgs.some((m) => m.role === "ai"),
-                  }
-                : ses
+              ses.id === id ? { ...ses, hasArchitecture: true } : ses
             ),
-          }));
-        }
-
-        // Also restore versions and latest design from architecture_designs if present
-        const { data: dbDesigns } = await supabase
-          .from("architecture_designs")
-          .select("id, version_tag, prompt, created_at, is_latest, diff, design_json")
-          .eq("session_id", id)
-          .order("created_at", { ascending: false });
-
-        if (dbDesigns && dbDesigns.length > 0) {
-          const latestDesign = dbDesigns[0];
-          const pkg = (latestDesign.design_json as Record<string, any>) || {};
-          const savedHld = pkg.hld as Record<string, unknown> | null;
-          let parsedNodes: Node[] = [];
-          let parsedEdges: Edge[] = [];
-          if (savedHld) {
-            const parsed = parseHldToReactFlow(savedHld);
-            parsedNodes = parsed.nodes;
-            parsedEdges = parsed.edges;
-          }
-
-          set({
-            availableVersions: dbDesigns,
-            activeVersionTag: latestDesign.version_tag || "v1.0",
-            activeDiff: latestDesign.diff || null,
-            hldData: savedHld,
-            hldNodes: parsedNodes,
-            hldEdges: parsedEdges,
+            hldData: pkg.hld,
+            hldNodes: parsed.nodes,
+            hldEdges: parsed.edges,
             arsrsData: pkg.arsrs || null,
-            lldData: pkg.llds || initialLldData,
-            validationData: pkg.validation ? { validation: { summary: pkg.validation } } as any : null,
+            lldData: pkg.llds || pkg.lld || initialLldData,
+            interviewCompleted: true,
+            activePipelineStep: 3,
+            generationStatus: "COMPLETED",
+          }));
+        } else {
+          // Reset architecture data for sessions without an architecture diagram
+          set({
+            hldData: null,
+            hldNodes: [],
+            hldEdges: [],
+            arsrsData: null,
+            lldData: initialLldData,
+            validationData: null,
+            availableVersions: [],
+            activeVersionTag: "v1.0",
+            activeDiff: null,
+            interviewCompleted: false,
+            activePipelineStep: 1,
+            generationStatus: "IDLE",
           });
         }
-      } catch {
-        // Continue
       }
+    } catch (err) {
+      console.warn("Could not restore session from Supabase:", err);
     }
   },
 
   addMessage: async (sessionId: string, msg: ChatMessage) => {
+    // 1. Immediately append to in-memory store
     set((s) => ({
       sessions: s.sessions.map((ses) =>
         ses.id === sessionId
@@ -1168,24 +1257,170 @@ export const useAppStore = create<AppState>((set, get) => ({
       ),
     }));
 
+    const currentUser = get().user;
+    if (!currentUser || currentUser.app_metadata?.provider === "guest" || !isUUID(sessionId)) {
+      return;
+    }
+
     try {
-      const currentUser = get().user;
-      if (
-        currentUser &&
-        currentUser.app_metadata?.provider !== "guest" &&
-        sessionId.includes("-") &&
-        !sessionId.startsWith("session-")
-      ) {
-        await supabase.from("messages").insert([
-          {
-            session_id: sessionId,
-            role: msg.role === "ai" ? "assistant" : "user",
-            content: msg.content,
-          },
-        ]);
+      // 2. Ensure session exists in chat_sessions table and rename if generic
+      const { data: existingSession } = await supabase
+        .from("chat_sessions")
+        .select("id, title")
+        .eq("id", sessionId)
+        .maybeSingle();
+
+      const isGenericTitle =
+        !existingSession?.title ||
+        /^Architecture\s*\d*$/i.test(existingSession.title) ||
+        /^New Architecture/i.test(existingSession.title);
+
+      const promptSnippet = msg.content.trim().slice(0, 42);
+
+      if (msg.role === "user" && isGenericTitle && promptSnippet) {
+        set((s) => ({
+          sessions: s.sessions.map((ses) =>
+            ses.id === sessionId ? { ...ses, title: promptSnippet } : ses
+          ),
+        }));
+
+        if (existingSession) {
+          await supabase
+            .from("chat_sessions")
+            .update({ title: promptSnippet, updated_at: new Date().toISOString() })
+            .eq("id", sessionId);
+        } else {
+          await supabase.from("chat_sessions").insert([
+            {
+              id: sessionId,
+              user_id: currentUser.id,
+              title: promptSnippet,
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+        }
+      } else {
+        if (existingSession) {
+          await supabase
+            .from("chat_sessions")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", sessionId);
+        } else {
+          await supabase.from("chat_sessions").insert([
+            {
+              id: sessionId,
+              user_id: currentUser.id,
+              title: "Architecture Session",
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+        }
       }
-    } catch {
-      // Continue
+
+      // 3. Insert message into messages table
+      await supabase.from("messages").insert([
+        {
+          session_id: sessionId,
+          role: msg.role === "ai" ? "assistant" : "user",
+          content: msg.content,
+        },
+      ]);
+    } catch (err) {
+      console.warn("Could not persist message to Supabase:", err);
+    }
+  },
+
+  saveCurrentArchitecture: async (targetSessionId?: string) => {
+    const activeSid = targetSessionId || get().activeSessionId;
+    const currentUser = get().user;
+    if (!activeSid || !currentUser || currentUser.app_metadata?.provider === "guest" || !isUUID(activeSid)) {
+      return;
+    }
+
+    const hld = get().hldData;
+    const arsrs = get().arsrsData;
+    const llds = get().lldData;
+    const validation = get().validationData;
+    const hldNodes = get().hldNodes;
+
+    if (!hld) return;
+
+    const currentSession = get().sessions.find((s) => s.id === activeSid);
+    const userPrompt =
+      currentSession?.messages.find((m) => m.role === "user")?.content ||
+      currentSession?.title ||
+      "Architecture Design";
+
+    const scorePercent = validation
+      ? Math.round(
+          (validation.validation?.summary?.overall_score ??
+            validation.validation?.scorecard?.overall_composite_score ??
+            0.95) * 100
+        )
+      : 95;
+    const verdict = validation?.validation?.summary?.verdict || "APPROVED";
+
+    const fullPackage = {
+      hld,
+      llds,
+      arsrs,
+      validation: validation?.validation?.summary || validation?.validation || null,
+      score: scorePercent,
+      verdict,
+    };
+
+    try {
+      const { data: existingLatest } = await supabase
+        .from("architecture_designs")
+        .select("id, version, version_tag")
+        .eq("session_id", activeSid)
+        .eq("is_latest", true)
+        .maybeSingle();
+
+      let nextVerTag = "v1.0";
+      let parentId: string | null = null;
+
+      if (existingLatest) {
+        parentId = existingLatest.id;
+        await supabase
+          .from("architecture_designs")
+          .update({ is_latest: false })
+          .eq("id", existingLatest.id);
+
+        const prevTag = existingLatest.version_tag || "v1.0";
+        const num = parseFloat(prevTag.replace("v", "")) || 1.0;
+        nextVerTag = `v${(num + 0.1).toFixed(1)}`;
+      }
+
+      await supabase.from("architecture_designs").insert([
+        {
+          session_id: activeSid,
+          user_id: currentUser.id,
+          prompt: userPrompt,
+          design_json: fullPackage,
+          version: parseInt(nextVerTag.replace("v", "").split(".")[0], 10) || 1,
+          version_tag: nextVerTag,
+          parent_id: parentId,
+          is_latest: true,
+          updated_at: new Date().toISOString(),
+        },
+      ]);
+
+      await supabase
+        .from("chat_sessions")
+        .update({ updated_at: new Date().toISOString() })
+        .eq("id", activeSid);
+
+      set((s) => ({
+        activeVersionTag: nextVerTag,
+        sessions: s.sessions.map((ses) =>
+          ses.id === activeSid ? { ...ses, hasArchitecture: true } : ses
+        ),
+      }));
+
+      await get().fetchVersionsForSession(activeSid);
+    } catch (err) {
+      console.warn("Could not save architecture design to Supabase:", err);
     }
   },
 

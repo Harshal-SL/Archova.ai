@@ -11,6 +11,8 @@ import {
   SquarePen,
   Layers,
   Plus,
+  MessageSquare,
+  Cpu,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
@@ -26,6 +28,8 @@ export default function ChatPage() {
     sidebarOpen,
     toggleSidebar,
     activeView,
+    setActiveView,
+    hldData,
     sessions,
     activeSessionId,
     createSession,
@@ -56,7 +60,7 @@ export default function ChatPage() {
         {/* Top Minimal Workspace Header */}
         <header
           className={cn(
-            "flex h-14 w-full items-center justify-between px-4 shrink-0 z-20 transition-all select-none",
+            "flex h-14 w-full items-center justify-between px-4 shrink-0 z-20 transition-all select-none gap-2",
             isEmpty
               ? "bg-transparent border-b border-transparent"
               : "border-b border-neutral-200/70 bg-white/70 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-xs"
@@ -81,11 +85,45 @@ export default function ChatPage() {
             </div>
 
             {!isEmpty && (
-              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden sm:inline">
+              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden sm:inline max-w-[160px] md:max-w-[240px]">
                 / {sessionTitle}
               </span>
             )}
           </div>
+
+          {/* Center: View Switcher (Chat vs Architecture) */}
+          {activeSession && (
+            <div className="flex items-center rounded-xl border border-neutral-200/80 bg-white/70 p-0.5 dark:border-[#262626] dark:bg-[#0D0D0F] shadow-2xs backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => setActiveView("chat")}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-all cursor-pointer",
+                  activeView === "chat"
+                    ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
+                    : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white"
+                )}
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+                <span>Chat</span>
+              </button>
+              {hldData && (
+                <button
+                  type="button"
+                  onClick={() => setActiveView("hld")}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-lg px-3 py-1 text-xs font-bold transition-all cursor-pointer",
+                    activeView === "hld"
+                      ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
+                      : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white"
+                  )}
+                >
+                  <Cpu className="h-3.5 w-3.5" />
+                  <span>Architecture</span>
+                </button>
+              )}
+            </div>
+          )}
 
 
 

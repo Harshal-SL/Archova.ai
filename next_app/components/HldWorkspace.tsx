@@ -19,6 +19,7 @@ import {
   Sparkles,
   Cpu,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import clsx from "clsx";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
@@ -26,6 +27,7 @@ import Select, { type TSelectData } from "@/components/ui/select";
 
 export default function HldWorkspace() {
   const {
+    setActiveView,
     hldWorkspaceTab,
     setHldWorkspaceTab,
     jumpToLld,
@@ -73,6 +75,16 @@ export default function HldWorkspace() {
       {/* ── Top Workspace Navigation Header ── */}
       <div className="relative z-40 flex items-center justify-between border-b border-neutral-200/80 bg-white/80 px-4 py-2 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-950/80 shrink-0">
         <div className="flex items-center gap-1.5 flex-wrap">
+          {/* Back to Chat button */}
+          <button
+            onClick={() => setActiveView("chat")}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-all cursor-pointer mr-1 border border-neutral-200/80 dark:border-[#262626]"
+            title="Return to Chat Conversation"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span>Chat</span>
+          </button>
+
           {/* Tab 1: Validator Report & Quality Scorecard */}
           <button
             onClick={() => setHldWorkspaceTab("validation")}

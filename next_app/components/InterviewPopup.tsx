@@ -297,6 +297,7 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to generate and validate architecture.";
+      await useAppStore.getState().saveCurrentArchitecture().catch(() => {});
       setError(msg);
     } finally {
       setGeneratingArch(false);

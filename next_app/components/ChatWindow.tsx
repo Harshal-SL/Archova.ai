@@ -329,7 +329,7 @@ export default function ChatWindow() {
             )}
 
             {/* Quick HLD Architecture ready prompt banner */}
-            {hldData && interviewCompleted && (
+            {hldData && (
               <div className="my-3 flex items-center justify-between rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs">
                 <div className="flex items-center gap-2.5">
                   <Workflow className="h-5 w-5 text-blue-500" />

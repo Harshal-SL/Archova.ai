@@ -207,6 +207,11 @@ export default function Sidebar() {
                     )}
                   />
                   <span className="truncate flex-1">{s.title}</span>
+                  {s.hasArchitecture && (
+                    <span className="shrink-0 rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                      HLD
+                    </span>
+                  )}
                 </div>
               );
             })
