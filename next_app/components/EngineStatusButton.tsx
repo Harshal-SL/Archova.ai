@@ -64,7 +64,7 @@ export default function EngineStatusButton() {
               type="button"
               onClick={handleRefresh}
               disabled={checking}
-              className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+              className="rounded-lg p-1.5 text-neutral-500 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-[#0D0D0F] dark:hover:border-[#262626] dark:hover:text-white transition-colors cursor-pointer border border-transparent"
               title="Recheck connections"
             >
               <RefreshCw className={cn("h-4 w-4", checking && "animate-spin text-blue-500")} />
@@ -72,7 +72,7 @@ export default function EngineStatusButton() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+              className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-[#0D0D0F] dark:hover:border-[#262626] dark:hover:text-white transition-colors cursor-pointer border border-transparent"
             >
               <X className="h-4 w-4" />
             </button>
@@ -187,7 +187,7 @@ export default function EngineStatusButton() {
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="rounded-xl bg-neutral-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-neutral-800 dark:bg-neutral-100 dark:text-black dark:hover:bg-neutral-200 transition-colors cursor-pointer"
+            className="rounded-xl border border-neutral-200/80 bg-white/70 px-4 py-1.5 text-xs font-semibold text-neutral-800 hover:bg-white dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 transition-all cursor-pointer shadow-2xs backdrop-blur-md"
           >
             Close
           </button>
@@ -202,7 +202,7 @@ export default function EngineStatusButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex items-center gap-2 rounded-full border border-neutral-300 bg-white/80 px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-2xs backdrop-blur-md transition-all hover:border-black dark:border-neutral-700 dark:bg-neutral-900/80 dark:text-neutral-200 dark:hover:border-white cursor-pointer"
+        className="group flex items-center gap-2 rounded-full border border-neutral-200/80 bg-white/70 px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-2xs backdrop-blur-md transition-all hover:bg-white dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer"
         title="Check AI Backend & Validator Engine connectivity"
       >
         <div className="flex items-center -space-x-1">

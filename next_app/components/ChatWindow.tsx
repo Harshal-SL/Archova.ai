@@ -288,14 +288,14 @@ export default function ChatWindow() {
                       "rounded-3xl px-5 py-3.5 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap shadow-xs transition-all",
                       isUser
                         ? "max-w-[80%] bg-neutral-900 text-white dark:bg-neutral-100 dark:text-black font-medium rounded-br-sm"
-                        : "max-w-[85%] border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/90 text-neutral-900 dark:text-neutral-100 rounded-bl-sm"
+                        : "max-w-[85%] border border-neutral-200/80 bg-white dark:border-[#262626] dark:bg-[#0D0D0F] text-neutral-900 dark:text-neutral-100 rounded-bl-sm"
                     )}
                   >
                     {m.content}
                   </div>
 
                   {isUser && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100 text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white shadow-xs mt-0.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-white shadow-xs mt-0.5">
                       <UserIcon className="h-4 w-4" />
                     </div>
                   )}
@@ -373,11 +373,11 @@ export default function ChatWindow() {
       {/* ── Architectural Templates Modal (Triggered by the '+' button) ── */}
       {showTemplatesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
-          <div className="relative w-full max-w-xl rounded-3xl border border-neutral-300 bg-white p-6 shadow-2xl dark:border-neutral-800 dark:bg-neutral-900 text-neutral-900 dark:text-white">
+          <div className="relative w-full max-w-xl rounded-3xl border border-neutral-200/80 bg-white p-6 shadow-2xl dark:border-[#262626] dark:bg-[#0D0D0F] text-neutral-900 dark:text-white backdrop-blur-md">
             <button
               type="button"
               onClick={() => setShowTemplatesModal(false)}
-              className="absolute right-4 top-4 p-1.5 text-neutral-400 hover:text-black dark:hover:text-white transition-colors"
+              className="absolute right-4 top-4 p-1.5 text-neutral-400 hover:text-black dark:hover:text-white dark:hover:bg-[#161619] rounded-lg transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
@@ -395,7 +395,7 @@ export default function ChatWindow() {
                     setShowTemplatesModal(false);
                     handleStartGeneration(tmpl.text);
                   }}
-                  className="group flex flex-col p-3 rounded-2xl border border-neutral-200 bg-neutral-50 hover:border-blue-500 hover:bg-blue-50/20 dark:border-neutral-800 dark:bg-black/50 dark:hover:border-blue-500/50 cursor-pointer transition-all"
+                  className="group flex flex-col p-3 rounded-2xl border border-neutral-200/80 bg-neutral-50 hover:border-black dark:border-[#262626] dark:bg-[#161619]/60 dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-neutral-900 dark:text-white">

@@ -648,7 +648,7 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
               <button
                 type="button"
                 onClick={handleGuestLogin}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/80 text-neutral-800 dark:text-neutral-200 py-2.5 text-xs sm:text-sm font-semibold transition-all hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer shadow-2xs"
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white/70 dark:bg-[#0D0D0F] text-neutral-800 dark:text-neutral-200 py-2.5 text-xs sm:text-sm font-semibold transition-all hover:bg-white dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer shadow-2xs backdrop-blur-md"
               >
                 <Sparkles className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
                 <span>Continue as Guest (No Registration Required)</span>

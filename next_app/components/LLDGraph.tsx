@@ -393,7 +393,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
             className={`pointer-events-auto flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold backdrop-blur-md transition-all duration-150 cursor-pointer shadow-2xs ${
               animationsEnabled
                 ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black"
-                : "border-neutral-300 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white"
+                : "border-neutral-200/80 bg-white/70 text-neutral-700 hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white"
             }`}
             title="Toggle data flow animation"
           >
@@ -404,7 +404,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white shadow-2xs cursor-pointer transition-colors"
+            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 backdrop-blur-md hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white shadow-2xs cursor-pointer transition-colors"
             title="Toggle Fullscreen"
           >
             {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
@@ -452,7 +452,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           proOptions={{ hideAttribution: true }}
         >
           <Background gap={24} size={1.2} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(100, 116, 139, 0.22)"} />
-          <Controls className="!border-neutral-300 !bg-white !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-neutral-700 dark:!bg-neutral-900 dark:!text-white dark:[&>button]:!border-neutral-800 dark:[&>button]:!bg-neutral-900 dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-neutral-800 dark:[&>button:hover]:!text-white" />
+          <Controls className="!border-neutral-200/80 !bg-white/70 !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-[#262626] dark:!bg-[#0D0D0F] dark:!text-white dark:[&>button]:!border-[#262626] dark:[&>button]:!bg-[#0D0D0F] dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-[#161619] dark:[&>button:hover]:!text-white" />
         </ReactFlow>
       )}
 
@@ -642,7 +642,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
                   desc
                 );
               }}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-300 bg-white py-2 text-xs font-semibold text-neutral-800 transition-all hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white cursor-pointer shadow-2xs"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white/70 backdrop-blur-md py-2 text-xs font-semibold text-neutral-800 transition-all hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer shadow-2xs"
             >
               <span>View Full Component Specification</span>
               <ArrowRight className="h-3.5 w-3.5" />

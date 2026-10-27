@@ -67,7 +67,7 @@ export default function Sidebar() {
           onClick={toggleSidebar}
           aria-label="Open sidebar"
           title="Open sidebar"
-          className="fixed left-3 top-3 z-40 flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200/50 bg-white/40 text-neutral-800 shadow-md backdrop-blur-2xl backdrop-saturate-150 transition-all hover:bg-white/70 hover:text-black dark:border-white/10 dark:bg-black/40 dark:text-neutral-200 dark:hover:bg-neutral-900/80 dark:hover:text-white cursor-pointer"
+          className="fixed left-3 top-3 z-40 flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200/50 bg-white/40 text-neutral-800 shadow-md backdrop-blur-2xl backdrop-saturate-150 transition-all hover:bg-white/70 hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer"
         >
           <PanelLeft className="h-4 w-4" />
         </button>

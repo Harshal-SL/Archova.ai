@@ -174,7 +174,7 @@ export default function ComparisonView() {
         <div className="flex items-center gap-3.5">
           <button
             onClick={() => setHldWorkspaceTab("hld")}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-700 hover:border-black hover:text-black dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:border-white dark:hover:text-white transition-all cursor-pointer shadow-2xs"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 transition-all cursor-pointer shadow-2xs backdrop-blur-md"
             title="Return to Topology View"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function ComparisonView() {
           <button
             onClick={handleReRun}
             disabled={isBenchmarking}
-            className="flex items-center gap-1.5 rounded-xl border border-neutral-300 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-800 hover:border-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white transition-colors cursor-pointer disabled:opacity-50 shadow-2xs"
+            className="flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white/70 px-3.5 py-2 text-xs font-semibold text-neutral-800 hover:border-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 transition-all cursor-pointer disabled:opacity-50 shadow-2xs backdrop-blur-md"
           >
             <RefreshCw
               className={clsx(
@@ -419,7 +419,7 @@ export default function ComparisonView() {
 
                       <button
                         onClick={() => handleViewArchitecture(m.model_id)}
-                        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 py-2.5 text-xs font-bold text-black dark:text-white hover:border-black dark:hover:border-white transition-all cursor-pointer"
+                        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white/70 dark:bg-[#0D0D0F] py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-200 hover:bg-white dark:hover:bg-[#161619] dark:hover:border-white/20 transition-all cursor-pointer shadow-2xs backdrop-blur-md"
                       >
                         <Layers className="h-3.5 w-3.5" />
                         <span>Inspect {m.model_name.split(" ")[0]} Architecture</span>
@@ -490,7 +490,7 @@ export default function ComparisonView() {
 
                   <button
                     onClick={() => handleViewArchitecture("gpt-4o")}
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 py-2.5 text-xs font-bold text-black dark:text-white hover:border-black dark:hover:border-white transition-all cursor-pointer"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white/70 dark:bg-[#0D0D0F] py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-200 hover:bg-white dark:hover:bg-[#161619] dark:hover:border-white/20 transition-all cursor-pointer shadow-2xs backdrop-blur-md"
                   >
                     <Layers className="h-3.5 w-3.5" />
                     <span>Inspect GPT-4o Architecture</span>
@@ -557,7 +557,7 @@ export default function ComparisonView() {
 
                   <button
                     onClick={() => handleViewArchitecture("claude-3-5-sonnet")}
-                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-300 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 py-2.5 text-xs font-bold text-black dark:text-white hover:border-black dark:hover:border-white transition-all cursor-pointer"
+                    className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white/70 dark:bg-[#0D0D0F] py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-200 hover:bg-white dark:hover:bg-[#161619] dark:hover:border-white/20 transition-all cursor-pointer shadow-2xs backdrop-blur-md"
                   >
                     <Layers className="h-3.5 w-3.5" />
                     <span>Inspect Claude Architecture</span>

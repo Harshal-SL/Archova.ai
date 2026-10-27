@@ -76,7 +76,7 @@ export default function PipelineStepper() {
                   isActive
                     ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
                     : isAvailable
-                    ? "text-neutral-700 hover:bg-black/5 hover:text-black dark:text-neutral-300 dark:hover:bg-white/10 dark:hover:text-white"
+                    ? "text-neutral-700 hover:bg-black/5 hover:text-black dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:text-white cursor-pointer"
                     : "cursor-not-allowed text-neutral-400 opacity-40 dark:text-neutral-600"
                 )}
               >
@@ -86,8 +86,8 @@ export default function PipelineStepper() {
                     isActive
                       ? "bg-neutral-800 text-white dark:bg-neutral-200 dark:text-black"
                       : isCompleted
-                      ? "border border-neutral-400 bg-neutral-200 text-neutral-900 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 font-bold"
-                      : "bg-neutral-200 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
+                      ? "border border-neutral-200/80 bg-neutral-100 text-neutral-900 dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-100 font-bold"
+                      : "bg-neutral-100 text-neutral-600 dark:bg-[#0D0D0F] dark:border dark:border-[#262626] dark:text-neutral-400"
                   )}
                 >
                   {isCompleted && !isActive ? (

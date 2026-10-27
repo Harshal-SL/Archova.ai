@@ -98,7 +98,7 @@ export default function BenchmarkConfigModal({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white transition-colors cursor-pointer"
+            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -139,7 +139,7 @@ export default function BenchmarkConfigModal({
                   className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer ${
                     isSelected
                       ? "border-indigo-500/80 bg-indigo-50/50 dark:border-indigo-500 dark:bg-indigo-950/30 text-indigo-950 dark:text-indigo-100 shadow-xs"
-                      : "border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/40 text-neutral-700 dark:text-neutral-300"
+                      : "border-neutral-200/80 dark:border-[#262626] hover:border-neutral-300 dark:hover:border-white/20 bg-neutral-50/50 dark:bg-[#0D0D0F] text-neutral-700 dark:text-neutral-300"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -219,7 +219,7 @@ export default function BenchmarkConfigModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer"
+            className="px-4 py-2 text-xs font-semibold rounded-xl border border-neutral-200/80 bg-white/70 backdrop-blur-md text-neutral-600 hover:text-black hover:border-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white transition-all cursor-pointer"
           >
             Cancel
           </button>

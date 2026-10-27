@@ -65,7 +65,7 @@ export default function VersionDiffDrawer({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-heading text-sm font-bold">Architecture Evolution Diff</h3>
-                <span className="flex items-center gap-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 px-2 py-0.5 text-[10px] font-mono font-bold">
+                <span className="flex items-center gap-1 rounded-md border border-neutral-200/80 dark:border-[#262626] bg-neutral-100 dark:bg-[#0D0D0F] px-2 py-0.5 text-[10px] font-mono font-bold">
                   {fromVer} <ArrowRight className="h-3 w-3" /> {toVer}
                 </span>
               </div>
@@ -76,7 +76,7 @@ export default function VersionDiffDrawer({
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-800 dark:hover:text-white transition-colors"
+            className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -269,13 +269,13 @@ export default function VersionDiffDrawer({
         </div>
 
         {/* Drawer Footer */}
-        <div className="border-t border-neutral-200 p-4 dark:border-neutral-800 flex justify-end">
+        <div className="border-t border-neutral-200 p-4 dark:border-[#262626] flex justify-end">
           <ShimmerButton
             onClick={onClose}
             borderRadius="12px"
             shimmerColor="rgba(16, 185, 129, 0.7)"
-            background="rgba(20, 20, 25, 0.9)"
-            className="px-5 py-2 text-xs font-semibold text-white shadow-md hover:shadow-lg transition-all"
+            background="#0D0D0F"
+            className="px-5 py-2 text-xs font-semibold text-white border border-[#262626] hover:border-white/20 shadow-md hover:shadow-lg transition-all cursor-pointer"
           >
             Close Drawer
           </ShimmerButton>

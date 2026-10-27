@@ -293,7 +293,7 @@ export default function ValidationView() {
             <button
               onClick={() => validateArchitecture()}
               title="Re-validate current architecture"
-              className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="flex items-center gap-1 rounded-lg border border-neutral-200/80 bg-white/70 backdrop-blur-md px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white transition-colors cursor-pointer"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Re-Validate</span>
@@ -302,7 +302,7 @@ export default function ValidationView() {
             <button
               onClick={handleCopyJson}
               title="Copy validated architecture JSON"
-              className="flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+              className="flex items-center gap-1 rounded-lg border border-neutral-200/80 bg-white/70 backdrop-blur-md px-2.5 py-1.5 text-xs font-semibold text-neutral-700 hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white transition-colors cursor-pointer"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
               <span className="hidden sm:inline">{copied ? "Copied" : "Copy"}</span>

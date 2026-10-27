@@ -172,7 +172,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
               <button
                 type="button"
                 onClick={handleCopyMarkdown}
-                className="flex items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-100 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white/70 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white transition-all cursor-pointer"
                 title="Copy ADR Rationale (Markdown)"
               >
                 {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
@@ -183,7 +183,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
             <button
               type="button"
               onClick={closeExplain}
-              className="rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black dark:hover:bg-neutral-900 dark:hover:text-white cursor-pointer"
+              className="rounded-xl p-2 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black dark:hover:bg-[#161619] dark:hover:text-white cursor-pointer"
               title="Close Dialog"
             >
               <X className="h-5 w-5" />
@@ -202,7 +202,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
         )}
 
         {/* ── Navigation Tabs ── */}
-        <div className="flex items-center gap-2 border-b border-neutral-200/80 px-6 py-2.5 bg-neutral-100/60 dark:border-neutral-800/80 dark:bg-neutral-900/60 shrink-0">
+        <div className="flex items-center gap-2 border-b border-neutral-200/80 px-6 py-2.5 bg-neutral-100/60 dark:border-[#262626] dark:bg-[#0D0D0F] shrink-0">
           {isArchova && (
             <>
               <button
@@ -210,7 +210,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
                 onClick={() => setActiveTab("rationale")}
                 className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "rationale"
-                    ? "bg-white text-black shadow-xs dark:bg-neutral-800 dark:text-white"
+                    ? "bg-white text-black shadow-xs dark:bg-[#161619] dark:text-white dark:border dark:border-[#262626]"
                     : "text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
                 }`}
               >
@@ -223,7 +223,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
                 onClick={() => setActiveTab("alternatives")}
                 className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   activeTab === "alternatives"
-                    ? "bg-white text-black shadow-xs dark:bg-neutral-800 dark:text-white"
+                    ? "bg-white text-black shadow-xs dark:bg-[#161619] dark:text-white dark:border dark:border-[#262626]"
                     : "text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
                 }`}
               >
@@ -238,7 +238,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
             onClick={() => setActiveTab("spec")}
             className={`flex items-center gap-2 rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               activeTab === "spec"
-                ? "bg-white text-black shadow-xs dark:bg-neutral-800 dark:text-white"
+                ? "bg-white text-black shadow-xs dark:bg-[#161619] dark:text-white dark:border dark:border-[#262626]"
                 : "text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
             }`}
           >
@@ -474,7 +474,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
         </div>
 
         {/* ── Modal Footer ── */}
-        <div className="flex items-center justify-between border-t border-neutral-200/80 px-6 py-3.5 bg-neutral-50/70 dark:border-neutral-800/80 dark:bg-neutral-900/50 shrink-0">
+        <div className="flex items-center justify-between border-t border-neutral-200/80 px-6 py-3.5 bg-neutral-50/70 dark:border-[#262626] dark:bg-[#0D0D0F] shrink-0">
           <span className="text-[11px] text-neutral-500 dark:text-neutral-400 hidden sm:inline">
             Architecture Decision Record (ADR) backed by AI Engine Multi-Agent Verification
           </span>

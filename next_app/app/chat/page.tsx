@@ -69,13 +69,13 @@ export default function ChatPage() {
                 type="button"
                 onClick={toggleSidebar}
                 title="Open sidebar"
-                className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-300 dark:hover:bg-white/10 cursor-pointer backdrop-blur-md transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer backdrop-blur-md transition-colors shadow-2xs"
               >
                 <PanelLeft className="h-4 w-4" />
               </button>
             )}
 
-            <div className="flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-sm font-bold text-neutral-800 dark:text-neutral-200 hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer">
+            <div className="flex items-center gap-1.5 rounded-xl border border-transparent hover:border-neutral-200/80 hover:bg-white/70 dark:hover:border-[#262626] dark:hover:bg-[#0D0D0F] px-2.5 py-1 text-sm font-bold text-neutral-800 dark:text-neutral-200 transition-all cursor-pointer backdrop-blur-md">
               <span>ArchAI 4o</span>
               <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
             </div>
@@ -111,7 +111,7 @@ export default function ChatPage() {
               type="button"
               onClick={toggleTheme}
               title="Toggle theme"
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-300 dark:hover:bg-white/10 cursor-pointer transition-colors backdrop-blur-md"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-200/80 bg-white/70 text-neutral-700 hover:bg-white hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer transition-colors backdrop-blur-md shadow-2xs"
             >
               {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
             </button>

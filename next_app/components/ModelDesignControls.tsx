@@ -65,8 +65,8 @@ export default function ModelDesignControls() {
         borderRadius="14px"
         shimmerColor="#ffffff"
         shimmerDuration="2.5s"
-        background="#222225"
-        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white border border-neutral-700/80 hover:border-neutral-500 shadow-2xs hover:shadow-md transition-all cursor-pointer pointer-events-auto"
+        background="#0D0D0F"
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white border border-[#262626] hover:border-white/20 shadow-2xs hover:shadow-md transition-all cursor-pointer pointer-events-auto"
         title="Compare Archova AI Engine with baseline LLM models"
       >
         <div className="flex items-center gap-1.5 text-white">

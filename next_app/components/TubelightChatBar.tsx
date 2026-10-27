@@ -612,7 +612,7 @@ export default function TubelightChatBar() {
                       key={i}
                       type="button"
                       onClick={() => handleSendMessage(starter)}
-                      className="rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-white/5 px-2.5 py-1 text-[11px] font-medium text-neutral-700 dark:text-neutral-300 hover:border-cyan-400 transition-all cursor-pointer"
+                      className="rounded-full border border-neutral-200/80 dark:border-[#262626] bg-white/80 dark:bg-[#0D0D0F] px-2.5 py-1 text-[11px] font-medium text-neutral-700 dark:text-neutral-300 hover:border-black dark:hover:border-white/20 dark:hover:bg-[#161619] transition-all cursor-pointer"
                     >
                       {starter}
                     </button>
@@ -712,9 +712,9 @@ export default function TubelightChatBar() {
                 borderRadius="10px"
                 shimmerColor="rgba(6, 182, 212, 0.85)"
                 shimmerDuration="2.5s"
-                background={floatingInput.trim() && !isSending ? "rgba(10, 10, 15, 0.95)" : "rgba(35, 35, 40, 0.5)"}
+                background={floatingInput.trim() && !isSending ? "#0D0D0F" : "#161619"}
                 className={cn(
-                  "flex h-7 w-7 p-0 items-center justify-center rounded-xl transition-all cursor-pointer shadow-xs border border-white/20",
+                  "flex h-7 w-7 p-0 items-center justify-center rounded-xl transition-all cursor-pointer shadow-xs border border-[#262626] hover:border-white/20",
                   !floatingInput.trim() && "opacity-50 cursor-not-allowed"
                 )}
               >

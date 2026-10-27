@@ -110,7 +110,7 @@ export default function Select({
               layout
               layoutId={`dropdown-${selectId}`}
               onClick={() => setOpen(true)}
-              className="overflow-hidden rounded-2xl border border-neutral-300 bg-white/95 text-neutral-900 shadow-2xs backdrop-blur-md hover:border-black dark:border-neutral-700 dark:bg-neutral-900/95 dark:text-neutral-100 dark:hover:border-white transition-colors cursor-pointer"
+              className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/70 text-neutral-900 shadow-2xs backdrop-blur-md hover:border-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-100 dark:hover:bg-[#161619] dark:hover:border-white/20 transition-colors cursor-pointer"
             >
               <SelectItem item={selected || { id: "empty", label: placeholder || "Select...", value: "" }} />
             </motion.div>
@@ -119,7 +119,7 @@ export default function Select({
               layout
               animate={{ borderRadius: 18 }}
               layoutId={`dropdown-${selectId}`}
-              className="absolute right-0 top-0 z-[9999] w-72 sm:w-80 overflow-hidden rounded-[18px] border border-neutral-300 bg-white/98 text-neutral-900 py-2 shadow-2xl backdrop-blur-2xl dark:border-neutral-700 dark:bg-neutral-950/98 dark:text-neutral-100"
+              className="absolute right-0 top-0 z-[9999] w-72 sm:w-80 overflow-hidden rounded-[18px] border border-neutral-200/80 bg-white/95 text-neutral-900 py-2 shadow-2xl backdrop-blur-2xl dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-100"
             >
               <Head setOpen={setOpen} title={title} />
               <div className="w-full max-h-72 overflow-y-auto px-1">
@@ -150,7 +150,7 @@ const Head = ({ setOpen, title }: { setOpen: (open: boolean) => void; title: str
       exit={{ opacity: 0 }}
       transition={{ delay: 0.08 }}
       layout
-      className="flex items-center justify-between px-3.5 py-2 border-b border-neutral-200/80 dark:border-neutral-800/80 mb-1"
+      className="flex items-center justify-between px-3.5 py-2 border-b border-neutral-200/80 dark:border-[#262626] mb-1"
     >
       <motion.strong layout className="text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
         {title}
@@ -158,7 +158,7 @@ const Head = ({ setOpen, title }: { setOpen: (open: boolean) => void; title: str
       <button
         type="button"
         onClick={() => setOpen(false)}
-        className="flex h-5 w-5 items-center justify-center rounded-full bg-neutral-200 hover:bg-neutral-300 text-neutral-700 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-300 cursor-pointer transition-colors"
+        className="flex h-5 w-5 items-center justify-center rounded-full border border-neutral-200/80 bg-white/70 hover:bg-neutral-100 text-neutral-700 dark:border-[#262626] dark:bg-[#161619] dark:hover:bg-[#202024] dark:text-neutral-300 cursor-pointer transition-colors"
       >
         <X size={12} />
       </button>
@@ -198,7 +198,7 @@ const SelectItem = ({
         noDescription ? "px-3 py-1.5" : "my-0.5",
         isSelected && !noDescription
           ? "bg-[#005dff]/10 text-[#005dff] dark:bg-[#005dff]/20 dark:text-white font-bold"
-          : "hover:bg-neutral-100 text-neutral-800 dark:hover:bg-neutral-900 dark:text-neutral-200",
+          : "hover:bg-neutral-100 text-neutral-800 dark:hover:bg-[#161619] dark:text-neutral-200",
         item?.disabled && "opacity-40 pointer-events-none"
       )}
       variants={!noDescription ? itemAnimation : undefined}
@@ -213,7 +213,7 @@ const SelectItem = ({
           <motion.div
             layout
             className={cn(
-              "flex shrink-0 items-center justify-center rounded-lg border border-neutral-300 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-800",
+              "flex shrink-0 items-center justify-center rounded-lg border border-neutral-200/80 bg-white/70 dark:border-[#262626] dark:bg-[#161619]",
               noDescription ? "h-5 w-5 text-xs" : "h-7 w-7 text-sm"
             )}
           >

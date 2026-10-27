@@ -42,7 +42,7 @@ export default function ArsrsView() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-full border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-xs transition-all hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
+            className="flex items-center gap-1.5 rounded-full border border-neutral-200/80 bg-white/70 backdrop-blur-md px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-xs transition-all hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer"
           >
             {copied ? (
               <Check className="h-3.5 w-3.5 text-black dark:text-white" />
@@ -110,7 +110,7 @@ export default function ArsrsView() {
       <div className="flex items-center justify-between border-t border-neutral-200/70 bg-white/70 px-6 py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg">
         <button
           onClick={() => setActivePipelineStep(1)}
-          className="flex items-center gap-1.5 rounded-full border border-neutral-200/80 bg-white/80 px-4 py-2 text-xs font-semibold text-neutral-800 backdrop-blur-md transition-colors hover:border-black dark:border-white/10 dark:bg-white/[0.06] dark:text-neutral-200 dark:hover:border-white"
+          className="flex items-center gap-1.5 rounded-full border border-neutral-200/80 bg-white/80 px-4 py-2 text-xs font-semibold text-neutral-800 backdrop-blur-md transition-colors hover:border-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Prompt & Interview</span>

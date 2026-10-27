@@ -109,7 +109,7 @@ export default function HldWorkspace() {
               "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
               hldWorkspaceTab === "json"
                 ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-xs"
-                : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-900"
+                : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-[#161619]"
             )}
           >
             <Code2 className="h-3.5 w-3.5 text-emerald-500" />
@@ -156,7 +156,7 @@ export default function HldWorkspace() {
 
           {/* ── HLD / LLD Toggle Switch (In place of Approved button on right corner) ── */}
           <div
-            className="relative inline-flex items-center rounded-full border border-neutral-300/80 bg-neutral-100/90 p-0.5 dark:border-neutral-700/80 dark:bg-neutral-900/90 shadow-2xs backdrop-blur-md select-none"
+            className="relative inline-flex items-center rounded-full border border-neutral-200/80 bg-white/70 p-0.5 dark:border-[#262626] dark:bg-[#0D0D0F] shadow-2xs backdrop-blur-md select-none"
             role="group"
             aria-label="HLD and LLD Toggle Switch"
           >
@@ -180,7 +180,7 @@ export default function HldWorkspace() {
             <button
               type="button"
               onClick={() => setHldWorkspaceTab(hldWorkspaceTab === "lld" ? "hld" : "lld")}
-              className="mx-1 relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-neutral-300 p-0.5 transition-colors duration-200 dark:bg-neutral-700 focus:outline-hidden"
+              className="mx-1 relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full bg-neutral-300 p-0.5 transition-colors duration-200 dark:bg-[#161619] dark:border dark:border-[#262626] focus:outline-hidden"
               title="Toggle between HLD and LLD"
               aria-label="Toggle between HLD and LLD"
             >

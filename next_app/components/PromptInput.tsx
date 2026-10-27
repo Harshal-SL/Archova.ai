@@ -106,8 +106,8 @@ export default function PromptInput({
       <div
         className={cn(
           "relative flex items-center gap-2 rounded-full border transition-all duration-200",
-          "border-neutral-200 bg-white/95 text-neutral-900 focus-within:border-neutral-400 focus-within:shadow-xl",
-          "dark:border-white/[0.08] dark:bg-[#212121] dark:text-white dark:focus-within:border-neutral-600 shadow-2xl",
+          "border-neutral-200/80 bg-white/95 text-neutral-900 focus-within:border-black focus-within:shadow-xl",
+          "dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-white dark:focus-within:border-white/20 shadow-2xl backdrop-blur-md",
           variant === "center" ? "p-2 pl-3.5 sm:pl-4 min-h-[52px]" : "p-1.5 pl-3 min-h-[48px]"
         )}
       >
@@ -116,7 +116,7 @@ export default function PromptInput({
           type="button"
           onClick={onOpenTemplates}
           title="Add files or select architectural templates"
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-white transition-colors cursor-pointer"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
         >
           <Plus className="h-5 w-5 stroke-[1.9]" />
         </button>
@@ -143,7 +143,7 @@ export default function PromptInput({
             className={cn(
               "flex items-center gap-1.5 rounded-full px-2.5 py-1 text-sm font-medium transition-colors cursor-pointer",
               thinkActive
-                ? "text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/10"
+                ? "text-neutral-800 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-[#161619]"
                 : "text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
             )}
           >
@@ -157,7 +157,7 @@ export default function PromptInput({
             onClick={handleToggleVoice}
             title={isListening ? "Stop listening" : "Dictate requirements"}
             className={cn(
-              "flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-white transition-colors cursor-pointer",
+              "flex h-8 w-8 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer",
               isListening && "text-red-500 dark:text-red-400 animate-pulse bg-red-500/10"
             )}
           >

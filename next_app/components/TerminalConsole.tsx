@@ -111,7 +111,7 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
             </span>
           )}
 
-          <span className="rounded border border-neutral-300 bg-neutral-200 px-1.5 py-0.5 text-[9px] font-bold text-black dark:border-neutral-700 dark:bg-neutral-800 dark:text-white">
+          <span className="rounded border border-neutral-200/80 bg-neutral-200 px-1.5 py-0.5 text-[9px] font-bold text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-white">
             {logs.length}
           </span>
 
@@ -119,10 +119,10 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
             onClick={toggleAutoScrollLogs}
             title="Toggle Auto-Scroll"
             className={clsx(
-              "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all",
+              "rounded px-1.5 py-0.5 text-[9px] font-semibold transition-all cursor-pointer",
               autoScrollLogs
                 ? "bg-black text-white dark:bg-white dark:text-black shadow-xs"
-                : "border border-neutral-300 bg-white text-neutral-600 hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-400 dark:hover:text-white"
+                : "border border-neutral-200/80 bg-white/70 text-neutral-600 hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white"
             )}
           >
             {autoScrollLogs ? "Scroll:ON" : "OFF"}
@@ -131,7 +131,7 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
           <button
             onClick={clearLogs}
             title="Clear logs"
-            className="rounded p-1 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+            className="rounded p-1 text-neutral-500 transition-colors hover:bg-neutral-200 hover:text-black dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white cursor-pointer"
           >
             <Trash2 className="h-3 w-3" />
           </button>
@@ -139,7 +139,7 @@ export default function TerminalConsole({ initialCollapsed = false }: Props) {
           <button
             onClick={() => setCollapsed(!collapsed)}
             title={collapsed ? "Expand logs" : "Collapse logs"}
-            className="rounded p-1 text-neutral-500 hover:bg-neutral-200 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-white"
+            className="rounded p-1 text-neutral-500 hover:bg-neutral-200 hover:text-black dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white cursor-pointer"
           >
             {collapsed ? (
               <ChevronUp className="h-3 w-3" />

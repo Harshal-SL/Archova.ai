@@ -394,7 +394,7 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
                               "group relative flex items-center gap-3 rounded-xl border px-3.5 py-2.5 text-left text-xs sm:text-sm transition-all cursor-pointer",
                               isSelected
                                 ? "border-[#005dff] bg-[#005dff]/10 text-neutral-900 dark:text-white shadow-xs ring-1 ring-[#005dff]/30 font-medium"
-                                : "border-neutral-200 bg-white hover:border-neutral-300 hover:bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-950/60 dark:hover:border-neutral-700 dark:hover:bg-neutral-900 text-neutral-700 dark:text-neutral-300"
+                                : "border-neutral-200/80 bg-white/70 backdrop-blur-md hover:border-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:hover:border-white/20 dark:hover:bg-[#161619] text-neutral-700 dark:text-neutral-300"
                             )}
                           >
                             <div

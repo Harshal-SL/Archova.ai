@@ -261,9 +261,9 @@ export default function Navbar() {
                     setMobileMenuOpen(false);
                     handleSignOut();
                   }}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-bold text-neutral-800 dark:text-neutral-200 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-900 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl transition-colors cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full px-4 py-2.5 text-xs font-bold text-neutral-800 dark:text-neutral-200 bg-white/70 hover:bg-white dark:bg-[#0D0D0F] dark:hover:bg-[#161619] dark:hover:border-white/20 border border-neutral-200/80 dark:border-[#262626] rounded-2xl transition-all cursor-pointer shadow-2xs backdrop-blur-md"
                 >
-                  <LogOut className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
+                  <LogOut className="h-4 w-4 text-red-600 dark:text-red-400" />
                   <span>Logout</span>
                 </button>
               </div>

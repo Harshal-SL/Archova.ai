@@ -274,11 +274,11 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       {/* Header with question badges */}
       <div className="mb-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-bold text-black shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
+          <span className="flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white/70 px-3 py-1 text-xs font-bold text-black shadow-2xs dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-white">
             <HelpCircle className="h-3.5 w-3.5" />
             {currentQuestion.question_id || "Requirement Clarification"}
           </span>
-          <span className="rounded-lg border border-neutral-300 bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black dark:text-white">
+          <span className="rounded-lg border border-neutral-200/80 bg-white/70 dark:border-[#262626] dark:bg-[#0D0D0F] px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-black dark:text-white">
             {(currentQuestion.priority || "Medium").toUpperCase()} Priority
           </span>
         </div>
@@ -320,7 +320,7 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
                     "group flex items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left text-xs font-semibold transition-all duration-200",
                     isSelected
                       ? "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black shadow-sm"
-                      : "border-neutral-300 bg-white text-neutral-800 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
+                      : "border-neutral-200/80 bg-white/70 backdrop-blur-md text-neutral-800 hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-200 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white"
                   )}
                 >
                   <span

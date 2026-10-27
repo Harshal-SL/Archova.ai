@@ -149,7 +149,7 @@ export default function JsonViewer({
               {title}
             </span>
           ) : showTabs ? (
-            <div className="flex items-center gap-1 bg-black/40 p-1 rounded-lg border border-neutral-800">
+            <div className="flex items-center gap-1 bg-[#0D0D0F] p-1 rounded-lg border border-[#262626]">
               {TABS.map((tab) => {
                 const TabIcon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -167,8 +167,8 @@ export default function JsonViewer({
                     className={clsx(
                       "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-all cursor-pointer whitespace-nowrap",
                       isActive
-                        ? "bg-neutral-800 text-white font-semibold shadow-xs border border-neutral-700"
-                        : "text-neutral-400 hover:bg-neutral-800/60 hover:text-neutral-200"
+                        ? "bg-[#161619] text-white font-semibold shadow-xs border border-[#262626]"
+                        : "text-neutral-400 hover:bg-[#161619]/60 hover:text-neutral-200"
                     )}
                   >
                     <TabIcon className={clsx("h-3 w-3", isActive ? "text-emerald-400" : "text-neutral-500")} />
@@ -195,7 +195,7 @@ export default function JsonViewer({
               placeholder="Filter keys or values..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-7 w-36 sm:w-48 rounded-lg border border-neutral-800 bg-neutral-900 pl-8 pr-7 text-xs text-white placeholder-neutral-500 focus:border-neutral-600 focus:outline-hidden"
+              className="h-7 w-36 sm:w-48 rounded-lg border border-[#262626] bg-[#0D0D0F] pl-8 pr-7 text-xs text-white placeholder-neutral-500 focus:border-white/20 focus:outline-hidden"
             />
             {searchQuery && (
               <button
@@ -210,7 +210,7 @@ export default function JsonViewer({
 
           {/* Stats Badge */}
           {activePayload && (
-            <div className="hidden lg:flex items-center gap-1.5 rounded-md bg-neutral-900 border border-neutral-800 px-2 py-1 text-[11px] font-mono text-neutral-400">
+            <div className="hidden lg:flex items-center gap-1.5 rounded-md bg-[#0D0D0F] border border-[#262626] px-2 py-1 text-[11px] font-mono text-neutral-400">
               <span className="text-emerald-400">{formatSize(stats.bytes)}</span>
               <span>•</span>
               <span>{stats.lines} lines</span>
@@ -224,7 +224,7 @@ export default function JsonViewer({
             type="button"
             onClick={handleCopy}
             disabled={!activePayload}
-            className="flex items-center gap-1 rounded-lg border border-neutral-800 bg-neutral-900 px-2.5 py-1 text-xs font-semibold text-neutral-200 hover:border-neutral-700 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-40"
+            className="flex items-center gap-1 rounded-lg border border-[#262626] bg-[#0D0D0F] px-2.5 py-1 text-xs font-semibold text-neutral-200 hover:border-white/20 hover:text-white hover:bg-[#161619] transition-colors cursor-pointer disabled:opacity-40"
             title="Copy formatted JSON to clipboard"
           >
             {copied ? (
@@ -245,7 +245,7 @@ export default function JsonViewer({
             type="button"
             onClick={handleDownload}
             disabled={!activePayload}
-            className="flex items-center gap-1 rounded-lg border border-neutral-800 bg-neutral-900 px-2.5 py-1 text-xs font-semibold text-neutral-200 hover:border-neutral-700 hover:text-white hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-40"
+            className="flex items-center gap-1 rounded-lg border border-[#262626] bg-[#0D0D0F] px-2.5 py-1 text-xs font-semibold text-neutral-200 hover:border-white/20 hover:text-white hover:bg-[#161619] transition-colors cursor-pointer disabled:opacity-40"
             title="Download JSON artifact file"
           >
             <Download className="h-3.5 w-3.5 text-neutral-400" />
