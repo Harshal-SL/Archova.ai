@@ -19,7 +19,6 @@ import {
   Workflow,
   Database,
   Cpu,
-  Scale,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
@@ -133,7 +132,7 @@ export function AnimatedAIChat({
   userName = "",
   className,
 }: AnimatedAIChatProps) {
-  const { theme, benchmarkModelsConfig } = useAppStore();
+  const { theme } = useAppStore();
   const isDark = theme === "dark";
 
   const [value, setValue] = useState("");
@@ -516,18 +515,6 @@ export function AnimatedAIChat({
                     className="absolute inset-0 bg-black/[0.04] dark:bg-white/[0.06] rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                     layoutId="button-highlight"
                   />
-                </motion.button>
-
-                {/* Benchmark LLM Models Toggle Button */}
-                <motion.button
-                  type="button"
-                  onClick={() => setShowBenchmarkModal(true)}
-                  whileTap={{ scale: 0.94 }}
-                  title="Configure Baseline LLM Models & API Keys to Benchmark"
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50/80 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-900/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors cursor-pointer"
-                >
-                  <Scale className="w-3.5 h-3.5 text-indigo-500" />
-                  <span className="hidden sm:inline">Compare ({benchmarkModelsConfig.length} LLMs)</span>
                 </motion.button>
               </div>
 
