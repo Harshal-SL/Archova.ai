@@ -1021,14 +1021,18 @@ export const useAppStore = create<AppState>((set, get) => ({
     const defaultTitle = title || `Architecture ${sessionCounter}`;
     const currentUser = get().user;
 
-    let newId = `session-${Date.now()}`;
+    const newId =
+      typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+        ? crypto.randomUUID()
+        : `session-${Date.now()}`;
 
     if (currentUser && currentUser.app_metadata?.provider !== "guest") {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("chat_sessions")
           .insert([
             {
+              id: newId,
               user_id: currentUser.id,
               title: defaultTitle,
               updated_at: new Date().toISOString(),
@@ -1037,8 +1041,10 @@ export const useAppStore = create<AppState>((set, get) => ({
           .select()
           .single();
 
-        if (data?.id) {
-          newId = data.id;
+        if (error) {
+          console.warn("Could not persist session to Supabase:", error.message);
+        } else if (data?.id) {
+          // Confirm persisted ID
         }
       } catch (err) {
         console.warn("Could not persist session to Supabase:", err);

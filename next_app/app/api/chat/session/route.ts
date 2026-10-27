@@ -58,10 +58,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const sessionId = crypto.randomUUID();
     const { data, error } = await supabase
       .from('chat_sessions')
       .insert([
         {
+          id: sessionId,
           user_id: userId,
           title,
           updated_at: new Date().toISOString(),
