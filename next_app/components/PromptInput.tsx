@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Plus, Brain, Mic, ArrowUp, Scale } from "lucide-react";
+import { Plus, Brain, Mic, ArrowUp, Scale, Paperclip, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { useAppStore } from "@/lib/store";
 import BenchmarkConfigModal from "./BenchmarkConfigModal";
 
 interface PromptInputProps {
-  onSend: (text: string) => void;
+  onSend: (text: string, files?: File[]) => void;
   disabled?: boolean;
   placeholder?: string;
   variant?: "center" | "bottom";
@@ -22,11 +22,12 @@ export default function PromptInput({
 }: PromptInputProps) {
   const { benchmarkModelsConfig } = useAppStore();
   const [value, setValue] = useState("");
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [thinkActive, setThinkActive] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const [showBenchmarkModal, setShowBenchmarkModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-resize textarea height
   useEffect(() => {
@@ -37,11 +38,26 @@ export default function PromptInput({
     }
   }, [value]);
 
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setAttachedFiles((prev) => [...prev, ...Array.from(files)]);
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
   const handleSend = () => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
-    onSend(trimmed);
+    if ((!trimmed && attachedFiles.length === 0) || disabled) return;
+    onSend(trimmed, attachedFiles);
     setValue("");
+    setAttachedFiles([]);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
@@ -93,7 +109,7 @@ export default function PromptInput({
     }
   };
 
-  const hasValue = value.trim().length > 0;
+  const hasValue = value.trim().length > 0 || attachedFiles.length > 0;
 
   return (
     <div
@@ -102,6 +118,40 @@ export default function PromptInput({
         variant === "center" ? "max-w-[700px] px-2 sm:px-4" : "max-w-3xl mx-auto px-2 sm:px-4 pb-3 sm:pb-4 pt-1 sm:pt-2"
       )}
     >
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg"
+        multiple
+        className="hidden"
+      />
+
+      {/* Attached file badges */}
+      {attachedFiles.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-2 px-2">
+          {attachedFiles.map((file, idx) => (
+            <div
+              key={`${file.name}-${idx}`}
+              className="flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white/95 dark:border-[#262626] dark:bg-[#0D0D0F] px-2.5 py-1 text-xs text-neutral-800 dark:text-neutral-200 shadow-2xs backdrop-blur-md"
+            >
+              <Paperclip className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+              <span className="truncate max-w-[150px] font-medium">{file.name}</span>
+              <span className="text-[10px] text-neutral-400">({(file.size / 1024).toFixed(1)} KB)</span>
+              <button
+                type="button"
+                onClick={() => removeAttachment(idx)}
+                className="hover:text-red-500 cursor-pointer ml-1 p-0.5 rounded-full"
+                title="Remove attachment"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Pill-shaped ChatGPT input container */}
       <div
         className={cn(
@@ -111,15 +161,26 @@ export default function PromptInput({
           variant === "center" ? "p-1.5 sm:p-2 pl-2.5 sm:pl-4 min-h-[48px] sm:min-h-[52px]" : "p-1 sm:p-1.5 pl-2 sm:pl-3 min-h-[44px] sm:min-h-[48px]"
         )}
       >
-        {/* Left: '+' Action Button */}
-        <button
-          type="button"
-          onClick={onOpenTemplates}
-          title="Add files or select architectural templates"
-          className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
-        >
-          <Plus className="h-4 w-4 sm:h-5 sm:w-5 stroke-[1.9]" />
-        </button>
+        {/* Left: '+' Action Button (Starters) & Paperclip (Upload) */}
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            type="button"
+            onClick={onOpenTemplates}
+            title="Select architectural starter templates"
+            className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <Plus className="h-4 w-4 sm:h-5 sm:w-5 stroke-[1.9]" />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleAttachClick}
+            title="Upload requirements document (.pdf, .docx, .txt, .md, images)"
+            className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full text-neutral-400 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <Paperclip className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          </button>
+        </div>
 
         {/* Center: Clean Textarea / Input */}
         <textarea

@@ -40,6 +40,12 @@ export interface AgentTelemetryResponse {
   timestamp: string;
 }
 
+export interface ProcessInputResponse {
+  combined_prompt: string;
+  sources: string[];
+  block_count: number;
+}
+
 export interface StartGenerationResponse {
   generation_id: string;
   status: "INTERVIEW_IN_PROGRESS" | "INTERVIEW_COMPLETED" | string;
@@ -114,6 +120,28 @@ export const aiEngineApi = {
       }
     } catch {}
     return { ok: false, version: "Offline", host: AI_HOST };
+  },
+
+  // 1b. Ingest documents and/or prompt text
+  async processInput(text?: string, files?: File[]): Promise<ProcessInputResponse> {
+    const formData = new FormData();
+    if (text && text.trim()) {
+      formData.append("text", text.trim());
+    }
+    if (files && files.length > 0) {
+      for (const file of files) {
+        formData.append("files", file);
+      }
+    }
+    const res = await fetch(`${AI_HOST}/api/input`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to process requirement documents (HTTP ${res.status})`);
+    }
+    return await res.json();
   },
 
   // 2. Start generation with problem statement

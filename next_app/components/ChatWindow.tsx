@@ -101,21 +101,74 @@ export default function ChatWindow() {
     }
   }, [activeSessionId]);
 
-  const handleStartGeneration = async (promptText: string) => {
+  const handleStartGeneration = async (promptText: string, attachedFiles?: File[]) => {
     let sid = activeSessionId;
+    const hasFiles = attachedFiles && attachedFiles.length > 0;
+
+    const initialTitle = promptText
+      ? promptText.slice(0, 32)
+      : hasFiles
+      ? attachedFiles[0].name.replace(/\.[^/.]+$/, "").slice(0, 32)
+      : "New Architecture";
+
     if (!sid) {
-      sid = await createSession(promptText.slice(0, 32));
+      sid = await createSession(initialTitle);
+    }
+
+    // Format chat message content
+    let displayContent = promptText;
+    if (hasFiles) {
+      const docList = attachedFiles.map((f) => `\`${f.name}\``).join(", ");
+      displayContent = promptText
+        ? `${promptText}\n\n📎 **Uploaded Requirements:** ${docList}`
+        : `📎 **Uploaded Requirements Document${attachedFiles.length > 1 ? "s" : ""}:** ${docList}`;
     }
 
     // 1. Post user prompt into chat
     await addMessage(sid, {
       id: generateMsgId(),
       role: "user",
-      content: promptText,
+      content: displayContent,
     });
 
     setStarting(true);
     const now = new Date().toTimeString().split(" ")[0];
+
+    // If documents are attached, ingest them through backend parser
+    let effectivePrompt = promptText;
+    if (hasFiles) {
+      setActiveAgent({
+        id: "agent-doc-ingestion",
+        name: "Document Ingestion Agent",
+        role: "Requirements Document Extraction & OCR",
+        icon: "brain",
+        task: `Extracting requirements from ${attachedFiles.map((f) => f.name).join(", ")}...`,
+        status: "working",
+        stage: "REE",
+        progressPercent: 15,
+        thought: "Parsing document structure (PDF/DOCX/TXT/OCR) into structured architecture requirements...",
+      });
+
+      addLogEntry({
+        timestamp: now,
+        stage: "REE",
+        message: `📄 Ingesting ${attachedFiles.length} uploaded document(s): ${attachedFiles.map((f) => f.name).join(", ")}...`,
+        level: "INFO",
+      });
+
+      try {
+        const ingested = await aiEngineApi.processInput(promptText, attachedFiles);
+        effectivePrompt = ingested.combined_prompt || promptText;
+        addLogEntry({
+          timestamp: new Date().toTimeString().split(" ")[0],
+          stage: "REE",
+          message: `✓ Ingestion complete. Extracted ${ingested.block_count} requirement block(s) from: ${ingested.sources.join(", ")}.`,
+          level: "INFO",
+        });
+      } catch (err) {
+        console.warn("Document parsing warning, using raw prompt:", err);
+      }
+    }
 
     // Check if an architecture baseline already exists in this session
     const hasBaseline = Boolean(hldData && typeof hldData === "object" && Object.keys(hldData).length > 0);
@@ -144,7 +197,7 @@ export default function ChatWindow() {
       });
 
       try {
-        const result = await evolveArchitecture(promptText);
+        const result = await evolveArchitecture(effectivePrompt);
 
         addLogEntry({
           timestamp: new Date().toTimeString().split(" ")[0],
@@ -205,11 +258,11 @@ export default function ChatWindow() {
       useAppStore.getState().startAgentTelemetryPolling(clientGenId);
 
       // Concurrently initiate direct 1-shot baseline LLM benchmark in background
-      useAppStore.getState().runBenchmarkSuite(promptText).catch((e) => {
+      useAppStore.getState().runBenchmarkSuite(effectivePrompt).catch((e) => {
         console.warn("Background benchmark suite non-blocking error:", e);
       });
 
-      const response = await aiEngineApi.startGeneration(promptText, clientGenId);
+      const response = await aiEngineApi.startGeneration(effectivePrompt, clientGenId);
 
       useAppStore.setState({
         generationId: response.generation_id,
