@@ -113,14 +113,14 @@ export default function Sidebar() {
       {/* Main Sidebar Aside with Glassmorphism (Mobile Drawer + Desktop Fixed/Relative) */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/80 bg-white transition-all duration-300 ease-in-out dark:border-[#262626] dark:bg-[#0D0D0F] shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white md:dark:bg-[#0D0D0F]",
+          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/80 bg-white transition-all duration-300 ease-in-out dark:border-white/10 dark:bg-black shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white md:dark:bg-black",
           sidebarOpen ? "w-[280px] sm:w-80 translate-x-0" : "w-0 -translate-x-full overflow-hidden border-r-0 md:w-0"
         )}
       >
         {/* ── Background Grid & Shooting Stars Animation Layer ── */}
         {mounted && (
           <div
-            className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+            className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-45 dark:opacity-25 transition-opacity"
             aria-hidden="true"
           >
             <ShootingStarsGrid
@@ -139,7 +139,7 @@ export default function Sidebar() {
         
 
         {/* Top Header & Brand */}
-        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-[#262626] shrink-0 bg-white/70 dark:bg-[#0D0D0F]/70 backdrop-blur-md">
+        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-white/10 shrink-0 bg-white/70 dark:bg-black/70 backdrop-blur-md">
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
@@ -179,7 +179,7 @@ export default function Sidebar() {
         {/* Search Filter when sessions exist */}
         {sessions.length > 3 && (
           <div className="relative z-10 px-3 pb-2 shrink-0">
-            <div className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-100/70 px-2.5 py-1.5 text-xs shadow-2xs dark:border-[#262626] dark:bg-[#161619]">
+            <div className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-100/70 px-2.5 py-1.5 text-xs shadow-2xs dark:border-white/10 dark:bg-white/[0.04]">
               <Search className="h-3.5 w-3.5 text-neutral-400" />
               <input
                 type="text"
@@ -218,8 +218,8 @@ export default function Sidebar() {
                   className={cn(
                     "group relative flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-all cursor-pointer",
                     isActive
-                      ? "bg-neutral-100 font-bold text-black dark:bg-[#161619] dark:text-white shadow-2xs border border-neutral-200/80 dark:border-[#262626] border-l-2 border-l-black dark:border-l-white"
-                      : "text-neutral-700/80 hover:bg-neutral-100/60 hover:text-black dark:text-neutral-400/80 dark:hover:bg-[#161619]/60 dark:hover:text-white"
+                      ? "bg-neutral-100 font-bold text-black dark:bg-white/[0.08] dark:text-white shadow-2xs border border-neutral-200/80 dark:border-white/15 border-l-2 border-l-black dark:border-l-white"
+                      : "text-neutral-700/80 hover:bg-neutral-100/60 hover:text-black dark:text-neutral-400/80 dark:hover:bg-white/[0.04] dark:hover:text-white"
                   )}
                 >
                   <MessageSquare
@@ -254,9 +254,9 @@ export default function Sidebar() {
         </div>
 
         {/* Docked User Profile below the sidebar */}
-        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-[#262626] shrink-0 bg-white/70 dark:bg-[#0D0D0F]/70 backdrop-blur-md">
+        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-white/10 shrink-0 bg-white/70 dark:bg-black/70 backdrop-blur-md">
           {user ? (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-white/10 dark:bg-white/[0.04] opacity-85 hover:opacity-100 transition-all duration-200">
               <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black/80 text-white text-xs font-bold dark:bg-white/90 dark:text-black shadow-xs">
                   {userInitial}
@@ -282,7 +282,7 @@ export default function Sidebar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-white/10 dark:bg-white/[0.04] opacity-85 hover:opacity-100 transition-all duration-200">
               <Link
                 href="/signin"
                 className="flex min-w-0 items-center gap-2.5 flex-1 hover:opacity-80 transition-opacity"
