@@ -174,7 +174,16 @@ export default function EngineStatusButton() {
               </span>
             </div>
             <div className="mt-2 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
-              <span className="truncate block">ybbdalnerdxudabtpyfn.supabase.co</span>
+              <span className="truncate block">
+                {(() => {
+                  try {
+                    const raw = process.env.NEXT_PUBLIC_SUPABASE_URL;
+                    return raw ? new URL(raw).hostname : "Supabase Cloud";
+                  } catch {
+                    return "Supabase Cloud";
+                  }
+                })()}
+              </span>
             </div>
           </div>
         </div>

@@ -104,7 +104,10 @@ export interface StatusResponse {
 
 // In-memory question tracker for frontend simulation
 const answerCounts: Record<string, number> = {};
-const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+const isBrowser = typeof window !== "undefined";
+const AI_HOST = isBrowser
+  ? "/api/engine"
+  : (process.env.AI_ENGINE_URL || process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
 
 export const aiEngineApi = {
   // 1. Health check — Tries FastAPI on port 8000
@@ -273,7 +276,7 @@ export const aiEngineApi = {
 
   // 9. Get architecture package for validation
   async getPackage(generationId: string): Promise<Record<string, any>> {
-    const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+    // Top-level AI_HOST used (routed via secure proxy)
     const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/package`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -284,7 +287,7 @@ export const aiEngineApi = {
 
   // 10. Automated Validation & AI Correction Workflow
   async validateAndCorrect(generationId: string, maxRetries = 2): Promise<any> {
-    const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+    // Top-level AI_HOST used (routed via secure proxy)
     try {
       const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/validate-and-correct?max_retries=${maxRetries}`, {
         method: "POST",
