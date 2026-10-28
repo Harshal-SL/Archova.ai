@@ -12,6 +12,7 @@ from app.routers.sae_router import router as sae_router
 from app.api.routes.generations import router as generations_router
 from app.routers.version_router import router as version_router
 from app.routers.benchmark_router import router as benchmark_router
+from app.routers.correction_router import router as correction_router
 
 api_router = APIRouter()
 
@@ -22,5 +23,6 @@ api_router.include_router(sae_router)
 api_router.include_router(generations_router)
 api_router.include_router(version_router)
 api_router.include_router(benchmark_router)
+api_router.include_router(correction_router)
 
 

@@ -9,6 +9,7 @@ import JsonViewer from "./JsonViewer";
 import ComparisonView from "./ComparisonView";
 import TubelightChatBar from "./TubelightChatBar";
 import VersionDiffDrawer from "./VersionDiffDrawer";
+import ValidationReportView from "./ValidationReportView";
 import {
   Network,
   Layers,
@@ -42,6 +43,8 @@ export default function HldWorkspace() {
     benchmarkResults,
     benchmarkModelsConfig,
     isBenchmarking,
+    validationReport,
+    isValidatingV2,
   } = useAppStore();
 
   const [showDiffDrawer, setShowDiffDrawer] = useState(false);
@@ -85,36 +88,40 @@ export default function HldWorkspace() {
             <span>Chat</span>
           </button>
 
-          {/* Tab 1: Validator Report & Quality Scorecard */}
+          {/* Tab 1: Validation Audit (Validator Engine v2) */}
           <button
             onClick={() => setHldWorkspaceTab("validation")}
             className={clsx(
               "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
-              hldWorkspaceTab === "validation"
+              hldWorkspaceTab === "validation" || hldWorkspaceTab === "validation-v2"
                 ? "bg-neutral-900 text-white dark:bg-white dark:text-black shadow-xs"
                 : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-900"
             )}
           >
             <ShieldCheck className="h-3.5 w-3.5" />
             <span>Validation Audit</span>
-            {isValidating && (
+            {(isValidating || isValidatingV2) && (
               <RefreshCw className="h-3 w-3 animate-spin text-indigo-500" />
             )}
-            {scorePercent !== null && !isValidating && (
+            {validationReport && !(isValidating || isValidatingV2) && (
               <span
                 className={clsx(
                   "rounded-full px-1.5 py-0.2 text-[10px] font-bold border",
-                  scorePercent >= 80
+                  validationReport.final_status === "ACCEPTED"
                     ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400"
-                    : "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400"
+                    : validationReport.final_status === "ACCEPTED_WITH_WARNINGS"
+                    ? "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400"
+                    : validationReport.final_status === "PROVISIONAL"
+                    ? "bg-purple-500/10 text-purple-600 border-purple-500/30 dark:text-purple-400"
+                    : "bg-rose-500/10 text-rose-600 border-rose-500/30 dark:text-rose-400"
                 )}
               >
-                {scorePercent}%
+                {validationReport.final_scores?.overall ?? 0}% ({validationReport.final_status})
               </span>
             )}
           </button>
 
-          {/* Tab 4: Raw JSON Inspector for HLD & 5 LLDs */}
+          {/* Tab 2: Raw JSON Inspector for HLD & 5 LLDs */}
           <button
             onClick={() => setHldWorkspaceTab("json")}
             className={clsx(
@@ -253,6 +260,8 @@ export default function HldWorkspace() {
             <HLDGraph onSelectLld={(lldType) => jumpToLld(lldType)} />
           ) : hldWorkspaceTab === "validation" ? (
             <ValidationView />
+          ) : hldWorkspaceTab === "validation-v2" ? (
+            <ValidationReportView />
           ) : hldWorkspaceTab === "json" ? (
             <JsonViewer />
           ) : (

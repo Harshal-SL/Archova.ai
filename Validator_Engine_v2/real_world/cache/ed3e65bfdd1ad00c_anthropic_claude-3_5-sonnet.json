@@ -1,0 +1,40 @@
+{
+  "system": "DNS Outage and Resolution Failure",
+  "patterns": [
+    {
+      "id": "RW-DNSOUT-01",
+      "name": "Circuit Breaker with Graceful Fallback",
+      "description": "Isolates downstream microservice dependencies with timeouts and fallback responses to prevent cascading outages.",
+      "category": "resilience",
+      "applies_to_artifacts": [
+        "hld",
+        "backend",
+        "cloud"
+      ],
+      "applicability": {
+        "conditions": "Distributed multi-service architecture",
+        "scale_hint": "Critical service path availability"
+      },
+      "source_section": "advantages",
+      "priority": 1
+    },
+    {
+      "id": "RW-DNSOUT-02",
+      "name": "Multi-AZ Active-Active Redundancy",
+      "description": "Maintains redundant compute across availability zones with automatic health-checked traffic failover.",
+      "category": "scaling",
+      "applies_to_artifacts": [
+        "hld",
+        "cloud"
+      ],
+      "applicability": {
+        "conditions": "High-availability NFR targets",
+        "scale_hint": "99.99% uptime requirements"
+      },
+      "source_section": "decision_signals",
+      "priority": 2
+    }
+  ],
+  "extraction_failed": false,
+  "error": null
+}

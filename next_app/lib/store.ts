@@ -12,12 +12,28 @@ import {
   type ModelBenchmarkResult,
   type BenchmarkComparisonSummary,
   type AgentTelemetry,
+  type TargetedCorrectionResponse,
+  type TargetedCorrectionRequest,
+  type AcceptCorrectionResponse,
+  type RejectCorrectionResponse,
   DEFAULT_BENCHMARK_PRESETS,
 } from "./ai-engine-client";
 import {
   validatorApi,
   type ValidatedArchitectureResponse,
 } from "./validator-client";
+import {
+  validatorV2Client,
+  type Report,
+  type ReportWithPackage,
+} from "./validator-v2-client";
+import {
+  type CorrectionPlan,
+  type CorrectionItemStatus,
+  buildCorrectionPlan,
+  validateCorrectionEligibility,
+  checkAutomatedCorrectionCapability,
+} from "./correction-planner";
 import { parseHldToReactFlow } from "./graph-parser";
 
 export interface ChatMessage {
@@ -120,8 +136,8 @@ interface AppState {
   hldEdges: Edge[];
   selectedNode: string | null;
   setSelectedNode: (id: string | null) => void;
-  hldWorkspaceTab: "hld" | "lld" | "validation" | "json" | "comparison";
-  setHldWorkspaceTab: (tab: "hld" | "lld" | "validation" | "json" | "comparison") => void;
+  hldWorkspaceTab: "hld" | "lld" | "validation" | "validation-v2" | "json" | "comparison";
+  setHldWorkspaceTab: (tab: "hld" | "lld" | "validation" | "validation-v2" | "json" | "comparison") => void;
   layoutDirection: "TB" | "LR";
   setLayoutDirection: (dir: "TB" | "LR") => void;
   toggleLayoutDirection: () => void;
@@ -143,8 +159,76 @@ interface AppState {
   isValidating: boolean;
   validationError: string | null;
   setValidationData: (data: ValidatedArchitectureResponse | null) => void;
-  validateArchitecture: (pkg?: Record<string, any>) => Promise<ValidatedArchitectureResponse | null>;
-  runCorrectionWorkflow: (maxRetries?: number, force?: boolean) => Promise<ValidatedArchitectureResponse | null>;
+  validateArchitecture: (pkg?: Record<string, any>) => Promise<Report | ValidatedArchitectureResponse | null>;
+  runCorrectionWorkflow: (maxRetries?: number, force?: boolean) => Promise<Report | ValidatedArchitectureResponse | null>;
+
+  // ── Standalone Validator Engine v2 (Port 8002) ──
+  validationReport: Report | null;
+  correctionPlan: CorrectionPlan | null;
+  validationStatus: string;
+  validationCurrentStep: string;
+  isValidatingV2: boolean;
+  setValidationReport: (report: Report | null) => void;
+  setCorrectionPlan: (plan: CorrectionPlan | null) => void;
+  runValidatorV2Pipeline: (pkg?: Record<string, any>) => Promise<ReportWithPackage | null>;
+
+  // ── Evidence-Based Correction Review Workflow (Part 2.2.1) ──
+  correctionDecisions: Record<
+    string,
+    {
+      decision: CorrectionItemStatus;
+      decided_at: string;
+      notes?: string;
+      generation_id?: string;
+      version_tag?: string;
+    }
+  >;
+  isProcessingCorrectionAction: boolean;
+  correctionActionMessage: {
+    type: "success" | "warning" | "error" | "info";
+    text: string;
+    itemId?: string;
+  } | null;
+  approveCorrectionPlanItem: (itemId: string) => {
+    success: boolean;
+    status: CorrectionItemStatus;
+    message: string;
+    automatedSupported: boolean;
+  };
+  markCorrectionForManualReview: (
+    itemId: string,
+    notes?: string
+  ) => {
+    success: boolean;
+    status: CorrectionItemStatus;
+    message: string;
+  };
+  dismissCorrectionPlanItem: (
+    itemId: string,
+    notes?: string
+  ) => {
+    success: boolean;
+    status: CorrectionItemStatus;
+    message: string;
+  };
+  resetCorrectionDecision: (itemId: string) => void;
+  clearCorrectionActionMessage: () => void;
+
+  // ── Targeted AI Architecture Correction (Part 2.2.2) ──
+  activeCorrectionDraft: TargetedCorrectionResponse | null;
+  isExecutingAiCorrection: boolean;
+  validationIsStale: boolean;
+  staleReason: string | null;
+  staleArtifactType: string | null;
+  historicalValidationReports: Record<string, Report>;
+  executeTargetedCorrection: (
+    itemId: string,
+    simulatedArtifact?: Record<string, unknown>
+  ) => Promise<TargetedCorrectionResponse | null>;
+  acceptCorrectionDraft: (operationId: string) => Promise<boolean>;
+  rejectCorrectionDraft: (operationId: string, reason?: string) => Promise<boolean>;
+  dismissCorrectionDraftModal: () => void;
+  runRevalidation: () => Promise<Report | ValidatedArchitectureResponse | null>;
 
   // ── Real-time Terminal Logs ──
   logs: LogEntry[];
@@ -318,6 +402,35 @@ export const useAppStore = create<AppState>((set, get) => ({
             if (guestUser && guestUser.id) {
               hasGuest = true;
               set({ user: guestUser, session: null, authLoading: false });
+              const wsRaw = localStorage.getItem("archai-guest-workspace");
+              if (wsRaw) {
+                try {
+                  const ws = JSON.parse(wsRaw);
+                  if (ws && ws.activeSessionId) {
+                    set({
+                      sessions: ws.sessions || [],
+                      activeSessionId: ws.activeSessionId,
+                      generationId: ws.generationId || null,
+                      arsrsData: ws.arsrsData || null,
+                      hldData: ws.hldData || null,
+                      hldNodes: ws.hldNodes || [],
+                      hldEdges: ws.hldEdges || [],
+                      lldData: ws.lldData || initialLldData,
+                      activeVersionTag: ws.activeVersionTag || "v1.0",
+                      availableVersions: ws.availableVersions || [],
+                      validationReport: ws.validationReport || null,
+                      correctionPlan: ws.correctionPlan || null,
+                      validationIsStale: ws.validationIsStale || false,
+                      staleReason: ws.staleReason || null,
+                      interviewCompleted: !!ws.interviewCompleted,
+                      generationStatus: ws.generationStatus || "COMPLETED",
+                      activePipelineStep: ws.activePipelineStep || 3,
+                    });
+                  }
+                } catch {
+                  // ignore
+                }
+              }
             }
           }
         } catch {
@@ -400,6 +513,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem("archai-guest-user");
+        localStorage.removeItem("archai-guest-workspace");
         const keysToRemove: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
@@ -408,7 +522,8 @@ export const useAppStore = create<AppState>((set, get) => ({
             (key.startsWith("sb-") ||
               key.includes("supabase.auth") ||
               key.includes("supabase") ||
-              key === "archai-guest-user")
+              key === "archai-guest-user" ||
+              key === "archai-guest-workspace")
           ) {
             keysToRemove.push(key);
           }
@@ -666,12 +781,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Validator Engine Health & Results
-  validatorConnected: true,
-  validatorVersion: "Bypassed (Auto-Pass)",
+  // Validator Engine v2 Health & Results (Port 8002)
+  validatorConnected: false,
+  validatorVersion: "Checking...",
   checkValidatorHealth: async () => {
     const res = await validatorApi.checkHealth();
-    set({ validatorConnected: res.ok, validatorVersion: res.version || "Bypassed" });
+    set({ validatorConnected: res.ok, validatorVersion: res.version || (res.ok ? "2.0.0" : "Offline") });
     return res.ok;
   },
   validationData: null,
@@ -680,24 +795,829 @@ export const useAppStore = create<AppState>((set, get) => ({
   validationError: null,
   setValidationData: (data) => set({ validationData: data }),
 
+  // Standalone Validator Engine v2 (Port 8002)
+  validationReport: null,
+  correctionPlan: null,
+  validationStatus: "IDLE",
+  validationCurrentStep: "",
+  isValidatingV2: false,
+  setValidationReport: (report) => {
+    const plan = buildCorrectionPlan(report);
+    set({ validationReport: report, correctionPlan: plan });
+  },
+  setCorrectionPlan: (plan) => set({ correctionPlan: plan }),
+
+  // ── Targeted AI Architecture Correction (Part 2.2.2) ──
+  activeCorrectionDraft: null,
+  isExecutingAiCorrection: false,
+  validationIsStale: false,
+  staleReason: null,
+  staleArtifactType: null,
+  historicalValidationReports: {},
+
+  // ── Evidence-Based Correction Review Workflow Actions (Part 2.2.1) ──
+  correctionDecisions: {},
+  isProcessingCorrectionAction: false,
+  correctionActionMessage: null,
+
+  approveCorrectionPlanItem: (itemId: string) => {
+    if (get().isProcessingCorrectionAction) {
+      return {
+        success: false,
+        status: "PENDING_REVIEW" as CorrectionItemStatus,
+        message: "Another correction action is currently being processed. Please wait.",
+        automatedSupported: false,
+      };
+    }
+
+    set({ isProcessingCorrectionAction: true });
+
+    try {
+      const {
+        correctionPlan,
+        validationReport,
+        generationId,
+        activeVersionTag,
+        hldData,
+        arsrsData,
+        lldData,
+        addLogEntry,
+      } = get();
+
+      if (!correctionPlan || !correctionPlan.items) {
+        set({ isProcessingCorrectionAction: false });
+        return {
+          success: false,
+          status: "CORRECTION_FAILED" as CorrectionItemStatus,
+          message: "No active correction plan found.",
+          automatedSupported: false,
+        };
+      }
+
+      const item = correctionPlan.items.find((i) => i.id === itemId);
+      if (!item) {
+        set({ isProcessingCorrectionAction: false });
+        return {
+          success: false,
+          status: "CORRECTION_FAILED" as CorrectionItemStatus,
+          message: `Correction item '${itemId}' does not exist in the active plan.`,
+          automatedSupported: false,
+        };
+      }
+
+      // Collect known finding IDs from active validation report iterations
+      const knownFindingIds: string[] = [];
+      if (validationReport && Array.isArray(validationReport.iterations)) {
+        for (const it of validationReport.iterations) {
+          if (it.results) {
+            for (const res of Object.values(it.results)) {
+              if (Array.isArray(res.findings)) {
+                for (const f of res.findings) {
+                  if (f.id) knownFindingIds.push(f.id);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      // Check eligibility
+      const eligibility = validateCorrectionEligibility(item, {
+        generationId: generationId || null,
+        versionTag: activeVersionTag || "v1.0",
+        reportGenerationId: validationReport?.generation_id || null,
+        hasArchitecturePackage: Boolean(hldData && (arsrsData || lldData)),
+        knownFindingIds: knownFindingIds.length > 0 ? knownFindingIds : undefined,
+      });
+
+      if (!eligibility.eligible) {
+        set({
+          isProcessingCorrectionAction: false,
+          correctionActionMessage: {
+            type: "warning",
+            text: eligibility.reason,
+            itemId,
+          },
+        });
+        return {
+          success: false,
+          status: item.status,
+          message: eligibility.reason,
+          automatedSupported: false,
+        };
+      }
+
+      const decision = {
+        decision: "APPROVED_FOR_CORRECTION" as CorrectionItemStatus,
+        decided_at: new Date().toISOString(),
+        notes: "Approved by user for targeted AI architecture correction.",
+        generation_id: generationId || undefined,
+        version_tag: activeVersionTag || undefined,
+      };
+
+      const updatedItems = correctionPlan.items.map((it) =>
+        it.id === itemId
+          ? {
+              ...it,
+              status: "APPROVED_FOR_CORRECTION" as CorrectionItemStatus,
+              status_reason: "Approved by user. Synthesizing targeted AI correction...",
+              review_decision: decision,
+            }
+          : it
+      );
+
+      const updatedPlan = {
+        ...correctionPlan,
+        items: updatedItems,
+      };
+
+      set((s) => ({
+        isProcessingCorrectionAction: false,
+        correctionDecisions: {
+          ...s.correctionDecisions,
+          [itemId]: decision,
+        },
+        correctionPlan: updatedPlan,
+        correctionActionMessage: {
+          type: "info",
+          text: `Approved correction [${item.title}]. Synthesizing targeted AI correction...`,
+          itemId,
+        },
+      }));
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_WORKFLOW",
+        message: `📋 Correction [${item.id}] approved by user. Requesting isolated AI correction from AI Engine...`,
+        level: "INFO",
+      });
+
+      // Asynchronously invoke targeted AI correction execution
+      void get().executeTargetedCorrection(itemId);
+
+      return {
+        success: true,
+        status: "APPROVED_FOR_CORRECTION",
+        message: "Correction approved. AI Engine correction requested.",
+        automatedSupported: true,
+      };
+    } catch (err) {
+      set({ isProcessingCorrectionAction: false });
+      const msg = err instanceof Error ? err.message : "Error approving correction plan item.";
+      return {
+        success: false,
+        status: "CORRECTION_FAILED" as CorrectionItemStatus,
+        message: msg,
+        automatedSupported: false,
+      };
+    }
+  },
+
+  markCorrectionForManualReview: (itemId: string, notes?: string) => {
+    if (get().isProcessingCorrectionAction) {
+      return {
+        success: false,
+        status: "PENDING_REVIEW" as CorrectionItemStatus,
+        message: "Another correction action is currently being processed.",
+      };
+    }
+
+    const { correctionPlan, generationId, activeVersionTag, addLogEntry } = get();
+    if (!correctionPlan || !correctionPlan.items) {
+      return {
+        success: false,
+        status: "CORRECTION_FAILED" as CorrectionItemStatus,
+        message: "No active correction plan found.",
+      };
+    }
+
+    const item = correctionPlan.items.find((i) => i.id === itemId);
+    if (!item) {
+      return {
+        success: false,
+        status: "CORRECTION_FAILED" as CorrectionItemStatus,
+        message: `Correction item '${itemId}' does not exist.`,
+      };
+    }
+
+    const decision = {
+      decision: "MANUAL_REVIEW_REQUIRED" as CorrectionItemStatus,
+      decided_at: new Date().toISOString(),
+      notes: notes || "Flagged by user for manual architecture review and stakeholder clarification.",
+      generation_id: generationId || undefined,
+      version_tag: activeVersionTag || undefined,
+    };
+
+    const updatedItems = correctionPlan.items.map((it) =>
+      it.id === itemId
+        ? {
+            ...it,
+            status: "MANUAL_REVIEW_REQUIRED" as CorrectionItemStatus,
+            status_reason: decision.notes,
+            requires_manual_review: true,
+            review_decision: decision,
+          }
+        : it
+    );
+
+    set((s) => ({
+      correctionDecisions: {
+        ...s.correctionDecisions,
+        [itemId]: decision,
+      },
+      correctionPlan: {
+        ...correctionPlan,
+        items: updatedItems,
+      },
+      correctionActionMessage: {
+        type: "warning",
+        text: `Correction [${item.title}] marked for manual review.`,
+        itemId,
+      },
+    }));
+
+    addLogEntry({
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "CORRECTION_WORKFLOW",
+      message: `🔍 Correction [${item.id}] marked for manual review: ${decision.notes}`,
+      level: "WARNING",
+    });
+
+    return {
+      success: true,
+      status: "MANUAL_REVIEW_REQUIRED",
+      message: "Item marked for manual review.",
+    };
+  },
+
+  dismissCorrectionPlanItem: (itemId: string, notes?: string) => {
+    if (get().isProcessingCorrectionAction) {
+      return {
+        success: false,
+        status: "PENDING_REVIEW" as CorrectionItemStatus,
+        message: "Another correction action is currently being processed.",
+      };
+    }
+
+    const { correctionPlan, generationId, activeVersionTag, addLogEntry } = get();
+    if (!correctionPlan || !correctionPlan.items) {
+      return {
+        success: false,
+        status: "CORRECTION_FAILED" as CorrectionItemStatus,
+        message: "No active correction plan found.",
+      };
+    }
+
+    const item = correctionPlan.items.find((i) => i.id === itemId);
+    if (!item) {
+      return {
+        success: false,
+        status: "CORRECTION_FAILED" as CorrectionItemStatus,
+        message: `Correction item '${itemId}' does not exist.`,
+      };
+    }
+
+    const decision = {
+      decision: "DISMISSED" as CorrectionItemStatus,
+      decided_at: new Date().toISOString(),
+      notes: notes || "Dismissed by user as acceptable risk or not applicable to requirements.",
+      generation_id: generationId || undefined,
+      version_tag: activeVersionTag || undefined,
+    };
+
+    const updatedItems = correctionPlan.items.map((it) =>
+      it.id === itemId
+        ? {
+            ...it,
+            status: "DISMISSED" as CorrectionItemStatus,
+            status_reason: decision.notes,
+            review_decision: decision,
+          }
+        : it
+    );
+
+    set((s) => ({
+      correctionDecisions: {
+        ...s.correctionDecisions,
+        [itemId]: decision,
+      },
+      correctionPlan: {
+        ...correctionPlan,
+        items: updatedItems,
+      },
+      correctionActionMessage: {
+        type: "info",
+        text: `Correction proposal [${item.title}] dismissed.`,
+        itemId,
+      },
+    }));
+
+    addLogEntry({
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "CORRECTION_WORKFLOW",
+      message: `🚫 Correction proposal [${item.id}] dismissed by user.`,
+      level: "INFO",
+    });
+
+    return {
+      success: true,
+      status: "DISMISSED",
+      message: "Correction proposal dismissed.",
+    };
+  },
+
+  resetCorrectionDecision: (itemId: string) => {
+    const { correctionPlan, addLogEntry } = get();
+    if (!correctionPlan || !correctionPlan.items) return;
+
+    const item = correctionPlan.items.find((i) => i.id === itemId);
+    if (!item) return;
+
+    const revertedStatus: CorrectionItemStatus = item.requires_manual_review || !item.is_supported_by_evidence
+      ? "MANUAL_REVIEW_REQUIRED"
+      : "PENDING_REVIEW";
+
+    const updatedItems = correctionPlan.items.map((it) =>
+      it.id === itemId
+        ? {
+            ...it,
+            status: revertedStatus,
+            status_reason: revertedStatus === "MANUAL_REVIEW_REQUIRED" ? "Manual review required due to evidence constraints." : "Awaiting user review.",
+            review_decision: null,
+          }
+        : it
+    );
+
+    set((s) => {
+      const nextDecisions = { ...s.correctionDecisions };
+      delete nextDecisions[itemId];
+      return {
+        correctionDecisions: nextDecisions,
+        correctionPlan: {
+          ...correctionPlan,
+          items: updatedItems,
+        },
+        correctionActionMessage: null,
+      };
+    });
+
+    addLogEntry({
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "CORRECTION_WORKFLOW",
+      message: `↩️ Correction decision for [${item.id}] reset to ${revertedStatus}.`,
+      level: "INFO",
+    });
+  },
+
+  clearCorrectionActionMessage: () => set({ correctionActionMessage: null }),
+
+  executeTargetedCorrection: async (itemId: string, simulatedArtifact?: Record<string, unknown>) => {
+    const {
+      correctionPlan,
+      generationId,
+      activeVersionTag,
+      hldData,
+      lldData,
+      arsrsData,
+      addLogEntry,
+      isExecutingAiCorrection,
+    } = get();
+
+    if (isExecutingAiCorrection) {
+      return null;
+    }
+
+    const item = correctionPlan?.items?.find((i) => i.id === itemId);
+    if (!item) {
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_EXECUTION",
+        message: `❌ Cannot execute correction: Item '${itemId}' not found in plan.`,
+        level: "ERROR",
+      });
+      return null;
+    }
+
+    set({ isExecutingAiCorrection: true });
+
+    addLogEntry({
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "CORRECTION_EXECUTION",
+      message: `🧠 Requesting targeted AI correction for [${item.finding_id}] on ${item.affected_artifact}...`,
+      level: "INFO",
+    });
+
+    try {
+      const effGenId = generationId || `gen-${Date.now()}`;
+      const effVersion = activeVersionTag || "v1.0";
+
+      // 1. Map artifact name to canonical id
+      const artifactMapping: Record<string, string> = {
+        "HLD": "hld",
+        "Backend LLD": "backend",
+        "Database LLD": "database",
+        "Frontend LLD": "frontend",
+        "Security LLD": "security",
+        "Cloud LLD": "cloud",
+        "ARSRS": "arsrs",
+      };
+      const canonicalArtifact = artifactMapping[item.affected_artifact] || item.affected_artifact.toLowerCase();
+
+      // 2. Independently register server-side approval
+      await aiEngineApi.registerCorrectionApproval({
+        generation_id: effGenId,
+        finding_id: item.finding_id,
+        artifact_type: canonicalArtifact,
+        source_version: effVersion,
+        approved_by: "user",
+        reason: item.reason,
+      });
+
+      // 3. Assemble baseline package
+      const baselinePackage = {
+        generation_id: effGenId,
+        version: effVersion.replace("v", ""),
+        version_tag: effVersion,
+        arsrs: arsrsData,
+        hld: hldData,
+        llds: lldData,
+      };
+
+      // 4. Request targeted correction from AI Engine
+      const response = await aiEngineApi.requestTargetedCorrection({
+        generation_id: effGenId,
+        artifact_type: canonicalArtifact,
+        source_version: effVersion,
+        finding_id: item.finding_id,
+        finding_description: item.description,
+        evidence: item.evidence || "Validator finding description",
+        correction_instruction: item.correction_instruction,
+        reason: item.reason,
+        affected_target: item.affected_target || undefined,
+        baseline_package: baselinePackage,
+        simulated_corrected_artifact: simulatedArtifact,
+      });
+
+      set({
+        isExecutingAiCorrection: false,
+        activeCorrectionDraft: response,
+      });
+
+      const statusBadge = response.status;
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_EXECUTION",
+        message: `✨ AI Engine returned targeted correction draft (${statusBadge}). Operation ID: ${response.operation_id}. Ready for user review.`,
+        level: response.status === "CORRECTION_FAILED" ? "ERROR" : "INFO",
+      });
+
+      return response;
+    } catch (err) {
+      set({ isExecutingAiCorrection: false });
+      const errMsg = err instanceof Error ? err.message : "Targeted AI correction failed.";
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_EXECUTION",
+        message: `❌ Targeted correction error: ${errMsg}`,
+        level: "ERROR",
+      });
+      set({
+        correctionActionMessage: {
+          type: "warning",
+          text: `Targeted AI correction failed: ${errMsg}`,
+          itemId,
+        },
+      });
+      return null;
+    }
+  },
+
+  acceptCorrectionDraft: async (operationId: string) => {
+    const {
+      activeCorrectionDraft,
+      activeVersionTag,
+      availableVersions,
+      validationReport,
+      historicalValidationReports,
+      correctionPlan,
+      hldData,
+      lldData,
+      arsrsData,
+      addLogEntry,
+    } = get();
+
+    if (!activeCorrectionDraft || activeCorrectionDraft.operation_id !== operationId) {
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_ACCEPT",
+        message: `❌ Cannot accept correction: Operation '${operationId}' is not the active draft.`,
+        level: "ERROR",
+      });
+      return false;
+    }
+
+    const currVer = activeVersionTag || "v1.0";
+    if (activeCorrectionDraft.source_version && activeCorrectionDraft.source_version !== currVer) {
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_ACCEPT",
+        message: `❌ Stale correction draft rejected: draft was generated on ${activeCorrectionDraft.source_version} but active version is ${currVer}.`,
+        level: "ERROR",
+      });
+      return false;
+    }
+
+    try {
+      const res = await aiEngineApi.acceptCorrection(operationId, {
+        expected_source_version: currVer,
+        generation_id: get().generationId || undefined,
+      });
+
+      const newVer = res.new_version;
+      const normArt = res.artifact_type.toLowerCase();
+      const updatedArt = res.updated_artifact;
+
+      // Preserve previous validation report
+      const nextHistorical = { ...historicalValidationReports };
+      if (validationReport) {
+        nextHistorical[currVer] = validationReport;
+      }
+
+      // Mark validation as stale
+      const staleMsg = `Artifact '${res.artifact_type.toUpperCase()}' was modified and committed as ${newVer}. Previous validation report and verdict no longer apply.`;
+
+      // Update target artifact in store
+      let nextHld = hldData;
+      let nextNodes = get().hldNodes;
+      let nextEdges = get().hldEdges;
+      let nextArsrs = arsrsData;
+      const nextLld = { ...lldData };
+
+      if (normArt === "hld") {
+        nextHld = updatedArt;
+        const parsed = parseHldToReactFlow(updatedArt);
+        nextNodes = parsed.nodes;
+        nextEdges = parsed.edges;
+      } else if (normArt === "arsrs") {
+        nextArsrs = updatedArt;
+      } else if (normArt in nextLld) {
+        nextLld[normArt as LldType] = updatedArt;
+      }
+
+      const baseVersionItem = availableVersions.find((v) => v.version_tag === currVer) || {
+        id: `ver-${currVer}-${Date.now()}`,
+        version_tag: currVer,
+        prompt: "Baseline Architecture",
+        created_at: new Date(Date.now() - 60000).toISOString(),
+        is_latest: false,
+        design_json: {
+          hld: hldData,
+          llds: lldData,
+          arsrs: arsrsData,
+        },
+      };
+
+      const newVersionItem = {
+        id: `ver-${newVer}-${Date.now()}`,
+        version_tag: newVer,
+        prompt: activeCorrectionDraft.change_summary,
+        created_at: res.accepted_at || new Date().toISOString(),
+        is_latest: true,
+        design_json: {
+          hld: nextHld,
+          llds: nextLld,
+          arsrs: nextArsrs,
+          version: newVer.replace("v", ""),
+          version_tag: newVer,
+        },
+      };
+
+      const olderVersions = availableVersions
+        .filter((v) => v.version_tag !== newVer)
+        .map((v) => ({ ...v, is_latest: false }));
+
+      const updatedVersions = [
+        newVersionItem,
+        ...(olderVersions.length > 0 ? olderVersions : [baseVersionItem]),
+      ];
+
+      // Update correction plan item status to APPLIED
+      let updatedPlan = correctionPlan;
+      if (correctionPlan && correctionPlan.items) {
+        updatedPlan = {
+          ...correctionPlan,
+          items: correctionPlan.items.map((it) =>
+            it.finding_id === activeCorrectionDraft.finding_id
+              ? {
+                  ...it,
+                  status: "APPLIED" as CorrectionItemStatus,
+                  status_reason: `Applied in version ${newVer}: ${activeCorrectionDraft.change_summary}`,
+                }
+              : it
+          ),
+        };
+      }
+
+      set({
+        activeVersionTag: newVer,
+        availableVersions: updatedVersions,
+        hldData: nextHld,
+        hldNodes: nextNodes,
+        hldEdges: nextEdges,
+        arsrsData: nextArsrs,
+        lldData: nextLld,
+        validationIsStale: true,
+        staleReason: staleMsg,
+        staleArtifactType: res.artifact_type,
+        historicalValidationReports: nextHistorical,
+        activeCorrectionDraft: null,
+        correctionPlan: updatedPlan,
+      });
+
+      // Save guest workspace if in guest mode
+      if (typeof window !== "undefined") {
+        const currentUser = get().user;
+        if (!currentUser || currentUser.app_metadata?.provider === "guest") {
+          try {
+            const ws = {
+              sessions: get().sessions,
+              activeSessionId: get().activeSessionId,
+              generationId: get().generationId,
+              arsrsData: nextArsrs,
+              hldData: nextHld,
+              hldNodes: nextNodes,
+              hldEdges: nextEdges,
+              lldData: nextLld,
+              activeVersionTag: newVer,
+              availableVersions: updatedVersions,
+              validationReport: get().validationReport,
+              correctionPlan: updatedPlan,
+              validationIsStale: true,
+              staleReason: staleMsg,
+              interviewCompleted: true,
+              generationStatus: "COMPLETED",
+              activePipelineStep: 3,
+            };
+            localStorage.setItem("archai-guest-workspace", JSON.stringify(ws));
+          } catch {}
+        }
+      }
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_ACCEPT",
+        message: `✅ Correction accepted! Version bumped ${currVer} -> ${newVer}. Validation report marked STALE. Explicit revalidation required.`,
+        level: "INFO",
+      });
+
+      return true;
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to accept correction.";
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "CORRECTION_ACCEPT",
+        message: `❌ Acceptance failed: ${errMsg}`,
+        level: "ERROR",
+      });
+      return false;
+    }
+  },
+
+  rejectCorrectionDraft: async (operationId: string, reason?: string) => {
+    const { activeCorrectionDraft, addLogEntry } = get();
+    if (!activeCorrectionDraft || activeCorrectionDraft.operation_id !== operationId) {
+      return false;
+    }
+
+    try {
+      await aiEngineApi.rejectCorrection(operationId, { rejection_reason: reason });
+    } catch (err) {
+      console.warn("Backend reject call warning:", err);
+    }
+
+    // Keep original artifact completely intact
+    set({
+      activeCorrectionDraft: null,
+      correctionActionMessage: {
+        type: "info",
+        text: "Correction draft rejected. Original architecture preserved unchanged.",
+      },
+    });
+
+    addLogEntry({
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "CORRECTION_REJECT",
+      message: `🚫 Correction draft [${operationId}] rejected by user. Original architecture preserved unchanged.`,
+      level: "INFO",
+    });
+
+    return true;
+  },
+
+  dismissCorrectionDraftModal: () => {
+    set({ activeCorrectionDraft: null });
+  },
+
+  runRevalidation: async () => {
+    const { addLogEntry, generationId, arsrsData, hldData, lldData, activeVersionTag } = get();
+    addLogEntry({
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "REVALIDATION",
+      message: "🔄 User-triggered revalidation starting against Validator Engine v2 on Port 8002...",
+      level: "INFO",
+    });
+
+    const updatedPkg: Record<string, any> = {
+      generation_id: generationId || `gen-${Date.now()}`,
+      version: (activeVersionTag || "v1.1").replace(/^v/, ""),
+      version_tag: activeVersionTag || "v1.1",
+      arsrs: arsrsData || {},
+      hld: hldData || {},
+      llds: lldData || {},
+      is_revalidation: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    set({
+      validatedGenerationId: null,
+      validationIsStale: false,
+      staleReason: null,
+      staleArtifactType: null,
+    });
+
+    return await get().validateArchitecture(updatedPkg);
+  },
+
   validateArchitecture: async (pkg?: Record<string, any>) => {
-    const { generationId, arsrsData, hldData, lldData, addLogEntry } = get();
-    set({ isValidating: true, validationError: null });
+    const { generationId, isValidating, isValidatingV2, validatedGenerationId, validationReport, addLogEntry } = get();
+
+    // 1. Guard against duplicate validation requests caused by repeated renders or state changes
+    if (isValidating || isValidatingV2) {
+      return validationReport;
+    }
+    if (!pkg && generationId && validatedGenerationId === generationId && validationReport) {
+      return validationReport;
+    }
+
+    set({
+      isValidating: true,
+      isValidatingV2: true,
+      validationError: null,
+      validationStatus: "running",
+      validationCurrentStep: "Preparing complete architecture package (ARSRS, HLD, 5 LLDs)...",
+    });
 
     const now = new Date().toTimeString().split(" ")[0];
     addLogEntry({
       timestamp: now,
       stage: "VALIDATOR",
-      message: "🛡️ Activating Standalone Validator Engine (Port 8001)...",
+      message: `🛡️ Starting automated Validator Engine v2 audit (Port 8002)...`,
       level: "INFO",
     });
 
     try {
       let packagePayload = pkg;
+
+      // 2. Automatically wait for the complete architecture package if generating via AI Engine
+      const currentGenStatus = get().generationStatus;
+      const currentLldStatus = get().lldStatus;
+      const isAlreadyComplete =
+        currentGenStatus === "COMPLETED" &&
+        currentLldStatus &&
+        Object.keys(currentLldStatus).length >= 5 &&
+        Object.values(currentLldStatus).every((s) => (s as string) === "READY" || (s as string) === "COMPLETED" || (s as string) === "FAILED");
+
+      if (!packagePayload && generationId && !isAlreadyComplete) {
+        set({ validationCurrentStep: "Waiting for all 5 LLD blueprints to finalize..." });
+
+        let attempts = 0;
+        while (attempts < 30) {
+          try {
+            const stat = await aiEngineApi.getStatus(generationId);
+            const llds = stat.llds || {};
+            const lldVals = Object.values(llds);
+            const allDone = lldVals.length >= 5 && lldVals.every((s: any) => s === "READY" || s === "COMPLETED" || s === "FAILED");
+            if (stat.status === "COMPLETED" || allDone) {
+              break;
+            }
+          } catch {}
+          await new Promise((r) => setTimeout(r, 1000));
+          attempts++;
+        }
+
+        try {
+          packagePayload = await aiEngineApi.getPackage(generationId);
+        } catch (fetchPkgErr) {
+          console.warn("[Archova] Could not fetch raw package from AI Engine, composing from store:", fetchPkgErr);
+        }
+      }
+
+      // 3. Fallback to assembling package from active store state
       if (!packagePayload) {
+        const { arsrsData, hldData, lldData } = get();
         packagePayload = {
-          generation_id: generationId || "custom-package",
-          prompt: "System Architecture",
+          generation_id: generationId || `gen-${Date.now()}`,
+          prompt: "Architecture Package Evaluation",
           status: "COMPLETED",
           arsrs: arsrsData,
           hld: hldData,
@@ -705,234 +1625,176 @@ export const useAppStore = create<AppState>((set, get) => ({
         };
       }
 
-      const result = await validatorApi.validate(packagePayload);
-      set({
-        validationData: result,
-        validatedGenerationId: generationId,
-        isValidating: false,
-        validationError: null,
-        activePipelineStep: 5,
-      });
+      set({ validationCurrentStep: "Running Validator Engine v2 6-phase audit on Port 8002..." });
 
-      const scorePercent = Math.round((result.validation?.summary?.overall_score || 0) * 100);
-      const verdict = result.validation?.summary?.verdict || "APPROVED";
-      const findingsCount = result.validation?.summary?.total_findings_count || 0;
+      // 4. Send the complete package to Validator Engine v2 on port 8002
+      const report = await validatorV2Client.directValidate(packagePayload);
+      const plan = buildCorrectionPlan(report);
+
+      set({
+        validationReport: report,
+        correctionPlan: plan,
+        validatedGenerationId: generationId || packagePayload.generation_id,
+        isValidating: false,
+        isValidatingV2: false,
+        validationError: null,
+        validationStatus: report.final_status,
+        validationCurrentStep: `Validation complete: ${report.final_status}`,
+        generationStatus: "COMPLETED",
+      });
 
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
         stage: "VALIDATOR",
-        message: `✓ Architecture validated! Composite Score: ${scorePercent}% | Verdict: ${verdict} | Findings: ${findingsCount}`,
+        message: `✓ Validator Engine v2 complete! Status: ${report.final_status} | Overall Score: ${report.final_scores?.overall ?? 0}% | Actionable Corrections: ${plan?.actionable_count ?? 0}`,
         level: "INFO",
       });
 
-      return result;
+      return report;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Validation failed.";
-      set({ isValidating: false, validationError: msg });
+      const msg = err instanceof Error ? err.message : "Validator Engine v2 call failed.";
+      set({
+        isValidating: false,
+        isValidatingV2: false,
+        validationError: msg,
+        validationStatus: "failed",
+        validationCurrentStep: msg,
+        correctionPlan: null,
+      });
+
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
         stage: "VALIDATOR",
-        message: `❌ Validator Engine error: ${msg}`,
+        message: `❌ Validator Engine v2 error: ${msg}`,
         level: "ERROR",
       });
+
       return null;
     }
   },
 
   runCorrectionWorkflow: async (maxRetries = 2, force = false) => {
-    const { generationId, isValidating, validatedGenerationId, addLogEntry, hldData, arsrsData, lldData, hldNodes, hldEdges } = get();
+    // Note: Automatic correction/regeneration is deferred to Part 2.
+    // In this part, run real Validator Engine v2 validation.
+    return (await get().validateArchitecture()) as any;
+  },
 
-    // 1. Guard against duplicate validation requests caused by React effects, component remounts, or repeated generation events
-    if (isValidating) {
-      return null;
-    }
-    if (!force && generationId && validatedGenerationId === generationId && get().validationData) {
-      return get().validationData;
-    }
+  // ── Standalone Validator Engine v2 Runner ──
+  runValidatorV2Pipeline: async (pkg?: Record<string, any>) => {
+    const { generationId, arsrsData, hldData, lldData, hldNodes, hldEdges, addLogEntry } = get();
+    const effectiveGenId = generationId || (pkg as any)?.generation_id || `gen-${Date.now()}`;
 
-    set({ isValidating: true, validationError: null });
+    set({
+      isValidatingV2: true,
+      validationStatus: "running",
+      validationCurrentStep: "Initiating Validator Engine v2 pipeline...",
+    });
 
-    const now = new Date().toTimeString().split(" ")[0];
     addLogEntry({
-      timestamp: now,
-      stage: "CORRECTION",
-      message: `🔄 Starting automated Validator-AI Correction workflow (Max retries: ${maxRetries})...`,
+      timestamp: new Date().toTimeString().split(" ")[0],
+      stage: "VALIDATOR_V2",
+      message: `🛡️ Starting Validator Engine v2 (Port 8002) for session ${effectiveGenId}...`,
       level: "INFO",
     });
 
     try {
-      let result: ValidatedArchitectureResponse | null = null;
-      if (generationId) {
-        result = await aiEngineApi.validateAndCorrect(generationId, maxRetries);
-      } else {
-        result = await get().validateArchitecture();
+      let packagePayload = pkg;
+      if (!packagePayload) {
+        packagePayload = {
+          generation_id: effectiveGenId,
+          prompt: "Architecture Evaluation",
+          status: "COMPLETED",
+          arsrs: arsrsData,
+          hld: hldData,
+          llds: lldData,
+        };
       }
 
-      if (result) {
-        // Extract architecture from the final validated package
-        const rawArch = (result.architecture || {}) as Record<string, any>;
-        const finalHld = (rawArch.hld || hldData) as Record<string, unknown> | null;
-        const finalArsrs = (rawArch.arsrs || arsrsData) as Record<string, unknown> | null;
+      // 1. Trigger background pipeline execution on Port 8002
+      await validatorV2Client.runPipeline(effectiveGenId, packagePayload);
 
-        // Re-parse React Flow nodes & edges strictly from the final corrected HLD
-        let finalNodes = hldNodes;
-        let finalEdges = hldEdges;
-        if (finalHld) {
-          const parsed = parseHldToReactFlow(finalHld);
-          finalNodes = parsed.nodes;
-          finalEdges = parsed.edges;
-        }
-
-        // Extract all five LLDs strictly from the final corrected package
-        const rawLlds = (rawArch.llds || {}) as Record<string, any>;
-        const currentLldData = lldData;
-        const finalLldData: Record<LldType, Record<string, unknown> | null> = {
-          backend: (rawLlds.backend?.data || rawLlds.backend || rawArch.lld_backend || currentLldData.backend) as any,
-          frontend: (rawLlds.frontend?.data || rawLlds.frontend || rawArch.lld_frontend || currentLldData.frontend) as any,
-          database: (rawLlds.database?.data || rawLlds.database || rawArch.lld_database || currentLldData.database) as any,
-          security: (rawLlds.security?.data || rawLlds.security || rawArch.lld_security || currentLldData.security) as any,
-          cloud: (rawLlds.cloud?.data || rawLlds.cloud || rawArch.lld_cloud || currentLldData.cloud) as any,
-        };
-
-        const scorePercent = Math.round((result.validation?.summary?.overall_score || 0) * 100);
-        const verdict = result.validation?.summary?.verdict || "APPROVED";
-        const isApproved = Boolean(result.is_fully_validated);
-
-        const newLldStatus: Record<LldType, LldStatusType> = {
-          backend: finalLldData.backend ? "READY" : "NOT_STARTED",
-          frontend: finalLldData.frontend ? "READY" : "NOT_STARTED",
-          database: finalLldData.database ? "READY" : "NOT_STARTED",
-          security: finalLldData.security ? "READY" : "NOT_STARTED",
-          cloud: finalLldData.cloud ? "READY" : "NOT_STARTED",
-        };
-
-        set({
-          validationData: result,
-          validatedGenerationId: generationId,
-          isValidating: false,
-          validationError: null,
-          activePipelineStep: 3,
-          arsrsData: finalArsrs,
-          hldData: finalHld,
-          hldNodes: finalNodes,
-          hldEdges: finalEdges,
-          lldData: finalLldData,
-          lldStatus: newLldStatus,
-          generationStatus: "COMPLETED",
-          activeView: "hld", // Render HLD / LLDs as primary content
-          hldWorkspaceTab: "hld",
-        });
-
-        addLogEntry({
-          timestamp: new Date().toTimeString().split(" ")[0],
-          stage: "CORRECTION",
-          message: `✓ AI Correction Cycle finished! Final Score: ${scorePercent}% | Verdict: ${verdict} | Fully Validated: ${isApproved ? "YES" : "NO"}`,
-          level: "INFO",
-        });
-
-        // Persist validated design to Supabase architecture_designs and messages
-        try {
-          const currentUser = get().user;
-          const activeSid = get().activeSessionId;
-          if (currentUser && currentUser.app_metadata?.provider !== "guest" && activeSid && !activeSid.startsWith("demo-")) {
-            const userPrompt = get().sessions.find(s => s.id === activeSid)?.messages.find(m => m.role === 'user')?.content || "Architecture Design";
-            const fullPackage = {
-              hld: finalHld,
-              llds: finalLldData,
-              arsrs: finalArsrs,
-              validation: result.validation?.summary,
-              score: scorePercent,
-              verdict,
-            };
-
-            // Check if a previous latest design exists in this session to maintain version chain
-            const { data: existingLatest } = await supabase
-              .from("architecture_designs")
-              .select("id, version, version_tag")
-              .eq("session_id", activeSid)
-              .eq("is_latest", true)
-              .maybeSingle();
-
-            let nextVerTag = "v1.0";
-            let parentId: string | null = null;
-
-            if (existingLatest) {
-              parentId = existingLatest.id;
-              await supabase
-                .from("architecture_designs")
-                .update({ is_latest: false })
-                .eq("id", existingLatest.id);
-
-              const prevTag = existingLatest.version_tag || "v1.0";
-              const num = parseFloat(prevTag.replace("v", "")) || 1.0;
-              nextVerTag = `v${(num + 0.1).toFixed(1)}`;
-            }
-
-            await supabase.from("architecture_designs").insert([{
-              session_id: activeSid,
-              user_id: currentUser.id,
-              prompt: userPrompt,
-              design_json: fullPackage,
-              version: parseInt(nextVerTag.replace("v", "").split(".")[0], 10) || 1,
-              version_tag: nextVerTag,
-              parent_id: parentId,
-              is_latest: true,
-              updated_at: new Date().toISOString(),
-            }]);
-
-            await get().addMessage(activeSid, {
-              id: generateMsgId(),
-              role: "ai",
-              content: `✓ **Architecture Validated & Synthesized**\n\n• **Verdict**: ${verdict}\n• **Composite Quality Score**: ${scorePercent}%\n• **High-Level Design**: ${finalNodes.length} nodes synthesized\n• **Low-Level Designs**: 5 blueprints generated (Backend, Frontend, DB, Security, Cloud)`,
-            });
-
-            await supabase.from("chat_sessions").update({
-              updated_at: new Date().toISOString()
-            }).eq("id", activeSid);
-
-            set({ activeVersionTag: nextVerTag });
-            await get().fetchVersionsForSession(activeSid);
-          }
-        } catch (dbErr) {
-          console.warn("Could not persist validated architecture to Supabase:", dbErr);
-        }
-
-        // Always ensure availableVersions contains the baseline version item
-        const curVersions = get().availableVersions;
-        if (curVersions.length === 0) {
+      // 2. Poll until completed or failed
+      const reportWithPkg = await validatorV2Client.pollPipeline(
+        effectiveGenId,
+        (progress) => {
           set({
-            activeVersionTag: "v1.0",
-            availableVersions: [
-              {
-                id: `ver-init-${Date.now()}`,
-                version_tag: "v1.0",
-                prompt: "Initial Baseline Architecture",
-                created_at: new Date().toISOString(),
-                is_latest: true,
-                design_json: {
-                  hld: finalHld,
-                  llds: finalLldData,
-                  arsrs: finalArsrs,
-                  validation: result.validation?.summary,
-                },
-              },
-            ],
+            validationStatus: progress.state,
+            validationCurrentStep: `Round ${progress.iteration}: ${progress.current_step}`,
           });
-        }
+          addLogEntry({
+            timestamp: new Date().toTimeString().split(" ")[0],
+            stage: "VALIDATOR_V2",
+            message: `[Round ${progress.iteration}] ${progress.current_step}`,
+            level: "INFO",
+          });
+        },
+        2000,
+        300000
+      );
+
+      const report = (reportWithPkg as any).report || reportWithPkg;
+      const finalPkg = (reportWithPkg as any).final_package || (report as any).final_package || packagePayload;
+
+      // 3. Feed visualization strictly from the report's FINAL package
+      let finalNodes = hldNodes;
+      let finalEdges = hldEdges;
+      const rawHld = (finalPkg.hld || hldData) as Record<string, unknown> | null;
+      if (rawHld) {
+        const parsed = parseHldToReactFlow(rawHld);
+        const hldObj = rawHld as { nodes?: unknown[]; edges?: unknown[] } | undefined;
+        finalNodes =
+          hldObj?.nodes && (hldObj.nodes as unknown[]).length > 0
+            ? (hldObj.nodes as any)
+            : parsed.nodes;
+        finalEdges =
+          hldObj?.edges && (hldObj.edges as unknown[]).length > 0
+            ? (hldObj.edges as any)
+            : parsed.edges;
       }
-      return result;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Correction workflow failed.";
-      // Preserve initial generated package, expose error and validation status. Never treat unvalidated as approved.
+
+      const rawLlds = (finalPkg.llds || {}) as Record<string, any>;
+      const currentLldData = lldData;
+      const finalLldData: Record<LldType, Record<string, unknown> | null> = {
+        backend: (rawLlds.backend?.data || rawLlds.backend || currentLldData.backend) as any,
+        frontend: (rawLlds.frontend?.data || rawLlds.frontend || currentLldData.frontend) as any,
+        database: (rawLlds.database?.data || rawLlds.database || currentLldData.database) as any,
+        security: (rawLlds.security?.data || rawLlds.security || currentLldData.security) as any,
+        cloud: (rawLlds.cloud?.data || rawLlds.cloud || currentLldData.cloud) as any,
+      };
+
       set({
-        isValidating: false,
-        validationError: msg,
+        validationReport: report,
+        validationStatus: report.final_status,
+        validationCurrentStep: `Pipeline completed: ${report.final_status}`,
+        isValidatingV2: false,
+        arsrsData: (finalPkg.arsrs || arsrsData) as any,
+        hldData: rawHld,
+        hldNodes: finalNodes,
+        hldEdges: finalEdges,
+        lldData: finalLldData,
         generationStatus: "COMPLETED",
+        activeView: "hld",
+      });
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "VALIDATOR_V2",
+        message: `✓ Validator Engine v2 finished! Final Status: ${report.final_status} across ${report.iterations.length} rounds.`,
+        level: "INFO",
+      });
+
+      return reportWithPkg;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Validator Engine v2 pipeline failed.";
+      set({
+        isValidatingV2: false,
+        validationStatus: "failed",
+        validationCurrentStep: msg,
       });
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
-        stage: "CORRECTION",
-        message: `❌ AI Correction workflow error: ${msg}`,
+        stage: "VALIDATOR_V2",
+        message: `❌ Validator Engine v2 error: ${msg}`,
         level: "ERROR",
       });
       return null;
@@ -993,11 +1855,25 @@ export const useAppStore = create<AppState>((set, get) => ({
       validationData: null,
       validatedGenerationId: null,
       validationError: null,
+      validationReport: null,
+      validationStatus: "IDLE",
+      validationCurrentStep: "",
+      isValidatingV2: false,
       lldStatus: initialLldStatus,
       lldData: initialLldData,
       lldMessages: initialLldMessages,
       logs: [],
       activeSessionId: null,
+      activeCorrectionDraft: null,
+      isExecutingAiCorrection: false,
+      isProcessingCorrectionAction: false,
+      correctionActionMessage: null,
+      correctionPlan: null,
+      correctionDecisions: {},
+      validationIsStale: false,
+      staleReason: null,
+      staleArtifactType: null,
+      historicalValidationReports: {},
     });
   },
 
@@ -1106,6 +1982,16 @@ export const useAppStore = create<AppState>((set, get) => ({
       activeVersionTag: "v1.0",
       activeDiff: null,
       activeView: "chat",
+      validationReport: null,
+      correctionPlan: null,
+      correctionDecisions: {},
+      correctionActionMessage: null,
+      activeCorrectionDraft: null,
+      isExecutingAiCorrection: false,
+      validationIsStale: false,
+      staleReason: null,
+      staleArtifactType: null,
+      historicalValidationReports: {},
     }));
 
     return newId;
@@ -1117,6 +2003,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({
       activeSessionId: id,
       activeView: "chat",
+      activeCorrectionDraft: null,
+      isExecutingAiCorrection: false,
+      isProcessingCorrectionAction: false,
+      correctionActionMessage: null,
+      validationIsStale: false,
+      staleReason: null,
+      staleArtifactType: null,
+      correctionPlan: null,
+      validationReport: null,
+      historicalValidationReports: {},
     });
 
     const currentUser = get().user;
@@ -1365,6 +2261,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       llds,
       arsrs,
       validation: validation?.validation?.summary || validation?.validation || null,
+      validationReport: get().validationReport,
+      correctionPlan: get().correctionPlan,
       score: scorePercent,
       verdict,
     };
@@ -1545,6 +2443,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       arsrsData: pkg.arsrs || null,
       lldData: pkg.llds || initialLldData,
       validationData: pkg.validation ? { validation: { summary: pkg.validation } } as any : null,
+      validationReport: (pkg.validationReport || null) as Report | null,
+      correctionPlan: (pkg.correctionPlan || (pkg.validationReport ? buildCorrectionPlan(pkg.validationReport) : null)) as CorrectionPlan | null,
+      correctionDecisions: {},
+      correctionActionMessage: null,
     });
   },
 

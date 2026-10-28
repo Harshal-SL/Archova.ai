@@ -1,0 +1,40 @@
+{
+  "system": "Stripe Payments Platform",
+  "patterns": [
+    {
+      "id": "RW-STRIPE-01",
+      "name": "Idempotent Ingress Request Locking",
+      "description": "Guarantees once-only API transaction execution using distributed deduplication keys and reservation holds.",
+      "category": "concurrency",
+      "applies_to_artifacts": [
+        "hld",
+        "backend",
+        "database"
+      ],
+      "applicability": {
+        "conditions": "Transaction processing or financial reservation",
+        "scale_hint": "Any concurrent booking or payment traffic"
+      },
+      "source_section": "decision_signals",
+      "priority": 1
+    },
+    {
+      "id": "RW-STRIPE-02",
+      "name": "Double-Entry Audit Ledger Persistence",
+      "description": "Enforces immutable financial audit logging with append-only ledger and pessimistic row-level locking.",
+      "category": "data",
+      "applies_to_artifacts": [
+        "database",
+        "security"
+      ],
+      "applicability": {
+        "conditions": "Financial state mutability",
+        "scale_hint": "High-integrity transactions"
+      },
+      "source_section": "advantages",
+      "priority": 1
+    }
+  ],
+  "extraction_failed": false,
+  "error": null
+}

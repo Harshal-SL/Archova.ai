@@ -1,0 +1,70 @@
+{
+  "system": "Configuration Drift",
+  "patterns": [
+    {
+      "id": "RW-CONFIG-01",
+      "name": "Distributed Concurrency Lock",
+      "description": "Prevents race conditions and double-allocation on shared resources using atomic locks.",
+      "category": "concurrency",
+      "applies_to_artifacts": [
+        "backend",
+        "database"
+      ],
+      "applicability": {
+        "conditions": "Shared mutable state",
+        "scale_hint": "Concurrent read/write access"
+      },
+      "source_section": "decision_signals",
+      "priority": 1
+    },
+    {
+      "id": "RW-CONFIG-02",
+      "name": "Zero-Trust Boundary RBAC Enforcement",
+      "description": "Validates cryptographic tokens and least-privilege permissions on all resource endpoints.",
+      "category": "security",
+      "applies_to_artifacts": [
+        "backend",
+        "security"
+      ],
+      "applicability": {
+        "conditions": "Multi-tenant or authenticated APIs",
+        "scale_hint": "All public or internal RPCs"
+      },
+      "source_section": "advantages",
+      "priority": 2
+    },
+    {
+      "id": "RW-CONFIG-03",
+      "name": "Structured Observability & Telemetry",
+      "description": "Correlates distributed traces, metrics, and structured logs across service boundaries.",
+      "category": "observability",
+      "applies_to_artifacts": [
+        "hld",
+        "cloud"
+      ],
+      "applicability": {
+        "conditions": "Production monitoring",
+        "scale_hint": "SLO/SLI verification"
+      },
+      "source_section": "decision_signals",
+      "priority": 3
+    },
+    {
+      "id": "RW-CONFIG-04",
+      "name": "Client-Side State Management & Query Caching",
+      "description": "Caches API queries client-side with optimistic updates and automatic cache invalidation.",
+      "category": "caching",
+      "applies_to_artifacts": [
+        "frontend"
+      ],
+      "applicability": {
+        "conditions": "Interactive web or mobile client interfaces",
+        "scale_hint": "Eliminates redundant network round-trips"
+      },
+      "source_section": "advantages",
+      "priority": 2
+    }
+  ],
+  "extraction_failed": false,
+  "error": null
+}

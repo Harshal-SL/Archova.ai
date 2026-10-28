@@ -17,6 +17,8 @@ export default function EngineStatusButton() {
   const {
     apiConnected,
     apiVersion,
+    validatorConnected,
+    validatorVersion,
     checkApiHealth,
     checkValidatorHealth,
   } = useAppStore();
@@ -128,16 +130,28 @@ export default function EngineStatusButton() {
             </div>
           </div>
 
-          {/* 2. Validator Engine */}
+          {/* 2. Validator Engine v2 */}
           <div className="rounded-2xl border border-neutral-200 bg-neutral-50 p-3.5 dark:border-neutral-800 dark:bg-neutral-900/60">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-purple-500" />
-                <span className="font-bold text-xs">Validator Engine</span>
+                <span className="font-bold text-xs">Validator Engine v2</span>
               </div>
-              <span className="flex items-center gap-1 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30 px-2 py-0.5 text-[10px] font-bold uppercase">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                Bypassed (Auto-Pass)
+              <span
+                className={cn(
+                  "flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                  validatorConnected
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30"
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    validatorConnected ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+                  )}
+                />
+                {validatorConnected ? "Connected" : "Disconnected"}
               </span>
             </div>
 
@@ -145,20 +159,22 @@ export default function EngineStatusButton() {
               <div className="flex items-center justify-between">
                 <span>Engine Port:</span>
                 <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                  http://localhost:8001
+                  http://localhost:8002
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span>Mode:</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  Auto-Approved (98% Score)
+                <span>Version:</span>
+                <span className="font-semibold text-neutral-900 dark:text-neutral-200">
+                  {validatorVersion}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Pipelines:</span>
+                <span className="text-[10px] text-neutral-500">
+                  6-Phase LLM Review & Grounding
                 </span>
               </div>
             </div>
-
-            <p className="mt-2 text-[10.5px] leading-relaxed text-neutral-500 dark:text-neutral-400 border-t border-neutral-200/60 dark:border-neutral-800/60 pt-2">
-              ℹ️ Validator engine is currently bypassed as requested. All synthesized architectures automatically receive full approval and proceed directly to visual design and evolution.
-            </p>
           </div>
 
           {/* 3. Supabase Cloud Database */}

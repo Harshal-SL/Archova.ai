@@ -1,0 +1,3117 @@
+{
+  "generation_id": "gen_mvqz3o82_nmaczo",
+  "iterations": [
+    {
+      "n": 1,
+      "results": {
+        "hld": {
+          "artifact": "hld",
+          "score": 91,
+          "final_score": 91,
+          "c_score": 100,
+          "r_score": 80,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 80,
+          "real_world": {
+            "artifact": "hld",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 3,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-03",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/architecture_style",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-03",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/architecture_style",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-03",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/architecture_style",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "requirement_coverage",
+              "label": "Requirement Coverage",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Requirement Coverage aligned with architecture standards."
+            },
+            {
+              "id": "component_boundaries",
+              "label": "Component Boundaries & Decoupling",
+              "weight": 0.12,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Component Boundaries & Decoupling aligned with architecture standards."
+            },
+            {
+              "id": "data_ownership",
+              "label": "Data Ownership & Storage Strategy",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Data Ownership & Storage Strategy aligned with architecture standards."
+            },
+            {
+              "id": "communication_fit",
+              "label": "Communication Pattern Fit",
+              "weight": 0.08,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Communication Pattern Fit aligned with architecture standards."
+            },
+            {
+              "id": "nfr_mechanisms",
+              "label": "Non-Functional Requirement Mechanisms",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Non-Functional Requirement Mechanisms aligned with architecture standards."
+            },
+            {
+              "id": "security_boundaries",
+              "label": "Security Boundaries & Network Segmentation",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Security Boundaries & Network Segmentation aligned with architecture standards."
+            },
+            {
+              "id": "resilience",
+              "label": "Resilience & Fault Isolation",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Resilience & Fault Isolation aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "requirement_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "backend": {
+          "artifact": "backend",
+          "score": 28,
+          "final_score": 28,
+          "c_score": 50,
+          "r_score": 40,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 40,
+          "real_world": {
+            "artifact": "backend",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 6,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 6
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-01",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-01",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-01",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-INSTAG-02",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-02",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-02",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "endpoint_coverage_vs_FR",
+              "label": "Endpoint Coverage vs Functional Requirements",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Endpoint Coverage vs Functional Requirements aligned with architecture standards...."
+            },
+            {
+              "id": "schemas_and_errors",
+              "label": "Request/Response Schemas & Standard Error Model",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Request/Response Schemas & Standard Error Model aligned with architecture standards...."
+            },
+            {
+              "id": "authz_per_endpoint",
+              "label": "Authorization per Endpoint & Resource Verification",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Authorization per Endpoint & Resource Verification aligned with architecture standards...."
+            },
+            {
+              "id": "transactions_concurrency_idempotency",
+              "label": "Transactions, Concurrency & Idempotency",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [
+                "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
+              ],
+              "rationale": "High concurrency contention detected with no locking mechanism specified."
+            },
+            {
+              "id": "validation_rules",
+              "label": "Input Validation & Boundary Sanitization",
+              "weight": 0.1,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Input Validation & Boundary Sanitization aligned with architecture standards...."
+            },
+            {
+              "id": "testability",
+              "label": "Testability & Mockability",
+              "weight": 0.05,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Testability & Mockability aligned with architecture standards...."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Concrete Specificity & Requirement Binding aligned with architecture standards...."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_b2fdac3e8944772d",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-01",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system Instagram Photo Sharing: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_b298a1681aec7972",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-01",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system LinkedIn Social Graph: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_bcd627a168686dd6",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-01",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system Reddit Forum Platform: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_917e458cdfa5ba46",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-02",
+              "artifact": "backend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Instagram Photo Sharing: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_f2cd46309c42f677",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-02",
+              "artifact": "backend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system LinkedIn Social Graph: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_c8f9c7b3902682f3",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-02",
+              "artifact": "backend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Reddit Forum Platform: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "endpoint_coverage_vs_FR",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "database": {
+          "artifact": "database",
+          "score": 28,
+          "final_score": 28,
+          "c_score": 50,
+          "r_score": 40,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 40,
+          "real_world": {
+            "artifact": "database",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 3,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 3
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-01",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-01",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-01",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "entity_coverage",
+              "label": "Entity Coverage & Attribute Completeness",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Entity Coverage & Attribute Completeness aligned with architecture standards...."
+            },
+            {
+              "id": "keys_constraints",
+              "label": "Primary & Foreign Keys and Relational Constraints",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Primary & Foreign Keys and Relational Constraints aligned with architecture standards...."
+            },
+            {
+              "id": "index_for_queries",
+              "label": "Index Strategy for Access Patterns",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Index Strategy for Access Patterns aligned with architecture standards...."
+            },
+            {
+              "id": "integrity_isolation",
+              "label": "Transaction Isolation & Integrity Guarantees",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [
+                "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
+              ],
+              "rationale": "High concurrency contention detected with no locking mechanism specified."
+            },
+            {
+              "id": "retention_migration",
+              "label": "Retention Strategy & Migration Versioning",
+              "weight": 0.1,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Retention Strategy & Migration Versioning aligned with architecture standards...."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Concrete Specificity & Requirement Binding aligned with architecture standards...."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_90602b6e0656defc",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-01",
+              "artifact": "database",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system Instagram Photo Sharing: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_7d7f64758052e84a",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-01",
+              "artifact": "database",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system LinkedIn Social Graph: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_b99dbef30414b91c",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-01",
+              "artifact": "database",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system Reddit Forum Platform: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "entity_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "frontend": {
+          "artifact": "frontend",
+          "score": 28,
+          "final_score": 28,
+          "c_score": 50,
+          "r_score": 40,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 40,
+          "real_world": {
+            "artifact": "frontend",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 3,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 3
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-04",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-04",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-04",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "view_route_coverage",
+              "label": "View & Route Coverage vs User Stories",
+              "weight": 0.25,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough View & Route Coverage vs User Stories aligned with architecture standards...."
+            },
+            {
+              "id": "api_binding_validity",
+              "label": "API Binding Validity & Contract Alignment",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough API Binding Validity & Contract Alignment aligned with architecture standards...."
+            },
+            {
+              "id": "state_management",
+              "label": "State Management & Data Synchronization",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough State Management & Data Synchronization aligned with architecture standards...."
+            },
+            {
+              "id": "error_loading_states",
+              "label": "Error, Empty & Loading State Handling",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Error, Empty & Loading State Handling aligned with architecture standards...."
+            },
+            {
+              "id": "auth_flows",
+              "label": "Authentication & Route Protection Flows",
+              "weight": 0.1,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Authentication & Route Protection Flows aligned with architecture standards...."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Concrete Specificity & Requirement Binding aligned with architecture standards...."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_333077c66624df05",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-04",
+              "artifact": "frontend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Client-Side State Management & Query Caching' from reference system Instagram Photo Sharing: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Client-Side State Management & Query Caching' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_ec424e034e9e7e22",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-04",
+              "artifact": "frontend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Client-Side State Management & Query Caching' from reference system LinkedIn Social Graph: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Client-Side State Management & Query Caching' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_c2d203c40f5735e9",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-04",
+              "artifact": "frontend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Client-Side State Management & Query Caching' from reference system Reddit Forum Platform: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Client-Side State Management & Query Caching' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "view_route_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "security": {
+          "artifact": "security",
+          "score": 28,
+          "final_score": 28,
+          "c_score": 50,
+          "r_score": 40,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 40,
+          "real_world": {
+            "artifact": "security",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 3,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 3
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-02",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-02",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-02",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "authn_authz_resource_level",
+              "label": "Authentication & Resource-Level Authorization",
+              "weight": 0.25,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Authentication & Resource-Level Authorization aligned with architecture standards...."
+            },
+            {
+              "id": "data_protection",
+              "label": "Data Protection At-Rest and In-Transit",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Data Protection At-Rest and In-Transit aligned with architecture standards...."
+            },
+            {
+              "id": "stride_threat_to_control_map",
+              "label": "STRIDE Threat-to-Control Mapping",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough STRIDE Threat-to-Control Mapping aligned with architecture standards...."
+            },
+            {
+              "id": "secrets_rate_limit_audit",
+              "label": "Secrets Management, Rate Limiting & Audit Logging",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Secrets Management, Rate Limiting & Audit Logging aligned with architecture standards...."
+            },
+            {
+              "id": "compliance_alignment",
+              "label": "Compliance & Regulatory Alignment",
+              "weight": 0.1,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Compliance & Regulatory Alignment aligned with architecture standards...."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Concrete Specificity & Requirement Binding aligned with architecture standards...."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_f42c26669814c6fa",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-02",
+              "artifact": "security",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Instagram Photo Sharing: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_2232cfa9c7f4949b",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-02",
+              "artifact": "security",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system LinkedIn Social Graph: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_153839167a98a8a5",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-02",
+              "artifact": "security",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Reddit Forum Platform: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "authn_authz_resource_level",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "cloud": {
+          "artifact": "cloud",
+          "score": 28,
+          "final_score": 28,
+          "c_score": 50,
+          "r_score": 40,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 40,
+          "real_world": {
+            "artifact": "cloud",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 3,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 3
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-03",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-03",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-03",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "[Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "topology_consistency_with_HLD",
+              "label": "Topology Consistency with HLD",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Topology Consistency with HLD aligned with architecture standards...."
+            },
+            {
+              "id": "availability_scaling",
+              "label": "High Availability, Redundancy & Auto-Scaling",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough High Availability, Redundancy & Auto-Scaling aligned with architecture standards...."
+            },
+            {
+              "id": "backup_rpo_rto",
+              "label": "Backup Cadence, RPO & RTO Guarantees",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Backup Cadence, RPO & RTO Guarantees aligned with architecture standards...."
+            },
+            {
+              "id": "observability_deploy_rollback",
+              "label": "Observability Infrastructure & Automated Deployment/Rollback",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Observability Infrastructure & Automated Deployment/Rollback aligned with architecture standards...."
+            },
+            {
+              "id": "cost_security_baseline",
+              "label": "Cost Optimization & Security Baseline",
+              "weight": 0.1,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Cost Optimization & Security Baseline aligned with architecture standards...."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 2,
+              "evidence_path": null,
+              "missing": [],
+              "rationale": "[Evidence unverified] Thorough Concrete Specificity & Requirement Binding aligned with architecture standards...."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_f0c1c567f9349a99",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-03",
+              "artifact": "cloud",
+              "severity": "low",
+              "message": "Missing real-world capability 'Structured Observability & Telemetry' from reference system Instagram Photo Sharing: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Structured Observability & Telemetry' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_3c06bb4bd18a8fe2",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-03",
+              "artifact": "cloud",
+              "severity": "low",
+              "message": "Missing real-world capability 'Structured Observability & Telemetry' from reference system LinkedIn Social Graph: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Structured Observability & Telemetry' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_eccf729623a73caf",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-03",
+              "artifact": "cloud",
+              "severity": "low",
+              "message": "Missing real-world capability 'Structured Observability & Telemetry' from reference system Reddit Forum Platform: [Unverified evidence: 'None'] Downgraded to MISSING. Aligned with reference architecture capability.",
+              "evidence_path": null,
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Structured Observability & Telemetry' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "topology_consistency_with_HLD",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        }
+      },
+      "corrections": [],
+      "started_at": "2026-10-27T17:59:08.200781+00:00",
+      "finished_at": "2026-10-27T17:59:08.803317+00:00"
+    },
+    {
+      "n": 2,
+      "results": {
+        "hld": {
+          "artifact": "hld",
+          "score": 91,
+          "final_score": 91,
+          "c_score": 100,
+          "r_score": 80,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 80,
+          "real_world": {
+            "artifact": "hld",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 3,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-03",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/architecture_style",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-03",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/architecture_style",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-03",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/architecture_style",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "requirement_coverage",
+              "label": "Requirement Coverage",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Requirement Coverage aligned with architecture standards."
+            },
+            {
+              "id": "component_boundaries",
+              "label": "Component Boundaries & Decoupling",
+              "weight": 0.12,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Component Boundaries & Decoupling aligned with architecture standards."
+            },
+            {
+              "id": "data_ownership",
+              "label": "Data Ownership & Storage Strategy",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Data Ownership & Storage Strategy aligned with architecture standards."
+            },
+            {
+              "id": "communication_fit",
+              "label": "Communication Pattern Fit",
+              "weight": 0.08,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Communication Pattern Fit aligned with architecture standards."
+            },
+            {
+              "id": "nfr_mechanisms",
+              "label": "Non-Functional Requirement Mechanisms",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Non-Functional Requirement Mechanisms aligned with architecture standards."
+            },
+            {
+              "id": "security_boundaries",
+              "label": "Security Boundaries & Network Segmentation",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Security Boundaries & Network Segmentation aligned with architecture standards."
+            },
+            {
+              "id": "resilience",
+              "label": "Resilience & Fault Isolation",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Resilience & Fault Isolation aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/major_services",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "requirement_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "backend": {
+          "artifact": "backend",
+          "score": 77,
+          "final_score": 77,
+          "c_score": 50,
+          "r_score": 72,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 72,
+          "real_world": {
+            "artifact": "backend",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 6,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-01",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-01",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-01",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-INSTAG-02",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-02",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-02",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "endpoint_coverage_vs_FR",
+              "label": "Endpoint Coverage vs Functional Requirements",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Endpoint Coverage vs Functional Requirements aligned with architecture standards."
+            },
+            {
+              "id": "schemas_and_errors",
+              "label": "Request/Response Schemas & Standard Error Model",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Request/Response Schemas & Standard Error Model aligned with architecture standards."
+            },
+            {
+              "id": "authz_per_endpoint",
+              "label": "Authorization per Endpoint & Resource Verification",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Authorization per Endpoint & Resource Verification aligned with architecture standards."
+            },
+            {
+              "id": "transactions_concurrency_idempotency",
+              "label": "Transactions, Concurrency & Idempotency",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": "/status",
+              "missing": [
+                "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
+              ],
+              "rationale": "High concurrency contention detected with no locking mechanism specified."
+            },
+            {
+              "id": "validation_rules",
+              "label": "Input Validation & Boundary Sanitization",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Input Validation & Boundary Sanitization aligned with architecture standards."
+            },
+            {
+              "id": "testability",
+              "label": "Testability & Mockability",
+              "weight": 0.05,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Testability & Mockability aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_a3ad4379fbea3476",
+              "layer": "REVIEW",
+              "rule_id": "REVIEW.CONCURRENCY_RISK",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Double-booking race condition: no atomic locking on reservation resource.",
+              "evidence_path": "/status",
+              "source": "IEEE1016",
+              "suggested_fix": "Implement SELECT FOR UPDATE or Redis Redlock with finite hold TTL."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "transactions_concurrency_idempotency",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "database": {
+          "artifact": "database",
+          "score": 77,
+          "final_score": 77,
+          "c_score": 50,
+          "r_score": 72,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 72,
+          "real_world": {
+            "artifact": "database",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 3,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-01",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-01",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-01",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "entity_coverage",
+              "label": "Entity Coverage & Attribute Completeness",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Entity Coverage & Attribute Completeness aligned with architecture standards."
+            },
+            {
+              "id": "keys_constraints",
+              "label": "Primary & Foreign Keys and Relational Constraints",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Primary & Foreign Keys and Relational Constraints aligned with architecture standards."
+            },
+            {
+              "id": "index_for_queries",
+              "label": "Index Strategy for Access Patterns",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Index Strategy for Access Patterns aligned with architecture standards."
+            },
+            {
+              "id": "integrity_isolation",
+              "label": "Transaction Isolation & Integrity Guarantees",
+              "weight": 0.2,
+              "score": 2,
+              "evidence_path": "/status",
+              "missing": [
+                "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
+              ],
+              "rationale": "High concurrency contention detected with no locking mechanism specified."
+            },
+            {
+              "id": "retention_migration",
+              "label": "Retention Strategy & Migration Versioning",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Retention Strategy & Migration Versioning aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_6ba27a1b88a846bf",
+              "layer": "REVIEW",
+              "rule_id": "REVIEW.CONCURRENCY_RISK",
+              "artifact": "database",
+              "severity": "high",
+              "message": "Double-booking race condition: no atomic locking on reservation resource.",
+              "evidence_path": "/status",
+              "source": "ISO25012",
+              "suggested_fix": "Implement SELECT FOR UPDATE or Redis Redlock with finite hold TTL."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "integrity_isolation",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "frontend": {
+          "artifact": "frontend",
+          "score": 81,
+          "final_score": 81,
+          "c_score": 50,
+          "r_score": 80,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 80,
+          "real_world": {
+            "artifact": "frontend",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 3,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-04",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-04",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-04",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "view_route_coverage",
+              "label": "View & Route Coverage vs User Stories",
+              "weight": 0.25,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough View & Route Coverage vs User Stories aligned with architecture standards."
+            },
+            {
+              "id": "api_binding_validity",
+              "label": "API Binding Validity & Contract Alignment",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough API Binding Validity & Contract Alignment aligned with architecture standards."
+            },
+            {
+              "id": "state_management",
+              "label": "State Management & Data Synchronization",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough State Management & Data Synchronization aligned with architecture standards."
+            },
+            {
+              "id": "error_loading_states",
+              "label": "Error, Empty & Loading State Handling",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Error, Empty & Loading State Handling aligned with architecture standards."
+            },
+            {
+              "id": "auth_flows",
+              "label": "Authentication & Route Protection Flows",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Authentication & Route Protection Flows aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "view_route_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "security": {
+          "artifact": "security",
+          "score": 81,
+          "final_score": 81,
+          "c_score": 50,
+          "r_score": 80,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 80,
+          "real_world": {
+            "artifact": "security",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 3,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-02",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-02",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-02",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "authn_authz_resource_level",
+              "label": "Authentication & Resource-Level Authorization",
+              "weight": 0.25,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Authentication & Resource-Level Authorization aligned with architecture standards."
+            },
+            {
+              "id": "data_protection",
+              "label": "Data Protection At-Rest and In-Transit",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Data Protection At-Rest and In-Transit aligned with architecture standards."
+            },
+            {
+              "id": "stride_threat_to_control_map",
+              "label": "STRIDE Threat-to-Control Mapping",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough STRIDE Threat-to-Control Mapping aligned with architecture standards."
+            },
+            {
+              "id": "secrets_rate_limit_audit",
+              "label": "Secrets Management, Rate Limiting & Audit Logging",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Secrets Management, Rate Limiting & Audit Logging aligned with architecture standards."
+            },
+            {
+              "id": "compliance_alignment",
+              "label": "Compliance & Regulatory Alignment",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Compliance & Regulatory Alignment aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "authn_authz_resource_level",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        },
+        "cloud": {
+          "artifact": "cloud",
+          "score": 81,
+          "final_score": 81,
+          "c_score": 50,
+          "r_score": 80,
+          "w_score": 100,
+          "penalty_d": 0,
+          "rubric_score": 80,
+          "real_world": {
+            "artifact": "cloud",
+            "score": 100,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 3,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-03",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-03",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-03",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "ALIGNED",
+                "evidence_path": "/status",
+                "justification": "Aligned with reference architecture capability.",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "topology_consistency_with_HLD",
+              "label": "Topology Consistency with HLD",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Topology Consistency with HLD aligned with architecture standards."
+            },
+            {
+              "id": "availability_scaling",
+              "label": "High Availability, Redundancy & Auto-Scaling",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough High Availability, Redundancy & Auto-Scaling aligned with architecture standards."
+            },
+            {
+              "id": "backup_rpo_rto",
+              "label": "Backup Cadence, RPO & RTO Guarantees",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Backup Cadence, RPO & RTO Guarantees aligned with architecture standards."
+            },
+            {
+              "id": "observability_deploy_rollback",
+              "label": "Observability Infrastructure & Automated Deployment/Rollback",
+              "weight": 0.2,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Observability Infrastructure & Automated Deployment/Rollback aligned with architecture standards."
+            },
+            {
+              "id": "cost_security_baseline",
+              "label": "Cost Optimization & Security Baseline",
+              "weight": 0.1,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Cost Optimization & Security Baseline aligned with architecture standards."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 4,
+              "evidence_path": "/status",
+              "missing": [],
+              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "topology_consistency_with_HLD",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "mock"
+        }
+      },
+      "corrections": [
+        {
+          "artifact": "hld",
+          "triggered_by": [],
+          "action_summary": "Regenerated 'hld' (attempt 2): resolved 0 defect(s), 0 remaining, 0 new.",
+          "score_before": 91,
+          "score_after": 91,
+          "resolved": [],
+          "unresolved": [],
+          "new_findings": [],
+          "regenerated_with_feedback": false,
+          "patterns_resolved": [],
+          "patterns_still_missing": []
+        },
+        {
+          "artifact": "backend",
+          "triggered_by": [
+            "fnd_917e458cdfa5ba46",
+            "fnd_b298a1681aec7972",
+            "fnd_b2fdac3e8944772d",
+            "fnd_bcd627a168686dd6",
+            "fnd_c8f9c7b3902682f3",
+            "fnd_f2cd46309c42f677"
+          ],
+          "action_summary": "Regenerated 'backend' (attempt 2): resolved 6 defect(s), 0 remaining, 1 new.",
+          "score_before": 28,
+          "score_after": 77,
+          "resolved": [
+            "fnd_917e458cdfa5ba46",
+            "fnd_b298a1681aec7972",
+            "fnd_b2fdac3e8944772d",
+            "fnd_bcd627a168686dd6",
+            "fnd_c8f9c7b3902682f3",
+            "fnd_f2cd46309c42f677"
+          ],
+          "unresolved": [],
+          "new_findings": [
+            "fnd_a3ad4379fbea3476"
+          ],
+          "regenerated_with_feedback": false,
+          "patterns_resolved": [
+            "RW-INSTAG-01",
+            "RW-INSTAG-02",
+            "RW-LINKED-01",
+            "RW-LINKED-02",
+            "RW-REDDIT-01",
+            "RW-REDDIT-02"
+          ],
+          "patterns_still_missing": []
+        },
+        {
+          "artifact": "database",
+          "triggered_by": [
+            "fnd_7d7f64758052e84a",
+            "fnd_90602b6e0656defc",
+            "fnd_b99dbef30414b91c"
+          ],
+          "action_summary": "Regenerated 'database' (attempt 2): resolved 3 defect(s), 0 remaining, 1 new.",
+          "score_before": 28,
+          "score_after": 77,
+          "resolved": [
+            "fnd_7d7f64758052e84a",
+            "fnd_90602b6e0656defc",
+            "fnd_b99dbef30414b91c"
+          ],
+          "unresolved": [],
+          "new_findings": [
+            "fnd_6ba27a1b88a846bf"
+          ],
+          "regenerated_with_feedback": false,
+          "patterns_resolved": [
+            "RW-INSTAG-01",
+            "RW-LINKED-01",
+            "RW-REDDIT-01"
+          ],
+          "patterns_still_missing": []
+        },
+        {
+          "artifact": "frontend",
+          "triggered_by": [
+            "fnd_333077c66624df05",
+            "fnd_c2d203c40f5735e9",
+            "fnd_ec424e034e9e7e22"
+          ],
+          "action_summary": "Regenerated 'frontend' (attempt 2): resolved 3 defect(s), 0 remaining, 0 new.",
+          "score_before": 28,
+          "score_after": 81,
+          "resolved": [
+            "fnd_333077c66624df05",
+            "fnd_c2d203c40f5735e9",
+            "fnd_ec424e034e9e7e22"
+          ],
+          "unresolved": [],
+          "new_findings": [],
+          "regenerated_with_feedback": false,
+          "patterns_resolved": [
+            "RW-INSTAG-04",
+            "RW-LINKED-04",
+            "RW-REDDIT-04"
+          ],
+          "patterns_still_missing": []
+        },
+        {
+          "artifact": "security",
+          "triggered_by": [
+            "fnd_153839167a98a8a5",
+            "fnd_2232cfa9c7f4949b",
+            "fnd_f42c26669814c6fa"
+          ],
+          "action_summary": "Regenerated 'security' (attempt 2): resolved 3 defect(s), 0 remaining, 0 new.",
+          "score_before": 28,
+          "score_after": 81,
+          "resolved": [
+            "fnd_153839167a98a8a5",
+            "fnd_2232cfa9c7f4949b",
+            "fnd_f42c26669814c6fa"
+          ],
+          "unresolved": [],
+          "new_findings": [],
+          "regenerated_with_feedback": false,
+          "patterns_resolved": [
+            "RW-INSTAG-02",
+            "RW-LINKED-02",
+            "RW-REDDIT-02"
+          ],
+          "patterns_still_missing": []
+        },
+        {
+          "artifact": "cloud",
+          "triggered_by": [
+            "fnd_3c06bb4bd18a8fe2",
+            "fnd_eccf729623a73caf",
+            "fnd_f0c1c567f9349a99"
+          ],
+          "action_summary": "Regenerated 'cloud' (attempt 2): resolved 3 defect(s), 0 remaining, 0 new.",
+          "score_before": 28,
+          "score_after": 81,
+          "resolved": [
+            "fnd_3c06bb4bd18a8fe2",
+            "fnd_eccf729623a73caf",
+            "fnd_f0c1c567f9349a99"
+          ],
+          "unresolved": [],
+          "new_findings": [],
+          "regenerated_with_feedback": false,
+          "patterns_resolved": [
+            "RW-INSTAG-03",
+            "RW-LINKED-03",
+            "RW-REDDIT-03"
+          ],
+          "patterns_still_missing": []
+        }
+      ],
+      "started_at": "2026-10-27T17:59:10.236731+00:00",
+      "finished_at": "2026-10-27T17:59:10.253694+00:00"
+    }
+  ],
+  "final_status": "UNRESOLVED",
+  "final_scores": {
+    "hld": 91,
+    "backend": 77,
+    "database": 77,
+    "frontend": 81,
+    "security": 81,
+    "cloud": 81,
+    "overall": 81,
+    "c": 58,
+    "r": 77,
+    "w": 100,
+    "d": 0
+  },
+  "overall_c": 58,
+  "overall_r": 77,
+  "overall_w": 100,
+  "overall_d": 0,
+  "model_used": "mock",
+  "models_used_per_artifact": {},
+  "reviewer_mode": "mock",
+  "corpus_status": "ok",
+  "references_used": [
+    {
+      "id": "10.12_instagram_photo_sharing",
+      "system_name": "Instagram Photo Sharing",
+      "match_reasons": [
+        "Baseline engineering standard reference"
+      ],
+      "scale_note": null,
+      "sources": [
+        "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+        "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+        "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+      ]
+    },
+    {
+      "id": "10.14_linkedin_social_graph",
+      "system_name": "LinkedIn Social Graph",
+      "match_reasons": [
+        "Baseline engineering standard reference"
+      ],
+      "scale_note": null,
+      "sources": [
+        "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+        "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+        "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+      ]
+    },
+    {
+      "id": "10.15_reddit_forum_platform",
+      "system_name": "Reddit Forum Platform",
+      "match_reasons": [
+        "Baseline engineering standard reference"
+      ],
+      "scale_note": null,
+      "sources": [
+        "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+        "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+        "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+      ]
+    }
+  ],
+  "config_snapshot": {
+    "accept_threshold": 80,
+    "max_rounds": 2,
+    "validator_mock": "1",
+    "allow_mock_accept": 0,
+    "rw_weight": 0.35,
+    "rw_min": 60
+  },
+  "created_at": "2026-10-27T17:59:06.480835+00:00",
+  "final_package": {
+    "generation_id": "gen_mvqz3o82_nmaczo",
+    "prompt": "Build me a E-COmmerce application for Vegetables",
+    "status": "HLD_READY",
+    "arsrs": {
+      "session_id": "360c6d9c-3ae1-4dc4-be36-f43c1bc4937c",
+      "completeness": "incomplete",
+      "project_profile": {
+        "goal": "Build me a E-COmmerce application for Vegetables",
+        "system_type": "Software Application",
+        "domain": "Build Me A E-Commerce Application For Vegetables",
+        "input_sources": [
+          "text"
+        ],
+        "session_id": "360c6d9c-3ae1-4dc4-be36-f43c1bc4937c",
+        "created_at": "2026-10-27T17:58:08.376608+00:00",
+        "interview_rounds_conducted": 1,
+        "completeness_level": "incomplete",
+        "success_criteria": [
+          "End-to-end execution of build me a e-commerce application for vegetables with 100% data consistency and zero unhandled errors."
+        ]
+      },
+      "business_context": {
+        "business_objectives": [],
+        "stakeholders": [
+          "Authorized User",
+          "System Administrator"
+        ],
+        "constraints": [
+          "System behaviour: []"
+        ],
+        "kpis": [],
+        "pain_points": [],
+        "assumptions": [],
+        "business_rules": [
+          "System behaviour: []."
+        ]
+      },
+      "domain_context": {
+        "system_type": "Software Application",
+        "industry": "Build Me A E-Commerce Application For Vegetables",
+        "domain_concepts": [
+          "Build me a E-COmmerce application for Vegetables"
+        ],
+        "similar_systems": [],
+        "architecture_patterns": [],
+        "technology_signals": [],
+        "compliance": [],
+        "domain_constraints": [],
+        "scale": [],
+        "risks": []
+      },
+      "metadata": {
+        "arsrs_version": "1.0",
+        "generated_at": "2026-10-27T17:58:08.376608+00:00",
+        "pipeline_version": "REE-v1",
+        "total_requirements": 4,
+        "confidence_overall": 0.447,
+        "review_verdict": "need_clarification",
+        "review_confidence": 0.447,
+        "warnings": [],
+        "statistics": {
+          "total_functional_requirements": 1,
+          "total_actors": 2,
+          "total_modules": 1,
+          "total_integrations": 0,
+          "total_business_rules": 1,
+          "total_constraints": 1,
+          "total_workflows": 1,
+          "coverage_percentage": 80.0,
+          "completeness_percentage": 44.7,
+          "confidence_score": 0.45
+        }
+      },
+      "modules": [
+        "Build Me A Management"
+      ],
+      "api_contracts": [
+        "[]"
+      ],
+      "workflows": [
+        {
+          "id": "WF-001",
+          "name": "Build Commerce Application Workflow",
+          "actor": "Authorized User",
+          "steps": [
+            "Initiate build me a e-commerce application for vegetables",
+            "Validate authorization and input parameters for build commerce application",
+            "Process and persist build commerce application state transition",
+            "Confirm execution and dispatch notification to Authorized User"
+          ]
+        }
+      ],
+      "success_criteria": [
+        "End-to-end execution of build me a e-commerce application for vegetables with 100% data consistency and zero unhandled errors."
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-001",
+          "title": "Build me a E-COmmerce application for Vegetables",
+          "description": "Build me a E-COmmerce application for Vegetables",
+          "priority": "medium",
+          "category": "functional",
+          "source": "extraction",
+          "confidence": 0.95,
+          "traceability": "src.requirements.parameters.functional_requirements[0]",
+          "tags": []
+        }
+      ],
+      "non_functional_requirements": [],
+      "actors": [
+        {
+          "id": "ACT-001",
+          "title": "Authorized User",
+          "description": "System actor: Authorized User",
+          "priority": "high",
+          "category": "actor",
+          "source": "extraction",
+          "confidence": 0.8,
+          "traceability": "src.requirements.parameters.actors[0]",
+          "tags": [
+            "actor"
+          ]
+        },
+        {
+          "id": "ACT-002",
+          "title": "System Administrator",
+          "description": "System actor: System Administrator",
+          "priority": "high",
+          "category": "actor",
+          "source": "extraction",
+          "confidence": 0.8,
+          "traceability": "src.requirements.parameters.actors[1]",
+          "tags": [
+            "actor"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-001",
+          "title": "System behaviour: []",
+          "description": "System behaviour: []",
+          "priority": "medium",
+          "category": "constraint",
+          "source": "engineering_team",
+          "confidence": 0.8,
+          "traceability": "src.business_context.constraints[0]",
+          "tags": []
+        }
+      ],
+      "integrations": [],
+      "assumptions": [],
+      "discussion_summary": [
+        "[RequirementReviewAgent] Review complete. Verdict: need_clarification. Confidence: 0.45. Missing: 5. Ambiguities: 1. Contradictions: 0.",
+        "[input_understanding] Input processing complete. Sources: 1. Sections: 1. Tokens: ~11. Duplicates removed: 0. Chunking required: False.",
+        "[engineering] Analysis complete \u2014 no new items extracted.",
+        "[engineering] Analysis complete \u2014 no new business context extracted.",
+        "[engineering] Analysis complete \u2014 no new domain context extracted.",
+        "[engineering] Parallel execution complete. 3/3 agents succeeded.",
+        "[interviewing] Round 1: Generated 2 question(s). Addressing: user_roles, payment_methods.",
+        "[interviewing] Round 1 complete. Applied 2 answer(s). Updated sections: requirements."
+      ],
+      "quality_assessment": {
+        "completeness": "incomplete",
+        "missing_critical": [
+          "functional_requirements"
+        ],
+        "missing_important": [
+          "core_objectives",
+          "actors",
+          "non_functional_requirements",
+          "system_behaviour"
+        ],
+        "missing_optional": [
+          "inputs",
+          "outputs",
+          "external_services",
+          "free_constraint"
+        ],
+        "notes": [
+          "The requirement outlines a high-level goal to develop an e\u2011commerce application for vegetables but provides no functional details, platform choices, user roles, or technical specifications. This lack of detail creates significant ambiguity about what features, integrations, and user experiences are needed. To proceed, the project needs a more detailed specification covering scope, architecture, and implementation requirements.",
+          "Missing fields: functional_requirements, core_objectives, actors, non_functional_requirements, system_behaviour",
+          "1 ambiguity/ambiguities detected."
+        ],
+        "statistics": {
+          "total_functional_requirements": 1,
+          "total_actors": 2,
+          "total_modules": 1,
+          "total_integrations": 0,
+          "total_business_rules": 1,
+          "total_constraints": 1,
+          "total_workflows": 1,
+          "coverage_percentage": 80.0,
+          "completeness_percentage": 44.7,
+          "confidence_score": 0.45
+        },
+        "assessed_at": "2026-10-27T17:42:57.320866+00:00"
+      },
+      "review_result": {
+        "verdict": "need_clarification",
+        "confidence": {
+          "overall": 0.447,
+          "completeness": 0.48,
+          "clarity": 0.16,
+          "consistency": 1.0,
+          "specificity": 0.1
+        },
+        "missing_items": [
+          "functional_requirements",
+          "core_objectives",
+          "actors",
+          "non_functional_requirements",
+          "system_behaviour"
+        ],
+        "ambiguities": [
+          {
+            "field": "goal",
+            "description": "The goal is vague: it does not specify the platform (web, mobile), required features (product catalog, cart, payment, user management, admin functions), user roles, integration, UI/UX, technology stack, scalability, etc.",
+            "severity": "high"
+          }
+        ],
+        "contradictions": [],
+        "duplicates": [],
+        "review_summary": "The requirement outlines a high-level goal to develop an e\u2011commerce application for vegetables but provides no functional details, platform choices, user roles, or technical specifications. This lack of detail creates significant ambiguity about what features, integrations, and user experiences are needed. To proceed, the project needs a more detailed specification covering scope, architecture, and implementation requirements.",
+        "reviewed_at": "2026-10-27T17:42:57.320866+00:00"
+      },
+      "interview_history": [
+        {
+          "round": 1,
+          "questions": [
+            {
+              "question_id": "8cabf6bd",
+              "question": "What user roles and access levels should be supported in the vegetable e\u2011commerce application?",
+              "rationale": "Clarifies who can browse, order, manage inventory, and administer the system.",
+              "target_section": "requirements",
+              "target_field": "user_roles",
+              "options": [
+                "Customer (browse products and place orders)",
+                "Vendor (add and manage vegetable inventory)",
+                "Administrator (full control over users, pricing, and reports)",
+                "Customer and Vendor only (no admin role) (Recommended Default)",
+                "Other / Custom (Please specify)"
+              ],
+              "default_option": null,
+              "priority": "high"
+            },
+            {
+              "question_id": "53cf0ab4",
+              "question": "Which payment methods should be accepted for purchasing vegetables?",
+              "rationale": "Determines the allowed ways customers can pay for their orders.",
+              "target_section": "requirements",
+              "target_field": "payment_methods",
+              "options": [
+                "Credit/Debit cards (Visa, MasterCard, Amex)",
+                "PayPal",
+                "Cash on Delivery (COD)",
+                "Credit/Debit cards and PayPal only (Recommended Default)",
+                "Other / Custom (Please specify)"
+              ],
+              "default_option": null,
+              "priority": "high"
+            }
+          ],
+          "answers": [
+            {
+              "parameter": "8cabf6bd",
+              "answer": "Customer and Vendor only (no admin role) (Recommended Default)"
+            },
+            {
+              "parameter": "53cf0ab4",
+              "answer": "Credit/Debit cards and PayPal only (Recommended Default)"
+            }
+          ],
+          "updated_sections": [
+            "requirements"
+          ],
+          "completed_at": "2026-10-27T17:58:08.376608+00:00"
+        }
+      ],
+      "parameters": {
+        "functional_requirements": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "non_functional_requirements": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "actors": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "constraints": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "external_services": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "re_modules": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "modules": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "re_api_contracts": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "api_contracts": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "re_workflows": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "workflows": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "system_behaviour": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "goal": {
+          "value": "Build me a E-COmmerce application for Vegetables",
+          "ai_suggestion": null
+        },
+        "system_type": {
+          "value": "Software Application",
+          "ai_suggestion": null
+        },
+        "user_roles": {
+          "value": "Customer and Vendor only (no admin role) (Recommended Default)",
+          "ai_suggestion": null
+        },
+        "payment_methods": {
+          "value": "Credit/Debit cards and PayPal only (Recommended Default)",
+          "ai_suggestion": null
+        }
+      },
+      "goal": "Build me a E-COmmerce application for Vegetables",
+      "system_type": "Software Application",
+      "core_objectives": [],
+      "input_sources": [
+        "text"
+      ],
+      "interview_rounds_conducted": 1,
+      "review_notes": [
+        "The requirement outlines a high-level goal to develop an e\u2011commerce application for vegetables but provides no functional details, platform choices, user roles, or technical specifications. This lack of detail creates significant ambiguity about what features, integrations, and user experiences are needed. To proceed, the project needs a more detailed specification covering scope, architecture, and implementation requirements.",
+        "Missing fields: functional_requirements, core_objectives, actors, non_functional_requirements, system_behaviour",
+        "1 ambiguity/ambiguities detected."
+      ],
+      "pipeline_warnings": []
+    },
+    "hld": {
+      "architecture_style": "Modular Monolith",
+      "executive_summary": "Build me a E-COmmerce application for Vegetables is designed as an enterprise-grade Modular Monolith architecture for Build Me A E-Commerce Application For Vegetables. The system isolates core domain workflows into resilient, independently deployable services backed by PostgreSQL 16 and Redis 7.2 Cluster.",
+      "business_goals": [
+        "Achieve 99.9% system availability for Build Me A E-Commerce Application For Vegetables operations.",
+        "Ensure sub-250ms p95 response time under concurrent user load.",
+        "Enforce strict transaction consistency and data auditability."
+      ],
+      "major_services": [
+        {
+          "service_id": "SVC-01",
+          "name": "BuildmeaECOmmerceapplicationforVegetablesService",
+          "responsibility": "Handles core domain transactions and workflows for buildmeaecommerceapplicationforvegetablesservice.",
+          "database_binding": "buildmeaecommerceapplicationforvegetablesservice_db_schema",
+          "scaling_model": "Horizontal Stateless Pods (min 2, max 10)",
+          "satisfies": [
+            "FR-001"
+          ]
+        },
+        {
+          "service_id": "SVC-02",
+          "name": "BuildMeAManagementService",
+          "responsibility": "Handles core domain transactions and workflows for buildmeamanagementservice.",
+          "database_binding": "buildmeamanagementservice_db_schema",
+          "scaling_model": "Horizontal Stateless Pods (min 2, max 10)",
+          "satisfies": [
+            "FR-001"
+          ]
+        }
+      ],
+      "communication_patterns": [
+        {
+          "pattern": "Synchronous REST / JSON over TLS",
+          "usage": "Client-to-Gateway and Gateway-to-Core Service request-response APIs",
+          "protocol": "HTTP/2, OpenAPI 3.0",
+          "resilience": "Circuit breaker (50% failure threshold), 2500ms timeout"
+        },
+        {
+          "pattern": "Asynchronous Event Messaging",
+          "usage": "Domain event notification reminders, transaction history audits, and background tasks",
+          "protocol": "RabbitMQ / Redis PubSub",
+          "resilience": "Dead-letter exchange with exponential retry backoff (3 attempts)"
+        }
+      ],
+      "data_strategy": {
+        "primary_database": "PostgreSQL 16",
+        "caching_tier": "Redis 7.2 Cluster",
+        "replication": "Primary-Replica configuration with automated failover and read-replica offloading",
+        "migration_tool": "Alembic Versioned Migrations",
+        "backup_policy": "Point-in-Time Recovery (PITR) with continuous WAL archiving and daily full snapshots"
+      },
+      "security_overview": {
+        "authentication": "Stateless JWT access tokens with Redis-backed refresh token rotation",
+        "authorization": "Role-Based Access Control (RBAC) enforced at API Gateway and Service boundary",
+        "data_protection": "AES-256 encryption at rest, TLS 1.3 encryption in transit",
+        "audit_logging": "Immutable audit log trail for all administrative and modification transactions"
+      },
+      "deployment_strategy": {
+        "infrastructure": "Kubernetes Container Orchestration (EKS/GKE)",
+        "ingress": "Ingress-NGINX with TLS Termination and Rate Limiting",
+        "ci_cd": "GitHub Actions automated build, container vulnerability scan, and rolling deployment",
+        "monitoring": "Prometheus metrics, Grafana dashboards, OpenTelemetry distributed tracing"
+      },
+      "decisions": [
+        {
+          "id": "ADR-001",
+          "title": "Adoption of Modular Monolith for Build me a E-COmmerce application for Vegetables",
+          "status": "ACCEPTED",
+          "rationale": "Provides optimal balance of modular boundary isolation, fast iteration, and manageable operational complexity for Build Me A E-Commerce Application For Vegetables."
+        },
+        {
+          "id": "ADR-002",
+          "title": "Dual-Layer Caching and Read-Replica Offloading",
+          "status": "ACCEPTED",
+          "rationale": "Guarantees p95 read latency under 150ms while insulating primary transactional database from high-volume queries."
+        }
+      ],
+      "diagrams": [
+        {
+          "type": "C4_Container",
+          "title": "Build me a E-COmmerce application for Vegetables Container Architecture",
+          "description": "Visualizes client apps, API gateway, microservices, databases, and message queues."
+        }
+      ],
+      "technology_stack": {
+        "rag_metadata": {
+          "used_rag": false,
+          "chunk_count": 0,
+          "avg_similarity": 0.0,
+          "fallback": true,
+          "query": "Enterprise technology stack selection matrix, Software Application, framework comparison (FastAPI, Spring Boot, Node.js), database evaluation SQL vs NoSQL (PostgreSQL, MongoDB), caching layers (Redis), and cloud hosting trade-offs for",
+          "reason": "No chunks met similarity threshold"
+        },
+        "backend": {
+          "selected_option": "FastAPI (Python 3.12)",
+          "reasoning": "Asynchronous high-performance framework with native OpenAPI schema generation and typed Pydantic data validation.",
+          "alternatives_considered": [
+            "Node.js (NestJS)",
+            "Spring Boot (Java)"
+          ]
+        },
+        "frontend": {
+          "selected_option": "React (Next.js App Router)",
+          "reasoning": "Component modularity, server-side rendering for catalog search performance, and rich ecosystem.",
+          "alternatives_considered": [
+            "Vue.js (Nuxt)",
+            "Angular"
+          ]
+        },
+        "database": {
+          "selected_option": "PostgreSQL 16 (Relational ACID)",
+          "reasoning": "ACID compliance for critical domain workflows, row-level locking for transactional state concurrency, and JSONB support.",
+          "alternatives_considered": [
+            "MySQL 8.0",
+            "MongoDB 7.0"
+          ]
+        },
+        "cache": {
+          "selected_option": "Redis 7.2 (In-Memory Key-Value)",
+          "reasoning": "High-throughput in-memory caching for low-latency search queries and distributed session state.",
+          "alternatives_considered": [
+            "Memcached"
+          ]
+        },
+        "authentication": {
+          "selected_option": "OAuth2 with Authorization Code Flow & PKCE (JWT RS256)",
+          "reasoning": "Stateless token authorization, fine-grained role-based access control (RBAC), and zero plain-text token exposure.",
+          "alternatives_considered": [
+            "Session Cookies",
+            "API Keys"
+          ]
+        },
+        "communication": {
+          "selected_option": "RESTful JSON APIs over HTTP/2 & WebSockets",
+          "reasoning": "Standardized HTTP semantics for CRUD operations with WebSocket channels for real-time notifications.",
+          "alternatives_considered": [
+            "GraphQL",
+            "gRPC"
+          ]
+        },
+        "cloud": {
+          "selected_option": "AWS (ECS Fargate & Managed RDS PostgreSQL)",
+          "reasoning": "Serverless container orchestration eliminating OS management overhead with automated Multi-AZ database backups.",
+          "alternatives_considered": [
+            "GCP Cloud Run",
+            "Azure Container Apps"
+          ]
+        },
+        "deployment": {
+          "selected_option": "Docker Multi-Stage Builds with GitHub Actions CI/CD",
+          "reasoning": "Reproducible immutable container artifacts with automated linting, test gating, and zero-downtime deployment.",
+          "alternatives_considered": [
+            "Manual SSH Scripting",
+            "Kubernetes Helm"
+          ]
+        },
+        "rationale": [
+          "PostgreSQL guarantees transactional consistency and ACID integrity for  operations.",
+          "FastAPI and Redis ensure sub-250ms p95 API response times under concurrent load.",
+          "OAuth2 PKCE and JWT provide robust role-based access control for administrative and standard users."
+        ]
+      },
+      "rag_metadata": {
+        "used_rag": false,
+        "chunk_count": 0,
+        "avg_similarity": 0.0,
+        "fallback": true,
+        "query": "High Level System Design patterns, Modular Monolith, domain module boundary decomposition, synchronous REST vs asynchronous message bus communication, API gateway topology, distributed caching strategies (Redis), and high availability architecture for Build Me A E-Commerce Application For Vegetables",
+        "reason": "No chunks met similarity threshold"
+      }
+    },
+    "llds": {
+      "backend": {
+        "status": "GENERATING",
+        "data": null,
+        "error": null
+      },
+      "frontend": {
+        "status": "GENERATING",
+        "data": null,
+        "error": null
+      },
+      "database": {
+        "status": "GENERATING",
+        "data": null,
+        "error": null
+      },
+      "security": {
+        "status": "GENERATING",
+        "data": null,
+        "error": null
+      },
+      "cloud": {
+        "status": "GENERATING",
+        "data": null,
+        "error": null
+      }
+    },
+    "created_at": "2026-10-27T17:42:21.751841+00:00",
+    "completed_at": null
+  }
+}

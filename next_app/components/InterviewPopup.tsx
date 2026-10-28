@@ -278,14 +278,19 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
       // 2. Automated Validation & AI Correction Workflow (calls POST /api/v1/generations/{id}/validate-and-correct?max_retries=2)
       const validatedResult = await useAppStore.getState().runCorrectionWorkflow(2);
 
+      const isAccepted = validatedResult
+        ? ("is_fully_validated" in validatedResult && Boolean((validatedResult as any).is_fully_validated)) ||
+          ("final_verdict" in validatedResult && ((validatedResult as any).final_verdict === "ACCEPTED" || (validatedResult as any).final_verdict === "ACCEPT"))
+        : false;
+
       setActiveAgent({
         id: "agent-validator",
         name: "Architectural Validator Engine",
         role: "Multi-Artifact Closed-Loop Verification",
         icon: "shield",
-        task: validatedResult?.is_fully_validated
+        task: isAccepted
           ? "Architecture verified and fully validated! Visual diagram active."
-          : "Architecture generation complete with validation findings.",
+          : "Architecture generation complete with validation audit report.",
         status: "completed",
         stage: "VALIDATOR",
         progressPercent: 100,

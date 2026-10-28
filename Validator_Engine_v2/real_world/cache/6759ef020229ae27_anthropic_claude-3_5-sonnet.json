@@ -1,0 +1,41 @@
+{
+  "system": "Cloudflare Edge Network",
+  "patterns": [
+    {
+      "id": "RW-CLOUDF-01",
+      "name": "Edge Perimeter Rate Limiting and WAF",
+      "description": "Filters malicious traffic and enforces rate limits at ingress boundaries prior to hitting application core.",
+      "category": "security",
+      "applies_to_artifacts": [
+        "hld",
+        "security",
+        "cloud"
+      ],
+      "applicability": {
+        "conditions": "Public-facing web or mobile endpoints",
+        "scale_hint": "Protects origin from request storms"
+      },
+      "source_section": "advantages",
+      "priority": 1
+    },
+    {
+      "id": "RW-CLOUDF-02",
+      "name": "Hierarchical Static and Response Caching",
+      "description": "Offloads origin servers via multi-tier caching with deterministic TTL and event-driven invalidation.",
+      "category": "caching",
+      "applies_to_artifacts": [
+        "hld",
+        "backend",
+        "cloud"
+      ],
+      "applicability": {
+        "conditions": "High-read traffic ratio",
+        "scale_hint": ">70% read offload target"
+      },
+      "source_section": "decision_signals",
+      "priority": 2
+    }
+  ],
+  "extraction_failed": false,
+  "error": null
+}

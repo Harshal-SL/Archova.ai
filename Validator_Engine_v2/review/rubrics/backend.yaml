@@ -1,0 +1,47 @@
+artifact: backend
+title: Backend LLD Architecture Rubric
+sources: ["IEEE1016", "ASVS"]
+applicable_tags: ["concurrency", "idempotency", "rbac", "error-model", "api"]
+
+dimensions:
+  - id: endpoint_coverage_vs_FR
+    label: Endpoint Coverage vs Functional Requirements
+    weight: 0.20
+    description: Complete coverage of all FR actions with explicit HTTP method, route, and handler mapping.
+    source: IEEE1016
+
+  - id: schemas_and_errors
+    label: Request/Response Schemas & Standard Error Model
+    weight: 0.15
+    description: Strongly-typed payloads, RFC 7807 problem details, and deterministic status codes.
+    source: IEEE1016
+
+  - id: authz_per_endpoint
+    label: Authorization per Endpoint & Resource Verification
+    weight: 0.15
+    description: Granular role and ownership validation on all mutating endpoints to prevent IDOR vulnerabilities.
+    source: ASVS
+
+  - id: transactions_concurrency_idempotency
+    label: Transactions, Concurrency & Idempotency
+    weight: 0.20
+    description: Idempotency keys, atomic row locks (SELECT FOR UPDATE) / distributed locks (Redlock), and race condition prevention.
+    source: IEEE1016
+
+  - id: validation_rules
+    label: Input Validation & Boundary Sanitization
+    weight: 0.10
+    description: Strict schema validation, sanitization of input parameters, and business rule enforcement.
+    source: ASVS
+
+  - id: testability
+    label: Testability & Mockability
+    weight: 0.05
+    description: Clear dependency injection, contract test boundaries, and isolated unit test targets.
+    source: IEEE1016
+
+  - id: specificity
+    label: Concrete Specificity & Requirement Binding
+    weight: 0.15
+    description: 5 = named entities, concrete numbers and mechanisms tied to requirement IDs; 0-2 = generic statements without entity or requirement link.
+    source: internal

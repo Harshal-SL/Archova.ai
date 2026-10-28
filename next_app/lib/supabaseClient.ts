@@ -9,5 +9,14 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const isCustomConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: isCustomConfigured,
+    persistSession: isCustomConfigured,
+  },
+});
 

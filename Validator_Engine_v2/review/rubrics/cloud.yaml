@@ -1,0 +1,41 @@
+artifact: cloud
+title: Cloud Infrastructure LLD Architecture Rubric
+sources: ["ISO25010", "Well-Architected"]
+applicable_tags: ["multi-az", "rpo", "rto", "observability", "deployment", "ha"]
+
+dimensions:
+  - id: topology_consistency_with_HLD
+    label: Topology Consistency with HLD
+    weight: 0.20
+    description: Infrastructure compute and network architecture directly reflects HLD service boundaries and data stores.
+    source: ISO25010
+
+  - id: availability_scaling
+    label: High Availability, Redundancy & Auto-Scaling
+    weight: 0.20
+    description: Multi-AZ compute clusters, horizontal pod/instance auto-scaling policies, and resilient load balancing.
+    source: Well-Architected
+
+  - id: backup_rpo_rto
+    label: Backup Cadence, RPO & RTO Guarantees
+    weight: 0.15
+    description: Automated point-in-time recovery, continuous WAL archiving, and verified recovery objectives.
+    source: ISO25010
+
+  - id: observability_deploy_rollback
+    label: Observability Infrastructure & Automated Deployment/Rollback
+    weight: 0.20
+    description: Centralized telemetry collectors, health probes, blue-green deployment pipelines, and automated rollback gates.
+    source: Well-Architected
+
+  - id: cost_security_baseline
+    label: Cost Optimization & Security Baseline
+    weight: 0.10
+    description: Least-privilege IAM roles, security groups, VPC private subnets, and right-sized compute tiers.
+    source: Well-Architected
+
+  - id: specificity
+    label: Concrete Specificity & Requirement Binding
+    weight: 0.15
+    description: 5 = named entities, concrete numbers and mechanisms tied to requirement IDs; 0-2 = generic statements without entity or requirement link.
+    source: internal

@@ -29,7 +29,6 @@ from app.schemas.benchmark_schemas import (
     QualityGateComparison,
 )
 from app.sae.utils.prompt_utils import repair_json_string
-from Validator_Engine.engine import ValidatorEngine
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +148,7 @@ class DirectLLMGenerator:
     """Service to execute single-shot direct architecture generation and comparative auditing."""
 
     def __init__(self) -> None:
-        self.validator = ValidatorEngine()
+        pass
 
     async def generate_single_shot(
         self,

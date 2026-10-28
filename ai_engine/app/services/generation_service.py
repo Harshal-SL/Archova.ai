@@ -24,14 +24,6 @@ if str(PROJECT_ROOT) not in sys.path:
 if str(WORKSPACE_ROOT) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_ROOT))
 
-# Validator Engine Integration
-from Validator_Engine.engine import ValidatorEngine
-from Validator_Engine.models.output_models import ValidatedArchitectureResponse
-from Validator_Engine.models.report_models import (
-    ArchitectureCorrectionFeedback,
-    CorrectionAttemptRecord,
-    CorrectionFeedbackItem,
-)
 
 # REE Imports
 from app.ree.agents.interview_moderator import InterviewModerator, _normalize_options_set
@@ -385,8 +377,47 @@ class GenerationService:
     # ── Context Lookup ──────────────────────────────────────────────────────────
 
     def get_context(self, generation_id: str) -> Optional[GenerationContext]:
-        """Retrieve generation context by ID."""
-        return self._store.get(generation_id)
+        """Retrieve generation context by ID with disk recovery fallback across service restarts."""
+        clean_id = (generation_id or "").strip()
+        if not clean_id:
+            return None
+
+        if clean_id in self._store:
+            return self._store[clean_id]
+
+        # Disk recovery fallback: scan output directories for previous run snapshots
+        try:
+            for parent_dir in (PROJECT_ROOT / "outputs", PROJECT_ROOT / "output"):
+                if not parent_dir.exists():
+                    continue
+                for run_dir in parent_dir.iterdir():
+                    if run_dir.is_dir() and (run_dir.name == clean_id or run_dir.name.endswith(f"_{clean_id}")):
+                        pkg_file = run_dir / "10_architecture_package.json"
+                        if pkg_file.exists():
+                            with open(pkg_file, "r", encoding="utf-8") as f:
+                                pkg = json.load(f)
+                            ctx = GenerationContext(
+                                generation_id=clean_id,
+                                prompt=pkg.get("prompt", ""),
+                                status=pkg.get("status", "COMPLETED"),
+                                arsrs=pkg.get("arsrs"),
+                                hld=pkg.get("hld"),
+                                output_dir=str(run_dir),
+                            )
+                            # Populate LLDs if present
+                            if "llds" in pkg and isinstance(pkg["llds"], dict):
+                                for lld_name, lld_val in pkg["llds"].items():
+                                    if lld_name in ctx.llds:
+                                        data = lld_val.get("data", lld_val) if isinstance(lld_val, dict) else lld_val
+                                        ctx.llds[lld_name].data = data
+                                        ctx.llds[lld_name].status = "READY"
+                            self._store[clean_id] = ctx
+                            logger.info("Successfully recovered generation context [%s] from disk (%s)", clean_id, run_dir.name)
+                            return ctx
+        except Exception as e:
+            logger.warning("Error recovering generation context from disk for [%s]: %s", clean_id, e)
+
+        return None
 
     # ── 1. Start Generation ───────────────────────────────────────────────────
 

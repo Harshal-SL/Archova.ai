@@ -1,0 +1,1680 @@
+{
+  "generation_id": "gen_mvrdhz39_r7z56l",
+  "iterations": [
+    {
+      "n": 1,
+      "results": {
+        "hld": {
+          "artifact": "hld",
+          "score": 60,
+          "final_score": 60,
+          "c_score": 100,
+          "r_score": 50,
+          "w_score": null,
+          "penalty_d": 0,
+          "rubric_score": 50,
+          "real_world": null,
+          "verdict": "PROVISIONAL",
+          "dimensions": [],
+          "findings": [],
+          "best_dimension": null,
+          "weakest_dimension": null,
+          "reviewer_status": "unavailable",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "none"
+        },
+        "backend": {
+          "artifact": "backend",
+          "score": 10,
+          "final_score": 10,
+          "c_score": 50,
+          "r_score": 0,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 0,
+          "real_world": {
+            "artifact": "backend",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 6,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-01",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "Empty artifact provides no concurrency lock implementation",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-01",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "No concurrency lock pattern found in artifact",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-01",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "Artifact does not contain any distributed lock usage",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-INSTAG-02",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "No RBAC or token validation implementation present",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-02",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "Zero\u2011trust RBAC enforcement not observed",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-02",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "No resource\u2011level authorization checks defined",
+                "requirement_refs": []
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "endpoint_coverage_vs_FR",
+              "label": "Endpoint Coverage vs Functional Requirements",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No HTTP endpoints defined; missing routes for creating, reading, updating, deleting todo items"
+              ],
+              "rationale": "Artifact empty, no endpoint mappings present"
+            },
+            {
+              "id": "schemas_and_errors",
+              "label": "Request/Response Schemas & Standard Error Model",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No request/response schemas; missing RFC 7807 error model definitions and status code mappings"
+              ],
+              "rationale": "No schema or error handling artifacts found"
+            },
+            {
+              "id": "authz_per_endpoint",
+              "label": "Authorization per Endpoint & Resource Verification",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No authorization policies, token validation, or resource\u2011level ownership checks defined"
+              ],
+              "rationale": "Empty artifact provides no authZ details"
+            },
+            {
+              "id": "transactions_concurrency_idempotency",
+              "label": "Transactions, Concurrency & Idempotency",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No idempotency keys, lock mechanisms, or version\u2011based concurrency controls present"
+              ],
+              "rationale": "No concurrency or idempotency implementation visible"
+            },
+            {
+              "id": "validation_rules",
+              "label": "Input Validation & Boundary Sanitization",
+              "weight": 0.1,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No input validation rules, sanitization, or business\u2011rule enforcement defined"
+              ],
+              "rationale": "Artifact lacks validation specifications"
+            },
+            {
+              "id": "testability",
+              "label": "Testability & Mockability",
+              "weight": 0.05,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No dependency injection, contract tests, or mockable interfaces described"
+              ],
+              "rationale": "Empty artifact provides no testability details"
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "No concrete entities, numeric parameters, or requirement bindings present"
+              ],
+              "rationale": "Artifact contains only generic empty JSON"
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_fe219447c2263933",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-01",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system Instagram Photo Sharing: Empty artifact provides no concurrency lock implementation",
+              "evidence_path": "",
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_3c3914608fceaaf5",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-01",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system LinkedIn Social Graph: No concurrency lock pattern found in artifact",
+              "evidence_path": "",
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_1020ba2e0c2595f9",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-01",
+              "artifact": "backend",
+              "severity": "high",
+              "message": "Missing real-world capability 'Distributed Concurrency Lock' from reference system Reddit Forum Platform: Artifact does not contain any distributed lock usage",
+              "evidence_path": "",
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Distributed Concurrency Lock' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_af3d341c5102da10",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-02",
+              "artifact": "backend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Instagram Photo Sharing: No RBAC or token validation implementation present",
+              "evidence_path": "",
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_11d02287806c836a",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-02",
+              "artifact": "backend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system LinkedIn Social Graph: Zero\u2011trust RBAC enforcement not observed",
+              "evidence_path": "",
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_a3f260e80893b72c",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-02",
+              "artifact": "backend",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Reddit Forum Platform: No resource\u2011level authorization checks defined",
+              "evidence_path": "",
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "endpoint_coverage_vs_FR",
+          "reviewer_status": "ok",
+          "dropped_unverified": 7,
+          "truncated": false,
+          "model_used": "cohere/north-mini-code:free"
+        },
+        "database": {
+          "artifact": "database",
+          "score": 10,
+          "final_score": 10,
+          "c_score": 50,
+          "r_score": 0,
+          "w_score": null,
+          "penalty_d": 0,
+          "rubric_score": 0,
+          "real_world": {
+            "artifact": "database",
+            "score": null,
+            "confidence": "unavailable",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 3,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-01",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": null,
+                "justification": "No database schema exists to assess concurrency patterns",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              },
+              {
+                "pattern_id": "RW-LINKED-01",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": null,
+                "justification": "No shared mutable state defined in empty artifact",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              },
+              {
+                "pattern_id": "RW-REDDIT-01",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Distributed Concurrency Lock",
+                "category": "concurrency",
+                "priority": 1,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": null,
+                "justification": "No distributed lock requirements identified in missing schema",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "entity_coverage",
+              "label": "Entity Coverage & Attribute Completeness",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": null,
+              "missing": [
+                "No domain entities defined",
+                "No tables mapped",
+                "No typed columns",
+                "No constraints specified"
+              ],
+              "rationale": "Artifact is empty JSON object with no entities or attributes defined"
+            },
+            {
+              "id": "keys_constraints",
+              "label": "Primary & Foreign Keys and Relational Constraints",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": null,
+              "missing": [
+                "No primary keys defined",
+                "No foreign key constraints",
+                "No unique constraints",
+                "No referential integrity rules"
+              ],
+              "rationale": "No tables or keys exist in the empty artifact"
+            },
+            {
+              "id": "index_for_queries",
+              "label": "Index Strategy for Access Patterns",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": null,
+              "missing": [
+                "No B-Tree indexes",
+                "No foreign key indexes",
+                "No query pattern coverage",
+                "No access path optimization"
+              ],
+              "rationale": "No database schema or indexes present in empty artifact"
+            },
+            {
+              "id": "integrity_isolation",
+              "label": "Transaction Isolation & Integrity Guarantees",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": null,
+              "missing": [
+                "No isolation levels declared",
+                "No transaction boundaries",
+                "No optimistic versioning",
+                "No row-level locking strategy"
+              ],
+              "rationale": "No transaction or integrity mechanisms defined in empty artifact"
+            },
+            {
+              "id": "retention_migration",
+              "label": "Retention Strategy & Migration Versioning",
+              "weight": 0.1,
+              "score": 0,
+              "evidence_path": null,
+              "missing": [
+                "No retention policies",
+                "No archival schedules",
+                "No purge mechanisms",
+                "No migration versioning"
+              ],
+              "rationale": "No data lifecycle or migration strategy present"
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": null,
+              "missing": [
+                "No named entities",
+                "No concrete parameters",
+                "No requirement bindings",
+                "No specific mechanisms"
+              ],
+              "rationale": "Empty artifact provides zero specific information or requirement links"
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "entity_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 6,
+          "truncated": false,
+          "model_used": "openrouter/free"
+        },
+        "frontend": {
+          "artifact": "frontend",
+          "score": 10,
+          "final_score": 10,
+          "c_score": 50,
+          "r_score": 0,
+          "w_score": null,
+          "penalty_d": 0,
+          "rubric_score": 0,
+          "real_world": {
+            "artifact": "frontend",
+            "score": null,
+            "confidence": "unavailable",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 3,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-04",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": null,
+                "justification": "Frontend artifact empty; no implementation to evaluate.",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              },
+              {
+                "pattern_id": "RW-LINKED-04",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": null,
+                "justification": "Frontend artifact empty; no implementation to evaluate.",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              },
+              {
+                "pattern_id": "RW-REDDIT-04",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Client-Side State Management & Query Caching",
+                "category": "caching",
+                "priority": 2,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": null,
+                "justification": "Frontend artifact empty; no implementation to evaluate.",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "view_route_coverage",
+              "label": "View & Route Coverage vs User Stories",
+              "weight": 0.25,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "User stories and page mappings",
+                "Client routes and components"
+              ],
+              "rationale": "Empty artifact provides no view/route mapping."
+            },
+            {
+              "id": "api_binding_validity",
+              "label": "API Binding Validity & Contract Alignment",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "HTTP method/path definitions",
+                "Request/response schemas"
+              ],
+              "rationale": "No API binding details present."
+            },
+            {
+              "id": "state_management",
+              "label": "State Management & Data Synchronization",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "State store definition (Zustand/Redux/React Query)",
+                "Cache invalidation logic",
+                "Optimistic UI updates"
+              ],
+              "rationale": "No state management implementation described."
+            },
+            {
+              "id": "error_loading_states",
+              "label": "Error, Empty & Loading State Handling",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "Error boundaries",
+                "Skeleton loaders",
+                "Graceful failure handling"
+              ],
+              "rationale": "No error/loading state handling defined."
+            },
+            {
+              "id": "auth_flows",
+              "label": "Authentication & Route Protection Flows",
+              "weight": 0.1,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "Protected route wrappers",
+                "Token refresh logic",
+                "Permission-based UI rendering"
+              ],
+              "rationale": "No authentication flow details present."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "/",
+              "missing": [
+                "Named entities, numeric parameters, requirement IDs"
+              ],
+              "rationale": "Artifact lacks concrete specificity."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "view_route_coverage",
+          "reviewer_status": "ok",
+          "dropped_unverified": 6,
+          "truncated": false,
+          "model_used": "cohere/north-mini-code:free"
+        },
+        "security": {
+          "artifact": "security",
+          "score": 10,
+          "final_score": 10,
+          "c_score": 50,
+          "r_score": 0,
+          "w_score": 0,
+          "penalty_d": 0,
+          "rubric_score": 0,
+          "real_world": {
+            "artifact": "security",
+            "score": 0,
+            "confidence": "normal",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 3,
+              "justified_divergence": 0,
+              "not_applicable": 0,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-02",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "Pattern not addressed in artifact specification.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-LINKED-02",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": null,
+                "justification": "Pattern not addressed in artifact specification.",
+                "requirement_refs": []
+              },
+              {
+                "pattern_id": "RW-REDDIT-02",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Zero-Trust Boundary RBAC Enforcement",
+                "category": "security",
+                "priority": 2,
+                "status": "MISSING",
+                "evidence_path": "",
+                "justification": "Zero-Trust Boundary RBAC enforcement with token validation and least-privilege checks is not implemented in the empty artifact",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "REJECTED",
+          "dimensions": [
+            {
+              "id": "authn_authz_resource_level",
+              "label": "Authentication & Resource-Level Authorization",
+              "weight": 0.25,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No authentication/authorization mechanisms, cryptographic token validation, or resource-level ownership checks in the artifact"
+              ],
+              "rationale": "Empty artifact contains no auth/authorization implementation, tokens, or resource-level ownership controls"
+            },
+            {
+              "id": "data_protection",
+              "label": "Data Protection At-Rest and In-Transit",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No TLS 1.3, AES-256, KMS, or PII masking mechanisms present in the artifact"
+              ],
+              "rationale": "No data protection controls (encryption at rest, in-transit, or PII handling) found in the empty artifact"
+            },
+            {
+              "id": "stride_threat_to_control_map",
+              "label": "STRIDE Threat-to-Control Mapping",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No STRIDE threat countermeasures or explicit threat-to-control mappings implemented"
+              ],
+              "rationale": "Empty artifact lacks comprehensive STRIDE threat modeling and countermeasure implementations"
+            },
+            {
+              "id": "secrets_rate_limit_audit",
+              "label": "Secrets Management, Rate Limiting & Audit Logging",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No secrets management (Vault/KMS), rate limiting, or tamper-evident audit logging controls"
+              ],
+              "rationale": "No secrets management, rate limiting, or audit stream mechanisms in the empty artifact"
+            },
+            {
+              "id": "compliance_alignment",
+              "label": "Compliance & Regulatory Alignment",
+              "weight": 0.1,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No GDPR/HIPAA/SOC2 compliance controls or regulatory alignment mechanisms"
+              ],
+              "rationale": "No compliance-specific controls or privacy baseline implementations present"
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No named entities, concrete numbers, or mechanism references tied to requirement IDs"
+              ],
+              "rationale": "Dimension requires named entities and concrete numbers; none present in the empty artifact"
+            }
+          ],
+          "findings": [
+            {
+              "id": "fnd_918e57a24ceed10a",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-INSTAG-02",
+              "artifact": "security",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Instagram Photo Sharing: Pattern not addressed in artifact specification.",
+              "evidence_path": null,
+              "source": "Instagram Photo Sharing reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Instagram Photo Sharing's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_d25c26820d31dd3f",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-LINKED-02",
+              "artifact": "security",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system LinkedIn Social Graph: Pattern not addressed in artifact specification.",
+              "evidence_path": null,
+              "source": "LinkedIn Social Graph reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate LinkedIn Social Graph's high-scale infrastructure; tie the mechanism to requirement IDs."
+            },
+            {
+              "id": "fnd_096e0758647acdc7",
+              "layer": "REAL_WORLD",
+              "rule_id": "RW-REDDIT-02",
+              "artifact": "security",
+              "severity": "medium",
+              "message": "Missing real-world capability 'Zero-Trust Boundary RBAC Enforcement' from reference system Reddit Forum Platform: Zero-Trust Boundary RBAC enforcement with token validation and least-privilege checks is not implemented in the empty artifact",
+              "evidence_path": "",
+              "source": "Reddit Forum Platform reference",
+              "suggested_fix": "Address 'Zero-Trust Boundary RBAC Enforcement' capability appropriate to this system's scale and operational profile. Do not replicate Reddit Forum Platform's high-scale infrastructure; tie the mechanism to requirement IDs."
+            }
+          ],
+          "best_dimension": "specificity",
+          "weakest_dimension": "authn_authz_resource_level",
+          "reviewer_status": "ok",
+          "dropped_unverified": 0,
+          "truncated": false,
+          "model_used": "liquid/lfm-2.5-2.6b:free"
+        },
+        "cloud": {
+          "artifact": "cloud",
+          "score": 10,
+          "final_score": 10,
+          "c_score": 50,
+          "r_score": 0,
+          "w_score": null,
+          "penalty_d": 0,
+          "rubric_score": 0,
+          "real_world": {
+            "artifact": "cloud",
+            "score": null,
+            "confidence": "unavailable",
+            "counts": {
+              "aligned": 0,
+              "partial": 0,
+              "missing": 0,
+              "justified_divergence": 0,
+              "not_applicable": 3,
+              "downgraded_unverified": 0
+            },
+            "assessments": [
+              {
+                "pattern_id": "RW-INSTAG-03",
+                "system_name": "Instagram Photo Sharing",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": "",
+                "justification": "No architecture provided to implement observability pattern.",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              },
+              {
+                "pattern_id": "RW-LINKED-03",
+                "system_name": "LinkedIn Social Graph",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": "",
+                "justification": "No architecture provided to implement observability pattern.",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              },
+              {
+                "pattern_id": "RW-REDDIT-03",
+                "system_name": "Reddit Forum Platform",
+                "pattern_name": "Structured Observability & Telemetry",
+                "category": "observability",
+                "priority": 3,
+                "status": "NOT_APPLICABLE",
+                "evidence_path": "",
+                "justification": "No architecture provided to implement observability pattern.",
+                "requirement_refs": [
+                  "FR-001"
+                ]
+              }
+            ],
+            "references_used": [
+              {
+                "id": "10.12_instagram_photo_sharing",
+                "system_name": "Instagram Photo Sharing",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+                  "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+                ]
+              },
+              {
+                "id": "10.14_linkedin_social_graph",
+                "system_name": "LinkedIn Social Graph",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+                  "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+                  "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+                ]
+              },
+              {
+                "id": "10.15_reddit_forum_platform",
+                "system_name": "Reddit Forum Platform",
+                "match_reasons": [
+                  "Baseline engineering standard reference"
+                ],
+                "scale_note": null,
+                "sources": [
+                  "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+                  "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+                  "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+                ]
+              }
+            ]
+          },
+          "verdict": "PROVISIONAL",
+          "dimensions": [
+            {
+              "id": "topology_consistency_with_HLD",
+              "label": "Topology Consistency with HLD",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No topology or HLD description present"
+              ],
+              "rationale": "Empty artifact provides no topology details."
+            },
+            {
+              "id": "availability_scaling",
+              "label": "High Availability, Redundancy & Auto-Scaling",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No high availability, redundancy, or auto-scaling configuration"
+              ],
+              "rationale": "Missing high availability design."
+            },
+            {
+              "id": "backup_rpo_rto",
+              "label": "Backup Cadence, RPO & RTO Guarantees",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No backup, RPO, RTO definitions or snapshot strategy"
+              ],
+              "rationale": "No backup strategy described."
+            },
+            {
+              "id": "observability_deploy_rollback",
+              "label": "Observability Infrastructure & Automated Deployment/Rollback",
+              "weight": 0.2,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No observability, health probes, or deployment/rollback mechanisms"
+              ],
+              "rationale": "Observability and deployment missing."
+            },
+            {
+              "id": "cost_security_baseline",
+              "label": "Cost Optimization & Security Baseline",
+              "weight": 0.1,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No cost optimization or security controls (IAM, VPC, etc.)"
+              ],
+              "rationale": "Security and cost baseline absent."
+            },
+            {
+              "id": "specificity",
+              "label": "Concrete Specificity & Requirement Binding",
+              "weight": 0.15,
+              "score": 0,
+              "evidence_path": "",
+              "missing": [
+                "No concrete entities, numbers, or requirement bindings"
+              ],
+              "rationale": "Generic empty artifact."
+            }
+          ],
+          "findings": [],
+          "best_dimension": "specificity",
+          "weakest_dimension": "topology_consistency_with_HLD",
+          "reviewer_status": "ok",
+          "dropped_unverified": 6,
+          "truncated": false,
+          "model_used": "cohere/north-mini-code:free"
+        }
+      },
+      "corrections": [],
+      "started_at": "2026-10-28T00:29:31.658915+00:00",
+      "finished_at": "2026-10-28T00:39:59.115560+00:00"
+    }
+  ],
+  "final_status": "REJECTED",
+  "final_scores": {
+    "hld": 60,
+    "backend": 10,
+    "database": 10,
+    "frontend": 10,
+    "security": 10,
+    "cloud": 10,
+    "overall": 18,
+    "c": 58,
+    "r": 8,
+    "w": 0,
+    "d": 0
+  },
+  "overall_c": 58,
+  "overall_r": 8,
+  "overall_w": 0,
+  "overall_d": 0,
+  "model_used": "cohere/north-mini-code:free",
+  "models_used_per_artifact": {},
+  "reviewer_mode": "live",
+  "corpus_status": "ok",
+  "references_used": [
+    {
+      "id": "10.12_instagram_photo_sharing",
+      "system_name": "Instagram Photo Sharing",
+      "match_reasons": [
+        "Baseline engineering standard reference"
+      ],
+      "scale_note": null,
+      "sources": [
+        "Object Storage: ../category_7_infrastructure_components/7.14_object_storage.md",
+        "CDN and Edge Network: ../category_7_infrastructure_components/7.15_cdn_and_edge_network.md",
+        "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md"
+      ]
+    },
+    {
+      "id": "10.14_linkedin_social_graph",
+      "system_name": "LinkedIn Social Graph",
+      "match_reasons": [
+        "Baseline engineering standard reference"
+      ],
+      "scale_note": null,
+      "sources": [
+        "Hot Partition Mitigation: ../category_3_scaling_techniques/3.16_hot_partition_mitigation.md",
+        "Recommendation System: ../category_12_application_archetypes/12.22_recommendation_system.md",
+        "Data Classification and PII Handling: ../category_9_security_architecture/9.19_data_classification_and_pii_handling.md"
+      ]
+    },
+    {
+      "id": "10.15_reddit_forum_platform",
+      "system_name": "Reddit Forum Platform",
+      "match_reasons": [
+        "Baseline engineering standard reference"
+      ],
+      "scale_note": null,
+      "sources": [
+        "Cache-Aside Implementation: ../category_4_caching_strategies/4.1_cache_aside_implementation.md",
+        "Rate Limiter Pattern: ../category_1_architecture_patterns/1.38_rate_limiter_pattern.md",
+        "Security Logging and Audit: ../category_9_security_architecture/9.13_security_logging_and_audit.md"
+      ]
+    }
+  ],
+  "config_snapshot": {
+    "accept_threshold": 80,
+    "max_rounds": 2,
+    "validator_mock": "0",
+    "allow_mock_accept": 0,
+    "rw_weight": 0.35,
+    "rw_min": 60
+  },
+  "created_at": "2026-10-28T00:29:31.587669+00:00",
+  "final_package": {
+    "generation_id": "gen_mvrdhz39_r7z56l",
+    "prompt": "Architecture Evaluation",
+    "status": "COMPLETED",
+    "arsrs": {
+      "session_id": "da590b89-9e30-4d41-8a3c-53e74b71a3fc",
+      "completeness": "incomplete",
+      "project_profile": {
+        "goal": "Give me a System design for Mobile application for handling TO DO lists",
+        "system_type": "Software Application",
+        "domain": "Give Me A System Design For Mobile Application For",
+        "input_sources": [
+          "text"
+        ],
+        "session_id": "da590b89-9e30-4d41-8a3c-53e74b71a3fc",
+        "created_at": "2026-10-28T00:28:30.888008+00:00",
+        "interview_rounds_conducted": 1,
+        "completeness_level": "incomplete",
+        "success_criteria": [
+          "End-to-end execution of give me a system design for mobile application for handling to do lists with 100% data consistency and zero unhandled errors."
+        ]
+      },
+      "business_context": {
+        "business_objectives": [],
+        "stakeholders": [
+          "Authorized User",
+          "System Administrator"
+        ],
+        "constraints": [
+          "System behaviour: []"
+        ],
+        "kpis": [],
+        "pain_points": [],
+        "assumptions": [],
+        "business_rules": [
+          "System behaviour: []."
+        ]
+      },
+      "domain_context": {
+        "system_type": "Software Application",
+        "industry": "Give Me A System Design For Mobile Application For",
+        "domain_concepts": [
+          "Core Workflow Execution",
+          "Resource Management",
+          "Audit Logging"
+        ],
+        "similar_systems": [],
+        "architecture_patterns": [],
+        "technology_signals": [],
+        "compliance": [],
+        "domain_constraints": [],
+        "scale": [],
+        "risks": []
+      },
+      "metadata": {
+        "arsrs_version": "1.0",
+        "generated_at": "2026-10-28T00:28:30.888008+00:00",
+        "pipeline_version": "REE-v1",
+        "total_requirements": 4,
+        "confidence_overall": 0.647,
+        "review_verdict": "need_clarification",
+        "review_confidence": 0.647,
+        "warnings": [],
+        "statistics": {
+          "total_functional_requirements": 1,
+          "total_actors": 2,
+          "total_modules": 1,
+          "total_integrations": 0,
+          "total_business_rules": 1,
+          "total_constraints": 1,
+          "total_workflows": 1,
+          "coverage_percentage": 80,
+          "completeness_percentage": 64.7,
+          "confidence_score": 0.65
+        }
+      },
+      "modules": [
+        "Give Me A Management"
+      ],
+      "api_contracts": [
+        "[]"
+      ],
+      "workflows": [
+        {
+          "id": "WF-001",
+          "name": "Give Design Mobile Workflow",
+          "actor": "Authorized User",
+          "steps": [
+            "Initiate give me a system design for mobile application for handli...",
+            "Validate authorization and input parameters for give design mobile",
+            "Process and persist give design mobile state transition",
+            "Confirm execution and dispatch notification to Authorized User"
+          ]
+        }
+      ],
+      "success_criteria": [
+        "End-to-end execution of give me a system design for mobile application for handling to do lists with 100% data consistency and zero unhandled errors."
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-001",
+          "title": "Give me a System design for Mobile application for handling\u2026",
+          "description": "Give me a System design for Mobile application for handling TO DO lists",
+          "priority": "medium",
+          "category": "functional",
+          "source": "extraction",
+          "confidence": 0.95,
+          "traceability": "src.requirements.parameters.functional_requirements[0]",
+          "tags": []
+        }
+      ],
+      "non_functional_requirements": [],
+      "actors": [
+        {
+          "id": "ACT-001",
+          "title": "Authorized User",
+          "description": "System actor: Authorized User",
+          "priority": "high",
+          "category": "actor",
+          "source": "extraction",
+          "confidence": 0.8,
+          "traceability": "src.requirements.parameters.actors[0]",
+          "tags": [
+            "actor"
+          ]
+        },
+        {
+          "id": "ACT-002",
+          "title": "System Administrator",
+          "description": "System actor: System Administrator",
+          "priority": "high",
+          "category": "actor",
+          "source": "extraction",
+          "confidence": 0.8,
+          "traceability": "src.requirements.parameters.actors[1]",
+          "tags": [
+            "actor"
+          ]
+        }
+      ],
+      "constraints": [
+        {
+          "id": "CON-001",
+          "title": "System behaviour: []",
+          "description": "System behaviour: []",
+          "priority": "medium",
+          "category": "constraint",
+          "source": "engineering_team",
+          "confidence": 0.8,
+          "traceability": "src.business_context.constraints[0]",
+          "tags": []
+        }
+      ],
+      "integrations": [],
+      "assumptions": [],
+      "discussion_summary": [
+        "[RequirementReviewAgent] Review complete. Verdict: need_clarification. Confidence: 0.65. Missing: 5. Ambiguities: 0. Contradictions: 0.",
+        "[input_understanding] Input processing complete. Sources: 1. Sections: 1. Tokens: ~13. Duplicates removed: 0. Chunking required: False.",
+        "[engineering] Analysis complete \u2014 no new items extracted.",
+        "[engineering] Analysis complete \u2014 no new business context extracted.",
+        "[engineering] Analysis complete \u2014 no new domain context extracted.",
+        "[engineering] Parallel execution complete. 3/3 agents succeeded.",
+        "[interviewing] Round 1: Generated 1 question(s). Addressing: max_tasks_limit.",
+        "[interviewing] Round 1 complete. Applied 1 answer(s). Updated sections: requirements."
+      ],
+      "quality_assessment": {
+        "completeness": "incomplete",
+        "missing_critical": [
+          "functional_requirements"
+        ],
+        "missing_important": [
+          "core_objectives",
+          "actors",
+          "non_functional_requirements",
+          "system_behaviour"
+        ],
+        "missing_optional": [
+          "inputs",
+          "outputs",
+          "external_services",
+          "free_constraint"
+        ],
+        "notes": [
+          "The requirement requests a system design for a mobile application to handle to\u2011do lists. It is clearly stated and internally consistent, but provides only a high\u2011level goal without detailed functional, UI, backend, or technical specifications. Additional elaboration would be needed to define features such as task creation, prioritization, reminders, synchronization, and technology stack.",
+          "Missing fields: functional_requirements, core_objectives, actors, non_functional_requirements, system_behaviour"
+        ],
+        "statistics": {
+          "total_functional_requirements": 1,
+          "total_actors": 2,
+          "total_modules": 1,
+          "total_integrations": 0,
+          "total_business_rules": 1,
+          "total_constraints": 1,
+          "total_workflows": 1,
+          "coverage_percentage": 80,
+          "completeness_percentage": 64.7,
+          "confidence_score": 0.65
+        },
+        "assessed_at": "2026-10-28T00:26:35.846601+00:00"
+      },
+      "review_result": {
+        "verdict": "need_clarification",
+        "confidence": {
+          "overall": 0.647,
+          "completeness": 0.48,
+          "clarity": 0.9,
+          "consistency": 1,
+          "specificity": 0.2
+        },
+        "missing_items": [
+          "functional_requirements",
+          "core_objectives",
+          "actors",
+          "non_functional_requirements",
+          "system_behaviour"
+        ],
+        "ambiguities": [],
+        "contradictions": [],
+        "duplicates": [],
+        "review_summary": "The requirement requests a system design for a mobile application to handle to\u2011do lists. It is clearly stated and internally consistent, but provides only a high\u2011level goal without detailed functional, UI, backend, or technical specifications. Additional elaboration would be needed to define features such as task creation, prioritization, reminders, synchronization, and technology stack.",
+        "reviewed_at": "2026-10-28T00:26:35.846601+00:00"
+      },
+      "interview_history": [
+        {
+          "round": 1,
+          "questions": [
+            {
+              "question_id": "6c576647",
+              "question": "How many tasks should a user be able to create and manage simultaneously?",
+              "rationale": "Clarifies the maximum number of tasks a user can have in the app.",
+              "target_section": "requirements",
+              "target_field": "max_tasks_limit",
+              "options": [
+                "Up to 50 tasks (Recommended Default)",
+                "Up to 200 tasks",
+                "Unlimited tasks",
+                "Self-service option for registered users with email confirmation",
+                "Other / Custom (Please specify)"
+              ],
+              "default_option": null,
+              "priority": "medium"
+            }
+          ],
+          "answers": [
+            {
+              "parameter": "6c576647",
+              "answer": "Up to 50 tasks (Recommended Default)"
+            }
+          ],
+          "updated_sections": [
+            "requirements"
+          ],
+          "completed_at": "2026-10-28T00:28:30.886008+00:00"
+        }
+      ],
+      "parameters": {
+        "functional_requirements": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "non_functional_requirements": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "actors": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "constraints": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "external_services": {
+          "value": [],
+          "ai_suggestion": []
+        },
+        "re_modules": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "modules": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "re_api_contracts": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "api_contracts": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "re_workflows": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "workflows": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "system_behaviour": {
+          "value": "[]",
+          "ai_suggestion": []
+        },
+        "goal": {
+          "value": "Give me a System design for Mobile application for handling TO DO lists",
+          "ai_suggestion": null
+        },
+        "system_type": {
+          "value": "Software Application",
+          "ai_suggestion": null
+        },
+        "max_tasks_limit": {
+          "value": "Up to 50 tasks (Recommended Default)",
+          "ai_suggestion": null
+        }
+      },
+      "goal": "Give me a System design for Mobile application for handling TO DO lists",
+      "system_type": "Software Application",
+      "core_objectives": [],
+      "input_sources": [
+        "text"
+      ],
+      "interview_rounds_conducted": 1,
+      "review_notes": [
+        "The requirement requests a system design for a mobile application to handle to\u2011do lists. It is clearly stated and internally consistent, but provides only a high\u2011level goal without detailed functional, UI, backend, or technical specifications. Additional elaboration would be needed to define features such as task creation, prioritization, reminders, synchronization, and technology stack.",
+        "Missing fields: functional_requirements, core_objectives, actors, non_functional_requirements, system_behaviour"
+      ],
+      "pipeline_warnings": []
+    },
+    "hld": {
+      "architecture_style": "Modular Monolith",
+      "executive_summary": "Give me a System design for Mobile application for handling TO DO lists is designed as an enterprise-grade Modular Monolith architecture for Give Me A System Design For Mobile Application For. The system isolates core domain workflows into resilient, independently deployable services backed by PostgreSQL 16 and Redis 7.2 Cluster.",
+      "business_goals": [
+        "Achieve 99.9% system availability for Give Me A System Design For Mobile Application For operations.",
+        "Ensure sub-250ms p95 response time under concurrent user load.",
+        "Enforce strict transaction consistency and data auditability."
+      ],
+      "major_services": [
+        {
+          "service_id": "SVC-01",
+          "name": "GivemeaSystemdesignforMobileapplicationforhandlingService",
+          "responsibility": "Handles core domain transactions and workflows for givemeasystemdesignformobileapplicationforhandlingservice.",
+          "database_binding": "givemeasystemdesignformobileapplicationforhandlingservice_db_schema",
+          "scaling_model": "Horizontal Stateless Pods (min 2, max 10)",
+          "satisfies": [
+            "FR-001"
+          ]
+        },
+        {
+          "service_id": "SVC-02",
+          "name": "GiveMeAManagementService",
+          "responsibility": "Handles core domain transactions and workflows for givemeamanagementservice.",
+          "database_binding": "givemeamanagementservice_db_schema",
+          "scaling_model": "Horizontal Stateless Pods (min 2, max 10)",
+          "satisfies": [
+            "FR-001"
+          ]
+        }
+      ],
+      "communication_patterns": [
+        {
+          "pattern": "Synchronous REST / JSON over TLS",
+          "usage": "Client-to-Gateway and Gateway-to-Core Service request-response APIs",
+          "protocol": "HTTP/2, OpenAPI 3.0",
+          "resilience": "Circuit breaker (50% failure threshold), 2500ms timeout"
+        },
+        {
+          "pattern": "Asynchronous Event Messaging",
+          "usage": "Domain event notification reminders, transaction history audits, and background tasks",
+          "protocol": "RabbitMQ / Redis PubSub",
+          "resilience": "Dead-letter exchange with exponential retry backoff (3 attempts)"
+        }
+      ],
+      "data_strategy": {
+        "primary_database": "PostgreSQL 16",
+        "caching_tier": "Redis 7.2 Cluster",
+        "replication": "Primary-Replica configuration with automated failover and read-replica offloading",
+        "migration_tool": "Alembic Versioned Migrations",
+        "backup_policy": "Point-in-Time Recovery (PITR) with continuous WAL archiving and daily full snapshots"
+      },
+      "security_overview": {
+        "authentication": "Stateless JWT access tokens with Redis-backed refresh token rotation",
+        "authorization": "Role-Based Access Control (RBAC) enforced at API Gateway and Service boundary",
+        "data_protection": "AES-256 encryption at rest, TLS 1.3 encryption in transit",
+        "audit_logging": "Immutable audit log trail for all administrative and modification transactions"
+      },
+      "deployment_strategy": {
+        "infrastructure": "Kubernetes Container Orchestration (EKS/GKE)",
+        "ingress": "Ingress-NGINX with TLS Termination and Rate Limiting",
+        "ci_cd": "GitHub Actions automated build, container vulnerability scan, and rolling deployment",
+        "monitoring": "Prometheus metrics, Grafana dashboards, OpenTelemetry distributed tracing"
+      },
+      "decisions": [
+        {
+          "id": "ADR-001",
+          "title": "Adoption of Modular Monolith for Give me a System design for Mobile application for handling TO DO lists",
+          "status": "ACCEPTED",
+          "rationale": "Provides optimal balance of modular boundary isolation, fast iteration, and manageable operational complexity for Give Me A System Design For Mobile Application For."
+        },
+        {
+          "id": "ADR-002",
+          "title": "Dual-Layer Caching and Read-Replica Offloading",
+          "status": "ACCEPTED",
+          "rationale": "Guarantees p95 read latency under 150ms while insulating primary transactional database from high-volume queries."
+        }
+      ],
+      "diagrams": [
+        {
+          "type": "C4_Container",
+          "title": "Give me a System design for Mobile application for handling TO DO lists Container Architecture",
+          "description": "Visualizes client apps, API gateway, microservices, databases, and message queues."
+        }
+      ],
+      "technology_stack": {
+        "rag_metadata": {
+          "used_rag": false,
+          "chunk_count": 0,
+          "avg_similarity": 0,
+          "fallback": true,
+          "query": "Enterprise technology stack selection matrix, Software Application, framework comparison (FastAPI, Spring Boot, Node.js), database evaluation SQL vs NoSQL (PostgreSQL, MongoDB), caching layers (Redis), and cloud hosting trade-offs for",
+          "reason": "No chunks met similarity threshold"
+        },
+        "backend": {
+          "selected_option": "FastAPI (Python 3.12)",
+          "reasoning": "Asynchronous high-performance framework with native OpenAPI schema generation and typed Pydantic data validation.",
+          "alternatives_considered": [
+            "Node.js (NestJS)",
+            "Spring Boot (Java)"
+          ]
+        },
+        "frontend": {
+          "selected_option": "React (Next.js App Router)",
+          "reasoning": "Component modularity, server-side rendering for catalog search performance, and rich ecosystem.",
+          "alternatives_considered": [
+            "Vue.js (Nuxt)",
+            "Angular"
+          ]
+        },
+        "database": {
+          "selected_option": "PostgreSQL 16 (Relational ACID)",
+          "reasoning": "ACID compliance for critical domain workflows, row-level locking for transactional state concurrency, and JSONB support.",
+          "alternatives_considered": [
+            "MySQL 8.0",
+            "MongoDB 7.0"
+          ]
+        },
+        "cache": {
+          "selected_option": "Redis 7.2 (In-Memory Key-Value)",
+          "reasoning": "High-throughput in-memory caching for low-latency search queries and distributed session state.",
+          "alternatives_considered": [
+            "Memcached"
+          ]
+        },
+        "authentication": {
+          "selected_option": "OAuth2 with Authorization Code Flow & PKCE (JWT RS256)",
+          "reasoning": "Stateless token authorization, fine-grained role-based access control (RBAC), and zero plain-text token exposure.",
+          "alternatives_considered": [
+            "Session Cookies",
+            "API Keys"
+          ]
+        },
+        "communication": {
+          "selected_option": "RESTful JSON APIs over HTTP/2 & WebSockets",
+          "reasoning": "Standardized HTTP semantics for CRUD operations with WebSocket channels for real-time notifications.",
+          "alternatives_considered": [
+            "GraphQL",
+            "gRPC"
+          ]
+        },
+        "cloud": {
+          "selected_option": "AWS (ECS Fargate & Managed RDS PostgreSQL)",
+          "reasoning": "Serverless container orchestration eliminating OS management overhead with automated Multi-AZ database backups.",
+          "alternatives_considered": [
+            "GCP Cloud Run",
+            "Azure Container Apps"
+          ]
+        },
+        "deployment": {
+          "selected_option": "Docker Multi-Stage Builds with GitHub Actions CI/CD",
+          "reasoning": "Reproducible immutable container artifacts with automated linting, test gating, and zero-downtime deployment.",
+          "alternatives_considered": [
+            "Manual SSH Scripting",
+            "Kubernetes Helm"
+          ]
+        },
+        "rationale": [
+          "PostgreSQL guarantees transactional consistency and ACID integrity for  operations.",
+          "FastAPI and Redis ensure sub-250ms p95 API response times under concurrent load.",
+          "OAuth2 PKCE and JWT provide robust role-based access control for administrative and standard users."
+        ]
+      },
+      "rag_metadata": {
+        "used_rag": false,
+        "chunk_count": 0,
+        "avg_similarity": 0,
+        "fallback": true,
+        "query": "High Level System Design patterns, Modular Monolith, domain module boundary decomposition, synchronous REST vs asynchronous message bus communication, API gateway topology, distributed caching strategies (Redis), and high availability architecture for Give Me A System Design For Mobile Application For",
+        "reason": "No chunks met similarity threshold"
+      }
+    },
+    "llds": {
+      "backend": null,
+      "frontend": null,
+      "database": null,
+      "security": null,
+      "cloud": null
+    }
+  }
+}

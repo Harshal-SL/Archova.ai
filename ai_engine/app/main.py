@@ -61,6 +61,8 @@ if _frontend_dir.exists():
     app.mount("/ui", StaticFiles(directory=str(_frontend_dir), html=True), name="ui")
 
 
+@app.get("/health", tags=["System Health"])
+@app.get("/api/v1/health", tags=["System Health"])
 @app.get("/", tags=["System Health"])
 def health():
     return {

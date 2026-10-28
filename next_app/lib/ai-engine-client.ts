@@ -254,29 +254,31 @@ export const aiEngineApi = {
     return await res.json();
   },
 
-  // 10. Automated Validation & AI Correction Workflow
+  // 10. Automated Validation & AI Review with Validator Engine v2 (Port 8002)
   async validateAndCorrect(generationId: string, maxRetries = 2): Promise<any> {
-    const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
-    try {
-      const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/validate-and-correct?max_retries=${maxRetries}`, {
-        method: "POST",
-      });
-      if (res.ok) {
-        return await res.json();
-      }
-      const errData = await res.json().catch(() => null);
-      if (res.status !== 404 && errData?.detail) {
-        throw new Error(errData.detail);
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message && !err.message.includes("fetch")) {
-        throw err;
-      }
-    }
-    // Standalone fallback: validate package directly
     const pkg = await this.getPackage(generationId);
-    const { validatorApi } = await import("./validator-client");
-    return await validatorApi.validate(pkg, 1, maxRetries);
+    const { validatorV2Client } = await import("./validator-v2-client");
+    const v2Report = await validatorV2Client.directValidate(pkg);
+    const overallScore = Math.round(v2Report.final_scores?.overall ?? 0);
+    const verdict = v2Report.final_status || "PROVISIONAL";
+    return {
+      architecture: pkg,
+      validation: {
+        status: verdict,
+        summary: {
+          overall_score: overallScore / 100,
+          verdict: verdict,
+          critical_findings_count: 0,
+          high_findings_count: 0,
+          medium_findings_count: 0,
+          low_findings_count: 0,
+          total_findings_count: 0,
+          is_valid: verdict === "ACCEPTED" || verdict === "ACCEPTED_WITH_WARNINGS",
+        },
+      },
+      is_fully_validated: verdict === "ACCEPTED" || verdict === "ACCEPTED_WITH_WARNINGS",
+      report: v2Report,
+    };
   },
 
   // 11. Version Management: Detect mode (INITIAL vs EVOLUTION)
@@ -559,7 +561,152 @@ export const aiEngineApi = {
     // Fallback benchmark synthesizer for standalone/offline operation
     return synthesizeOfflineBenchmark(prompt, models);
   },
+
+  // 14. Architecture Corrections — Register Approval (Part 2.2.2)
+  async registerCorrectionApproval(payload: {
+    generation_id: string;
+    finding_id: string;
+    artifact_type: string;
+    source_version?: string;
+    approved_by?: string;
+    reason?: string;
+  }): Promise<{ approval_id: string; status: string; approved_at: string }> {
+    const res = await fetch(`${AI_HOST}/api/v1/architecture-corrections/approvals`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to register approval (HTTP ${res.status})`);
+    }
+    return await res.json();
+  },
+
+  // 15. Architecture Corrections — Request Targeted Correction (Part 2.2.2)
+  async requestTargetedCorrection(payload: TargetedCorrectionRequest): Promise<TargetedCorrectionResponse> {
+    const res = await fetch(`${AI_HOST}/api/v1/architecture-corrections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Targeted correction failed (HTTP ${res.status})`);
+    }
+    return await res.json();
+  },
+
+  // 16. Architecture Corrections — Get Operation Details
+  async getCorrectionOperation(operationId: string): Promise<Record<string, unknown>> {
+    const res = await fetch(`${AI_HOST}/api/v1/architecture-corrections/${operationId}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to fetch correction operation (HTTP ${res.status})`);
+    }
+    return await res.json();
+  },
+
+  // 17. Architecture Corrections — Accept Correction
+  async acceptCorrection(
+    operationId: string,
+    payload?: AcceptCorrectionRequest
+  ): Promise<AcceptCorrectionResponse> {
+    const res = await fetch(`${AI_HOST}/api/v1/architecture-corrections/${operationId}/accept`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {}),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to accept correction (HTTP ${res.status})`);
+    }
+    return await res.json();
+  },
+
+  // 18. Architecture Corrections — Reject Correction
+  async rejectCorrection(
+    operationId: string,
+    payload?: { rejection_reason?: string }
+  ): Promise<RejectCorrectionResponse> {
+    const res = await fetch(`${AI_HOST}/api/v1/architecture-corrections/${operationId}/reject`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload || {}),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to reject correction (HTTP ${res.status})`);
+    }
+    return await res.json();
+  },
 };
+
+export interface VerificationResult {
+  is_valid: boolean;
+  checks_passed: string[];
+  checks_failed: string[];
+  warnings: string[];
+  baseline_preservation_score: number;
+  unrelated_keys_preserved: boolean;
+}
+
+export interface TargetedCorrectionRequest {
+  generation_id: string;
+  artifact_type: string;
+  source_version?: string;
+  finding_id: string;
+  finding_description: string;
+  evidence: string;
+  correction_instruction: string;
+  reason?: string;
+  affected_target?: string;
+  validation_context?: Record<string, unknown>;
+  baseline_package?: Record<string, unknown>;
+  simulated_corrected_artifact?: Record<string, unknown>;
+}
+
+export interface TargetedCorrectionResponse {
+  operation_id: string;
+  status: "CORRECTION_VERIFIED" | "CORRECTION_PROPOSED" | "MANUAL_REVIEW_REQUIRED" | "CORRECTION_FAILED";
+  generation_id: string;
+  source_version: string;
+  artifact_type: string;
+  finding_id: string;
+  change_summary: string;
+  explanation: string;
+  original_artifact: Record<string, unknown>;
+  corrected_artifact: Record<string, unknown>;
+  verification_result: VerificationResult;
+  unresolved_issues: string[];
+  created_at: string;
+}
+
+export interface AcceptCorrectionRequest {
+  expected_source_version?: string;
+  target_version?: string;
+  acceptance_note?: string;
+  generation_id?: string;
+}
+
+export interface AcceptCorrectionResponse {
+  operation_id: string;
+  status: "ACCEPTED";
+  new_version: string;
+  previous_version: string;
+  artifact_type: string;
+  updated_artifact: Record<string, unknown>;
+  updated_package?: Record<string, unknown>;
+  accepted_at: string;
+}
+
+export interface RejectCorrectionResponse {
+  operation_id: string;
+  status: "REJECTED";
+  rejection_reason?: string;
+  rejected_at: string;
+  original_artifact_preserved: boolean;
+}
 
 export interface BenchmarkModelConfig {
   id: string;

@@ -1,0 +1,41 @@
+artifact: database
+title: Database LLD Architecture Rubric
+sources: ["ISO25012", "IEEE1016"]
+applicable_tags: ["db-integrity", "isolation", "locking", "caching", "backup"]
+
+dimensions:
+  - id: entity_coverage
+    label: Entity Coverage & Attribute Completeness
+    weight: 0.20
+    description: All domain entities mapped to normalized tables with explicit typed columns and constraints.
+    source: ISO25012
+
+  - id: keys_constraints
+    label: Primary & Foreign Keys and Relational Constraints
+    weight: 0.20
+    description: Unambiguous primary keys, composite unique constraints, and enforced referential integrity.
+    source: ISO25012
+
+  - id: index_for_queries
+    label: Index Strategy for Access Patterns
+    weight: 0.15
+    description: B-Tree/GIN indexes tailored to query filters, joins, sorting, and foreign keys.
+    source: IEEE1016
+
+  - id: integrity_isolation
+    label: Transaction Isolation & Integrity Guarantees
+    weight: 0.20
+    description: Declared isolation levels (READ COMMITTED / SERIALIZABLE), row-level locks, and optimistic versioning.
+    source: ISO25012
+
+  - id: retention_migration
+    label: Retention Strategy & Migration Versioning
+    weight: 0.10
+    description: Data purge schedules, audit archival, and forward-backward schema migration safety.
+    source: ISO25012
+
+  - id: specificity
+    label: Concrete Specificity & Requirement Binding
+    weight: 0.15
+    description: 5 = named entities, concrete numbers and mechanisms tied to requirement IDs; 0-2 = generic statements without entity or requirement link.
+    source: internal
