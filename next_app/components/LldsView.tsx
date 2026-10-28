@@ -142,7 +142,7 @@ export default function LldsView({ onBackToHld }: Props = {}) {
         )}
       </div>
 
-      {/* Bottom Slider Footer with Navigation Controls & Bottom-Right LLD Dropdown */}
+      {/* Bottom Slider Footer with Navigation Controls & Bottom-Right LLD Dropup */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200/70 bg-white/70 px-3 sm:px-6 py-2 sm:py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg shrink-0">
         {/* Left: Back to Visual HLD */}
         <button
@@ -159,11 +159,13 @@ export default function LldsView({ onBackToHld }: Props = {}) {
           <span className="hidden sm:inline">Back to </span><span>Visual HLD</span>
         </button>
 
-        {/* Right: Only keep the dropdown menu of selecting the LLD designs */}
+        {/* Right: Dropup menu for navigating between LLD designs */}
         <div className="flex items-center gap-2 sm:gap-3">
           <Select
             id="lld-view-select"
             title="Switch Low-Level Design"
+            direction="up"
+            dropup
             value={activeLldType}
             onChange={(type) => {
               setActiveLldType(type as LldType);
