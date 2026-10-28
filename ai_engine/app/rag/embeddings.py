@@ -44,6 +44,9 @@ def get_embedder() -> Any:
     if _embedder is not None:
         return _embedder
 
+    if os.getenv("DISABLE_LOCAL_EMBEDDINGS", "false").lower() in ("true", "1"):
+        raise RuntimeError("Local embeddings disabled via DISABLE_LOCAL_EMBEDDINGS=true to preserve memory on low-RAM instance.")
+
     # Suppress the "BertModel LOAD REPORT" table printed by sentence-transformers
     logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
     logging.getLogger("transformers").setLevel(logging.ERROR)

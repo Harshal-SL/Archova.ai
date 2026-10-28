@@ -20,6 +20,10 @@ services:
         value: "google/gemini-2.5-flash-lite:free"
       - key: CORS_ORIGINS
         value: "*"
+      - key: DISABLE_LOCAL_EMBEDDINGS
+        value: "true"
+      - key: RAG_PRELOAD
+        value: "false"
       - key: QDRANT_URL
         sync: false
       - key: QDRANT_API_KEY
@@ -46,6 +50,10 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: "*"
+      - key: DISABLE_LOCAL_EMBEDDINGS
+        value: "true"
+      - key: RAG_PRELOAD
+        value: "false"
       - key: QDRANT_URL
         sync: false
       - key: QDRANT_API_KEY
