@@ -41,6 +41,7 @@ CREATE POLICY "Users can delete own architecture designs" ON public.architecture
 
 
 -- ── 2. Secure public.chat_sessions ────────────────────────────────
+-- Note: chat_sessions.user_id is TEXT in production schema
 ALTER TABLE IF EXISTS public.chat_sessions ENABLE ROW LEVEL SECURITY;
 
 -- Create index on user_id for RLS performance
@@ -53,29 +54,30 @@ DROP POLICY IF EXISTS "Users can view own chat sessions" ON public.chat_sessions
 CREATE POLICY "Users can view own chat sessions" ON public.chat_sessions
   FOR SELECT
   TO authenticated
-  USING ((SELECT auth.uid()) = user_id);
+  USING ((SELECT auth.uid())::text = user_id);
 
 DROP POLICY IF EXISTS "Users can insert own chat sessions" ON public.chat_sessions;
 CREATE POLICY "Users can insert own chat sessions" ON public.chat_sessions
   FOR INSERT
   TO authenticated
-  WITH CHECK ((SELECT auth.uid()) = user_id);
+  WITH CHECK ((SELECT auth.uid())::text = user_id);
 
 DROP POLICY IF EXISTS "Users can update own chat sessions" ON public.chat_sessions;
 CREATE POLICY "Users can update own chat sessions" ON public.chat_sessions
   FOR UPDATE
   TO authenticated
-  USING ((SELECT auth.uid()) = user_id)
-  WITH CHECK ((SELECT auth.uid()) = user_id);
+  USING ((SELECT auth.uid())::text = user_id)
+  WITH CHECK ((SELECT auth.uid())::text = user_id);
 
 DROP POLICY IF EXISTS "Users can delete own chat sessions" ON public.chat_sessions;
 CREATE POLICY "Users can delete own chat sessions" ON public.chat_sessions
   FOR DELETE
   TO authenticated
-  USING ((SELECT auth.uid()) = user_id);
+  USING ((SELECT auth.uid())::text = user_id);
 
 
 -- ── 3. Secure public.messages ─────────────────────────────────────
+-- Note: messages.session_id is TEXT, chat_sessions.id is TEXT, chat_sessions.user_id is TEXT
 ALTER TABLE IF EXISTS public.messages ENABLE ROW LEVEL SECURITY;
 
 -- Create index on session_id for nested RLS lookup performance
@@ -92,7 +94,7 @@ CREATE POLICY "Users can view own session messages" ON public.messages
     EXISTS (
       SELECT 1 FROM public.chat_sessions
       WHERE chat_sessions.id = messages.session_id
-        AND chat_sessions.user_id = (SELECT auth.uid())
+        AND chat_sessions.user_id = (SELECT auth.uid())::text
     )
   );
 
@@ -104,7 +106,7 @@ CREATE POLICY "Users can insert own session messages" ON public.messages
     EXISTS (
       SELECT 1 FROM public.chat_sessions
       WHERE chat_sessions.id = messages.session_id
-        AND chat_sessions.user_id = (SELECT auth.uid())
+        AND chat_sessions.user_id = (SELECT auth.uid())::text
     )
   );
 
@@ -116,7 +118,7 @@ CREATE POLICY "Users can update own session messages" ON public.messages
     EXISTS (
       SELECT 1 FROM public.chat_sessions
       WHERE chat_sessions.id = messages.session_id
-        AND chat_sessions.user_id = (SELECT auth.uid())
+        AND chat_sessions.user_id = (SELECT auth.uid())::text
     )
   );
 
@@ -128,23 +130,31 @@ CREATE POLICY "Users can delete own session messages" ON public.messages
     EXISTS (
       SELECT 1 FROM public.chat_sessions
       WHERE chat_sessions.id = messages.session_id
-        AND chat_sessions.user_id = (SELECT auth.uid())
+        AND chat_sessions.user_id = (SELECT auth.uid())::text
     )
   );
 
 
 -- ── 4. Secure public.users ────────────────────────────────────────
+-- Note: users.id is UUID
 ALTER TABLE IF EXISTS public.users ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Public can view users" ON public.users;
 DROP POLICY IF EXISTS "Users can insert their own data" ON public.users;
 DROP POLICY IF EXISTS "Users can update their own data" ON public.users;
 DROP POLICY IF EXISTS "Users can view own user record" ON public.users;
+DROP POLICY IF EXISTS "Users can insert own user record" ON public.users;
+DROP POLICY IF EXISTS "Users can update own user record" ON public.users;
 
 CREATE POLICY "Users can view own user record" ON public.users
   FOR SELECT
   TO authenticated
   USING ((SELECT auth.uid()) = id);
+
+CREATE POLICY "Users can insert own user record" ON public.users
+  FOR INSERT
+  TO authenticated
+  WITH CHECK ((SELECT auth.uid()) = id);
 
 CREATE POLICY "Users can update own user record" ON public.users
   FOR UPDATE
