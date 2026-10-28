@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
  * Server-Side AI Engine Reverse Proxy Route Handler
@@ -38,7 +39,7 @@ async function handleProxy(req: NextRequest, context: { params: Promise<{ path?:
     const body = hasBody ? await req.arrayBuffer() : undefined;
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout for LLM synthesis
+    const timeout = setTimeout(() => controller.abort(), 120000); // 120s timeout for LLM synthesis
 
     const backendRes = await fetch(destinationUrl, {
       method,

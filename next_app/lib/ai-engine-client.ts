@@ -105,9 +105,10 @@ export interface StatusResponse {
 // In-memory question tracker for frontend simulation
 const answerCounts: Record<string, number> = {};
 const isBrowser = typeof window !== "undefined";
+const directUrl = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "").trim().replace(/\/+$/, "");
 const AI_HOST = isBrowser
-  ? "/api/engine"
-  : (process.env.AI_ENGINE_URL || process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+  ? (directUrl || "/api/engine")
+  : (process.env.AI_ENGINE_URL || directUrl || "http://localhost:8000").trim().replace(/\/+$/, "");
 
 export const aiEngineApi = {
   // 1. Health check — Tries FastAPI on port 8000
