@@ -1,6 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
+
+const ShootingStarsGrid = dynamic(
+  () => import("@/components/ui/shooting-stars-grid"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -108,10 +117,29 @@ export default function Sidebar() {
           sidebarOpen ? "w-[280px] sm:w-80 translate-x-0" : "w-0 -translate-x-full overflow-hidden border-r-0 md:w-0"
         )}
       >
+        {/* ── Background Grid & Shooting Stars Animation Layer ── */}
+        {mounted && (
+          <div
+            className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+            aria-hidden="true"
+          >
+            <ShootingStarsGrid
+              starCount={24}
+              shootingStarCount={3}
+              gridSize={36}
+              speed="slow"
+              glow={false}
+              interactive={false}
+              className="h-full w-full rounded-none border-none shadow-none min-h-0 bg-transparent dark:bg-transparent"
+            >
+              {null}
+            </ShootingStarsGrid>
+          </div>
+        )}
         
 
         {/* Top Header & Brand */}
-        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-[#262626] shrink-0 bg-white dark:bg-[#0D0D0F]">
+        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-[#262626] shrink-0 bg-white/70 dark:bg-[#0D0D0F]/70 backdrop-blur-md">
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
@@ -226,7 +254,7 @@ export default function Sidebar() {
         </div>
 
         {/* Docked User Profile below the sidebar */}
-        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-[#262626] shrink-0 bg-white dark:bg-[#0D0D0F]">
+        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-[#262626] shrink-0 bg-white/70 dark:bg-[#0D0D0F]/70 backdrop-blur-md">
           {user ? (
             <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
               <div className="flex min-w-0 items-center gap-2.5">
