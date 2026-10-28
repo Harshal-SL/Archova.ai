@@ -632,7 +632,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
               <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-50/70 p-2.5 text-[11px] text-amber-900 dark:border-amber-500/20 dark:bg-amber-950/25 dark:text-amber-200">
                 <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
                 <span>
-                  <strong>Note:</strong> In-detail rationale & trade-offs are available exclusively for <strong>Archova AI Engine</strong> designs.
+                  <strong>Note:</strong> In-detail rationale & trade-offs are available exclusively for <strong>Archova AI</strong> designs.
                 </span>
               </div>
             )}

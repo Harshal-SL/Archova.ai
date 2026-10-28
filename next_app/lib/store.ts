@@ -839,7 +839,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             await get().addMessage(activeSid, {
               id: generateMsgId(),
               role: "ai",
-              content: `✓ **Architecture Validated & Synthesized**\n\n• **Verdict**: ${verdict}\n• **Composite Quality Score**: ${scorePercent}%\n• **High-Level Design**: ${finalNodes.length} nodes synthesized\n• **Low-Level Designs**: 5 blueprints generated (Backend, Frontend, DB, Security, Cloud)`,
+              content: `✓ Architecture Validated & Synthesized\n\n• Verdict: ${verdict}\n• Composite Quality Score: ${scorePercent}%\n• High-Level Design: ${finalNodes.length} nodes synthesized\n• Low-Level Designs: 5 blueprints generated (Backend, Frontend, DB, Security, Cloud)`,
             });
 
             await supabase.from("chat_sessions").update({
@@ -1603,7 +1603,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const evolvedNotice: ChatMessage = {
         id: generateMsgId(),
         role: "ai",
-        content: `✨ **Architecture Evolved to ${response.version}**\n\n• **Summary**: ${diff.feature_summary}\n• **Added Components**: ${addedCompNames}\n• **Database Changes**: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• **Invariance Guarantee**: 100% verified baseline preservation (0 existing components modified or deleted).`,
+        content: `✨ Architecture Evolved to ${response.version}\n\n• Summary: ${diff.feature_summary}\n• Added Components: ${addedCompNames}\n• Database Changes: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• Invariance Guarantee: 100% verified baseline preservation (0 existing components modified or deleted).`,
       };
       set((s) => ({
         sessions: s.sessions.map((ses) =>
@@ -1647,7 +1647,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         await supabase.from("messages").insert([{
           session_id: activeSid,
           role: "assistant",
-          content: `✨ **Architecture Evolved to ${response.version}**\n\n• **Summary**: ${diff.feature_summary}\n• **Added Components**: ${diff.added_nodes?.join(", ") || "None"}\n• **Database Changes**: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• **Invariance Guarantee**: 100% verified baseline preservation (0 existing components modified or deleted).`,
+          content: `✨ Architecture Evolved to ${response.version}\n\n• Summary: ${diff.feature_summary}\n• Added Components: ${diff.added_nodes?.join(", ") || "None"}\n• Database Changes: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• Invariance Guarantee: 100% verified baseline preservation (0 existing components modified or deleted).`,
           json_response: evolvedPkg,
         }]);
 

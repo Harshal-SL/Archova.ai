@@ -47,7 +47,7 @@ export default function ModelDesignControls() {
   const modelOptions: TSelectData[] = [
     {
       id: "archova",
-      label: "Archova AI Engine",
+      label: "Archova AI",
       value: "archova",
       description: "Multi-Agent REE + SAE Engine (with In-Detail Rationale)",
       icon: <Sparkles className="h-3.5 w-3.5 text-[#005dff]" />,
@@ -79,7 +79,7 @@ export default function ModelDesignControls() {
         shimmerDuration="2.5s"
         background="#0D0D0F"
         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white border border-[#262626] hover:border-white/20 shadow-2xs hover:shadow-md transition-all cursor-pointer pointer-events-auto"
-        title="Compare Archova AI Engine with baseline LLM models"
+        title="Compare Archova AI with baseline LLM models"
       >
         <div className="flex items-center gap-1.5 text-white">
           <Scale className="h-3.5 w-3.5 text-white" />

@@ -90,7 +90,7 @@ export default function HldWorkspace() {
   // Active model display name
   const activeModelDisplayName =
     activeModelId === "archova"
-      ? "Archova AI Engine"
+      ? "Archova AI"
       : benchmarkResults[activeModelId]?.model_name ||
         benchmarkModelsConfig.find((m) => m.id === activeModelId)?.name ||
         activeModelId;
@@ -263,7 +263,7 @@ export default function HldWorkspace() {
             onClick={() => selectModel("archova")}
             className="flex items-center gap-1 font-bold underline hover:text-black dark:hover:text-white transition-colors cursor-pointer text-[11px]"
           >
-            <span>Switch back to Archova AI Engine</span>
+            <span>Switch back to Archova AI</span>
             <ArrowRight className="h-3 w-3" />
           </button>
         </div>

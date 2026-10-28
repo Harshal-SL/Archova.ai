@@ -162,6 +162,18 @@ class DirectLLMGenerator:
         """
         start_time = time.perf_counter()
 
+        # Check Redis Cache
+        try:
+            from app.core.redis_client import get_cached_llm
+            cached_str = await get_cached_llm(prompt, f"benchmark:{model_config.model_id}")
+            if cached_str:
+                cached_data = json.loads(cached_str)
+                cached_latency = round((time.perf_counter() - start_time) * 1000, 1)
+                logger.info("[Benchmark] Redis cache hit for %s (%.1fms)", model_config.name, cached_latency)
+                return cached_data, cached_latency
+        except Exception:
+            pass
+
         # Determine target API key & endpoint
         api_key = (
             model_config.api_key
@@ -319,10 +331,17 @@ class DirectLLMGenerator:
             logger.warning("Direct LLM call failed for %s (%s). Synthesizing tailored archetype package.", model_config.name, exc)
             return self._build_fallback_package(prompt, model_config, str(exc)), round((time.perf_counter() - start_time) * 1000, 1)
 
-        latency_ms = round((time.perf_counter() - start_time) * 1000, 1)
-
         # Parse and normalize the single-shot response
         package = self._parse_and_normalize_package(raw_content, prompt, model_config)
+
+        # Store in Redis Cache
+        try:
+            if package and package.get("hld", {}).get("nodes"):
+                from app.core.redis_client import set_cached_llm
+                await set_cached_llm(prompt, f"benchmark:{model_config.model_id}", json.dumps(package), ttl_seconds=86400)
+        except Exception:
+            pass
+
         return package, latency_ms
 
     def _parse_and_normalize_package(

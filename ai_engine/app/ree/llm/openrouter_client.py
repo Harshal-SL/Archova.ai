@@ -182,6 +182,15 @@ class OpenRouterClient:
             )
             return None
 
+        # 0. Check Redis LLM Cache
+        try:
+            from app.core.redis_client import get_cached_llm_sync, set_cached_llm_sync
+            cached_content = get_cached_llm_sync(prompt, model)
+            if cached_content:
+                return cached_content
+        except Exception:
+            pass
+
         # 1. Primary Model Attempt Loop
         content = self._send_completion_for_model(
             model=model,
@@ -194,6 +203,11 @@ class OpenRouterClient:
         )
 
         if content is not None:
+            try:
+                from app.core.redis_client import set_cached_llm_sync
+                set_cached_llm_sync(prompt, model, content)
+            except Exception:
+                pass
             return content
 
         # 2. Determine Fallback Model (must be distinct from primary model)

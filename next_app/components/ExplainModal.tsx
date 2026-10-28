@@ -196,7 +196,7 @@ ${rationale.tradeoffs.map((t) => `- **Trade-off:** ${t.acceptedTradeoff}\n  - **
           <div className="mx-6 mt-3.5 mb-1 rounded-xl border border-amber-500/25 bg-amber-50/70 dark:border-amber-500/20 dark:bg-amber-950/25 px-4 py-2.5 text-xs text-amber-900 dark:text-amber-200 flex items-center gap-2.5 shrink-0">
             <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
             <span>
-              <strong>Note:</strong> In-detail architectural justification, ADR decisions, and trade-offs are available exclusively for <strong>Archova AI Engine</strong> designs. Baseline LLM designs display component specifications only.
+              <strong>Note:</strong> In-detail architectural justification, ADR decisions, and trade-offs are available exclusively for <strong>Archova AI</strong> designs. Baseline LLM designs display component specifications only.
             </span>
           </div>
         )}

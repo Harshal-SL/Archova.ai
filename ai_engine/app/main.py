@@ -16,8 +16,10 @@ for _env_candidate in _candidates:
         load_dotenv(dotenv_path=_env_candidate, override=True)
         break
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.routers import api_router
 
 app = FastAPI(
@@ -31,11 +33,6 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
-
-import os
-
-from pathlib import Path
-from fastapi.staticfiles import StaticFiles
 
 # Parse configurable CORS origins (comma-separated or wildcard '*')
 _cors_origins_raw = os.getenv("CORS_ORIGINS", "*").strip()
@@ -73,3 +70,17 @@ def health():
             "Software Architecture Engine (SAE)",
         ],
     }
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    try:
+        from app.core.redis_client import close_redis
+        await close_redis()
+    except Exception:
+        pass
+    try:
+        from app.core.kafka_client import close_kafka_producer
+        await close_kafka_producer()
+    except Exception:
+        pass

@@ -28,6 +28,9 @@ QDRANT_LOCAL_PATH: str = os.getenv(
 )
 QDRANT_COLLECTION: str = os.getenv("QDRANT_COLLECTION_NAME", "architecture_rag")
 
+# Redis Cache
+REDIS_URL: Optional[str] = os.getenv("REDIS_URL") or os.getenv("UPSTASH_REDIS_URL")
+
 # RAG Knowledge Corpus
 RAG_DATA_ROOT: Path = Path(
     os.getenv("RAG_DATA_ROOT", str(_WORKSPACE_ROOT / "ai_engine" / "data" / "RAG"))

@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import BubbleBg from "@/components/BubbleBg";
 import ThemeToggle from "@/components/ThemeToggle";
+import { Logo } from "@/components/Logo";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
@@ -325,11 +326,9 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
         href="/"
         className="fixed top-5 left-5 sm:top-6 sm:left-6 z-50 flex items-center gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-neutral-300 bg-white/90 text-neutral-900 hover:border-black dark:border-neutral-800 dark:bg-neutral-950/90 dark:text-neutral-200 dark:hover:border-white backdrop-blur-xl shadow-xs transition-all duration-200 group"
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black font-extrabold shadow-sm transition-transform duration-200 group-hover:scale-105">
-          <Cpu className="h-4 w-4" />
-        </div>
-        <span className="text-sm font-bold tracking-tight">
-          Arch<span className="text-neutral-500 dark:text-neutral-400">AI</span>
+        <Logo size={28} className="rounded-lg group-hover:scale-105" />
+        <span className="text-sm font-bold tracking-tight font-heading">
+          Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
         </span>
       </Link>
 

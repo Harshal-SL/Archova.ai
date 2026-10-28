@@ -19,6 +19,7 @@ import MultiAgentSwarmLoader from "./MultiAgentSwarmLoader";
 import { AiLoader } from "@/components/ui/ai-loader";
 import { AnimatedAIChat } from "@/components/ui/animated-ai-chat";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/Logo";
 
 const ARCHITECTURE_TEMPLATES = [
   {
@@ -120,8 +121,8 @@ export default function ChatWindow() {
     if (hasFiles) {
       const docList = attachedFiles.map((f) => `\`${f.name}\``).join(", ");
       displayContent = promptText
-        ? `${promptText}\n\n📎 **Uploaded Requirements:** ${docList}`
-        : `📎 **Uploaded Requirements Document${attachedFiles.length > 1 ? "s" : ""}:** ${docList}`;
+        ? `${promptText}\n\n📎 Uploaded Requirements: ${docList}`
+        : `📎 Uploaded Requirements Document${attachedFiles.length > 1 ? "s" : ""}: ${docList}`;
     }
 
     // 1. Post user prompt into chat
@@ -222,7 +223,7 @@ export default function ChatWindow() {
         await addMessage(sid, {
           id: generateMsgId(),
           role: "ai",
-          content: `⚠️ **Error evolving architecture**: ${msg}`,
+          content: `⚠️ Error evolving architecture: ${msg}`,
         });
       } finally {
         setStarting(false);
@@ -287,14 +288,14 @@ export default function ChatWindow() {
       await addMessage(sid, {
         id: generateMsgId(),
         role: "ai",
-        content: `I've analyzed your requirements and initiated the **Architecture Engineering Pipeline**.\n\nPlease answer the clarifying questions in the animated **AI Interview** below to synthesize the High-Level Design (HLD).`,
+        content: `I've analyzed your requirements and initiated the Architecture Engineering Pipeline.\n\nPlease answer the clarifying questions in the animated AI Interview below to synthesize the High-Level Design (HLD).`,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to process requirements.";
       await addMessage(sid, {
         id: generateMsgId(),
         role: "ai",
-        content: `⚠️ **Error initializing Architecture Engine**\n\n${msg}`,
+        content: `⚠️ Error initializing Architecture Engine\n\n${msg}`,
       });
     } finally {
       setStarting(false);
@@ -331,9 +332,7 @@ export default function ChatWindow() {
                   )}
                 >
                   {!isUser && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-neutral-950 text-white border border-neutral-800 dark:bg-white dark:text-black shadow-xs mt-0.5">
-                      <Cpu className="h-4 w-4" />
-                    </div>
+                    <Logo size={32} className="rounded-xl mt-0.5 shadow-xs" />
                   )}
 
                   <div
@@ -344,7 +343,7 @@ export default function ChatWindow() {
                         : "max-w-[85%] border border-neutral-200/80 bg-white dark:border-[#262626] dark:bg-[#0D0D0F] text-neutral-900 dark:text-neutral-100 rounded-bl-sm"
                     )}
                   >
-                    {m.content}
+                    {m.role === "ai" ? m.content.replace(/\*\*/g, "") : m.content}
                   </div>
 
                   {isUser && (

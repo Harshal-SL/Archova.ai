@@ -23,6 +23,7 @@ import {
   FileSearch,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
+import { Logo } from "./Logo";
 import clsx from "clsx";
 
 export default function ComparisonView() {
@@ -298,12 +299,10 @@ export default function ComparisonView() {
 
               <div>
                 <div className="flex items-center gap-2.5 mb-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#005dff] text-white font-bold text-sm">
-                    A
-                  </div>
+                  <Logo size={32} className="rounded-xl shadow-xs" />
                   <div>
                     <h3 className="text-sm font-bold text-black dark:text-white">
-                      Archova AI Engine
+                      Archova AI
                     </h3>
                     <div className="text-[10px] text-neutral-500 font-mono">
                       Multi-Agent REE + SAE + RAG
@@ -623,7 +622,7 @@ export default function ComparisonView() {
                   <div className="flex items-center gap-4 text-xs">
                     <span className="flex items-center gap-1.5 font-bold text-[#005dff]">
                       <span className="h-2 w-2 rounded-full bg-[#005dff]" />
-                      Archova AI Engine
+                      Archova AI
                     </span>
                     <span className="flex items-center gap-1.5 text-neutral-500 font-medium">
                       <span className="h-2 w-2 rounded-full bg-neutral-400 dark:bg-neutral-700" />
@@ -720,7 +719,7 @@ export default function ComparisonView() {
                       <tr>
                         <th className="py-3 px-5 font-bold">Quality Gate</th>
                         <th className="py-3 px-5 font-bold text-[#005dff]">
-                          Archova AI Engine
+                          Archova AI
                         </th>
                         {effectiveComparison.quality_gates[0]?.models &&
                           Object.keys(effectiveComparison.quality_gates[0].models).map(

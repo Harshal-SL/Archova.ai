@@ -41,6 +41,34 @@ from Validator_Engine.validators.structural_validator import StructuralValidator
 
 logger = logging.getLogger(__name__)
 
+_validator_redis_client = None
+
+
+def _get_validator_redis():
+    """Returns singleton synchronous Redis client for validation result caching."""
+    global _validator_redis_client
+    if _validator_redis_client is not None:
+        return _validator_redis_client
+    try:
+        from Validator_Engine.config import REDIS_URL
+        if not REDIS_URL:
+            return None
+        import redis
+        client = redis.from_url(
+            REDIS_URL,
+            decode_responses=True,
+            socket_timeout=3,
+            socket_connect_timeout=3,
+            retry_on_timeout=True,
+        )
+        client.ping()
+        _validator_redis_client = client
+        logger.info(f"[Validator:Redis] Connected to Redis cluster for caching: {REDIS_URL.split('@')[-1]}")
+        return _validator_redis_client
+    except Exception as exc:
+        logger.debug(f"[Validator:Redis] Redis connection not available ({exc}). Continuing without cache.")
+        return None
+
 
 class ValidatorEngine:
     """Master Architecture Validation Engine orchestrating end-to-end verification."""
@@ -83,6 +111,21 @@ class ValidatorEngine:
         # 1. Normalize Input
         package = self._normalize_input(input_data)
         logger.info(f"Starting architectural validation for package '{package.package_id}' ({package.get_system_name()})...")
+
+        # Fast Fingerprint & Redis Cache Check
+        fingerprint = hashlib.sha256(json.dumps(package.data, sort_keys=True, default=str).encode("utf-8")).hexdigest()[:16]
+        cache_key = f"val:cache:{fingerprint}"
+        r_client = _get_validator_redis()
+        if r_client:
+            try:
+                cached_raw = r_client.get(cache_key)
+                if cached_raw:
+                    cached_duration = round((time.perf_counter() - start_time) * 1000, 2)
+                    logger.info(f"[Validator:Redis] Cache HIT for '{package.package_id}' (fingerprint: {fingerprint}, {cached_duration}ms)")
+                    cached_response = ValidatedArchitectureResponse.model_validate_json(cached_raw)
+                    return cached_response
+            except Exception:
+                pass
 
         # 2. Phase 1: Structural Integrity & Schema Validation
         structural_report = self.structural_validator.validate(package)
@@ -140,7 +183,6 @@ class ValidatorEngine:
         )
 
         duration_ms = round((time.perf_counter() - start_time) * 1000, 2)
-        fingerprint = hashlib.sha256(json.dumps(package.data, default=str).encode("utf-8")).hexdigest()[:16]
 
         # 12. Assemble Validation Block
         critical_count = len([f for f in all_findings if f.severity == FindingSeverity.CRITICAL])
@@ -207,6 +249,13 @@ class ValidatorEngine:
             max_retries=max_retries,
             correction_history=correction_history or [],
         )
+
+        # Cache validated response in Redis
+        if r_client:
+            try:
+                r_client.set(cache_key, response.model_dump_json(), ex=86400)
+            except Exception:
+                pass
 
         logger.info(
             f"Validation completed for '{package.package_id}' (Attempt {attempt}): Status={response.status}, "

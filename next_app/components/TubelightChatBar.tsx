@@ -21,6 +21,7 @@ import {
 import { useAppStore, generateMsgId, type ChatMessage } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { Logo } from "@/components/Logo";
 
 // ── Smart Architecture Copilot Generator for Live Diagram Inquiries ──
 function generateArchitectureReply(prompt: string, hldData: Record<string, unknown> | null): string {
@@ -30,11 +31,11 @@ function generateArchitectureReply(prompt: string, hldData: Record<string, unkno
     return `### ⚡ Caching Tier Recommendation
 
 To optimize throughput for your current architecture:
-1. **Redis Cluster (Multi-AZ)**: Deploy a Redis 7.2 cluster with in-memory write-through caching for high-velocity session tokens and component queries.
-2. **TTL Strategy**: 
+1. Redis Cluster (Multi-AZ): Deploy a Redis 7.2 cluster with in-memory write-through caching for high-velocity session tokens and component queries.
+2. TTL Strategy: 
    - Hot queries: \`300s\` with jitter to prevent cache stampedes.
    - Static component metadata: \`3600s\`.
-3. **Cache Invalidation**: Use Redis Pub/Sub or Kafka CDC events from the persistence layer to trigger deterministic cache eviction.
+3. Cache Invalidation: Use Redis Pub/Sub or Kafka CDC events from the persistence layer to trigger deterministic cache eviction.
 
 *Visual HLD & Database LLD updated with recommended cache topology.*`;
   }
@@ -43,25 +44,25 @@ To optimize throughput for your current architecture:
     return `### 📡 Event-Driven Pipeline Choreography
 
 For asynchronous decoupled microservices:
-1. **Partitioning**: Partition by \`tenant_id\` or \`entity_id\` with 12 partitions per topic for horizontal consumer scaling.
-2. **Idempotency**: Consumers enforce deduplication via distributed lock on transaction ID with transactional outbox pattern.
-3. **Dead-Letter Queue (DLQ)**: Failed events retry up to 3 times with exponential backoff before landing in \`dlq-events\` for alerting.`;
+1. Partitioning: Partition by \`tenant_id\` or \`entity_id\` with 12 partitions per topic for horizontal consumer scaling.
+2. Idempotency: Consumers enforce deduplication via distributed lock on transaction ID with transactional outbox pattern.
+3. Dead-Letter Queue (DLQ): Failed events retry up to 3 times with exponential backoff before landing in \`dlq-events\` for alerting.`;
   }
 
   if (p.includes("security") || p.includes("auth") || p.includes("jwt") || p.includes("mtls")) {
     return `### 🛡️ Zero-Trust Security Specification
 
-1. **Edge Gateway**: Enforces OAuth2 / OIDC JWT token validation with JWKS rotation every 24 hours.
-2. **Internal Service-to-Service**: Strictly enforced mutual TLS (mTLS) with SPIFFE/SPIRE workload cryptographic identity attestation.
-3. **RBAC Matrix**: Role-based access control with least-privilege policies verified on every RPC boundary.`;
+1. Edge Gateway: Enforces OAuth2 / OIDC JWT token validation with JWKS rotation every 24 hours.
+2. Internal Service-to-Service: Strictly enforced mutual TLS (mTLS) with SPIFFE/SPIRE workload cryptographic identity attestation.
+3. RBAC Matrix: Role-based access control with least-privilege policies verified on every RPC boundary.`;
   }
 
   if (p.includes("scale") || p.includes("load") || p.includes("traffic") || p.includes("qps")) {
     return `### 📈 Horizontal Scaling Blueprint
 
-1. **Auto-scaling (HPA)**: Kubernetes pods configured to scale on 70% CPU / memory target or queue depth metrics via KEDA.
-2. **Database Read Replicas**: Route read-heavy traffic to 3 read replicas with PgBouncer connection pooling.
-3. **Global Edge CDN**: Edge caching for static assets with AWS CloudFront / Cloudflare reducing origin traffic by up to 78%.`;
+1. Auto-scaling (HPA): Kubernetes pods configured to scale on 70% CPU / memory target or queue depth metrics via KEDA.
+2. Database Read Replicas: Route read-heavy traffic to 3 read replicas with PgBouncer connection pooling.
+3. Global Edge CDN: Edge caching for static assets with AWS CloudFront / Cloudflare reducing origin traffic by up to 78%.`;
   }
 
   // General contextual architecture response
@@ -69,11 +70,11 @@ For asynchronous decoupled microservices:
 
 Regarding your inquiry: *"__${prompt.slice(0, 100)}..."*
 
-1. **System Impact**: This inquiry targets the core service boundary in your High-Level Design (HLD).
-2. **Recommended Action**:
+1. System Impact: This inquiry targets the core service boundary in your High-Level Design (HLD).
+2. Recommended Action:
    - Inspect the corresponding component drawer in the interactive topology above.
-   - Cross-reference with the **Low-Level Design (LLD)** blueprints for schema and protocol verification.
-3. **Verification**: The system guarantees IEEE/ISO compliance across API contracts, persistence sharding, and edge ingress routing.
+   - Cross-reference with the Low-Level Design (LLD) blueprints for schema and protocol verification.
+3. Verification: The system guarantees IEEE/ISO compliance across API contracts, persistence sharding, and edge ingress routing.
 
 *Feel free to ask for specific code blueprints, schema DDLs, or Kubernetes manifests!*`;
 }
@@ -477,12 +478,6 @@ export default function TubelightChatBar() {
 
               {/* ── C. Action Controls & Send Button ── */}
               <div className="flex items-center gap-1.5 shrink-0">
-                {/* Model Pill */}
-                <div className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/80 dark:bg-neutral-900/80 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
-                  <Sparkles className="h-3 w-3 text-cyan-500" />
-                  <span>Archova.ai 4o</span>
-                </div>
-
                 {/* Send Button with Shimmer Animation */}
                 <ShimmerButton
                   type="button"
@@ -631,9 +626,7 @@ export default function TubelightChatBar() {
                     )}
                   >
                     {!isUser && (
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-xs text-xs mt-0.5">
-                        <Cpu className="h-3.5 w-3.5" />
-                      </div>
+                      <Logo size={28} className="rounded-xl mt-0.5 shadow-xs" />
                     )}
 
                     <div
@@ -644,13 +637,15 @@ export default function TubelightChatBar() {
                           : "border border-neutral-200/90 dark:border-white/10 bg-white/90 dark:bg-[#141414] text-neutral-800 dark:text-neutral-200 rounded-tl-xs"
                       )}
                     >
-                      <div className="whitespace-pre-wrap">{m.content}</div>
+                      <div className="whitespace-pre-wrap">
+                        {m.role === "ai" ? m.content.replace(/\*\*/g, "") : m.content}
+                      </div>
 
                       {/* Copy action for AI messages */}
                       {!isUser && (
                         <button
                           type="button"
-                          onClick={() => copyToClipboard(m.content, m.id)}
+                          onClick={() => copyToClipboard(m.role === "ai" ? m.content.replace(/\*\*/g, "") : m.content, m.id)}
                           title="Copy message"
                           className="absolute top-2 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity p-1 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-white"
                         >
@@ -676,9 +671,7 @@ export default function TubelightChatBar() {
             {/* AI Thinking Animation */}
             {isSending && (
               <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 py-1">
-                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black text-xs animate-spin">
-                  <Cpu className="h-3 w-3" />
-                </div>
+                <Logo size={24} className="rounded-lg animate-spin" />
                 <span className="font-mono text-[11px] animate-pulse">
                   {hldData ? "Evolving architecture & updating diagram (v1.x)..." : "Archova.ai is analyzing architecture..."}
                 </span>

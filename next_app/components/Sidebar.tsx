@@ -18,6 +18,7 @@ import {
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { Logo } from "./Logo";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -127,13 +128,8 @@ export default function Sidebar() {
             href="/"
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black shadow-xs">
-              <Cpu className="h-4 w-4" />
-            </div>
+            <Logo size={28} className="rounded-lg" />
             <span className="tracking-tight font-extrabold text-base">Archova.ai</span>
-            <span className="rounded-md bg-neutral-200/80 px-1.5 py-0.5 text-[10px] font-mono text-neutral-700 dark:bg-white/10 dark:text-neutral-300">
-              v2.5
-            </span>
           </Link>
 
           <button

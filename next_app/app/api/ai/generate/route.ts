@@ -189,7 +189,7 @@ export async function POST(request: Request) {
         },
       };
 
-      aiResponse = `I've analyzed your requirement for "${userMessage}" and generated a production-ready architecture.\n\nKey Highlights:\n• **Frontend**: Next.js with responsive Tailwind CSS components\n• **Backend**: API gateway with modular microservice handlers\n• **Database**: Supabase PostgreSQL with real-time replication\n• **Security**: Multi-tier authentication with Row Level Security\n\nCheck out the interactive HLD & LLD diagrams on the right!`;
+      aiResponse = `I've analyzed your requirement for "${userMessage}" and generated a production-ready architecture.\n\nKey Highlights:\n• Frontend: Next.js with responsive Tailwind CSS components\n• Backend: API gateway with modular microservice handlers\n• Database: Supabase PostgreSQL with real-time replication\n• Security: Multi-tier authentication with Row Level Security\n\nCheck out the interactive HLD & LLD diagrams on the right!`;
     }
 
     try {

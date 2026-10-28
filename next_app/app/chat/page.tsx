@@ -8,7 +8,6 @@ import {
   ArrowUpRight,
   Sun,
   Moon,
-  ChevronDown,
   SquarePen,
   Layers,
   Plus,
@@ -19,6 +18,7 @@ import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
 import dynamic from "next/dynamic";
 import BubbleBg from "@/components/BubbleBg";
+import { Logo } from "@/components/Logo";
 
 const HldWorkspace = dynamic(() => import("@/components/HldWorkspace"), {
   ssr: false,
@@ -75,9 +75,7 @@ export default function ChatPage() {
       <div className="relative flex h-screen w-full items-center justify-center bg-white dark:bg-black text-neutral-900 dark:text-white transition-colors">
         <BubbleBg opacity="opacity-40" />
         <div className="relative z-10 flex flex-col items-center gap-4 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-lg animate-pulse">
-            <Cpu className="h-6 w-6" />
-          </div>
+          <Logo size={48} className="rounded-2xl shadow-lg animate-pulse" />
           <div className="space-y-1">
             <div className="font-heading font-extrabold text-base tracking-tight">
               Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
@@ -127,14 +125,9 @@ export default function ChatPage() {
               </button>
             )}
 
-            <div className="flex items-center gap-1 rounded-xl border border-transparent hover:border-neutral-200/80 hover:bg-white/70 dark:hover:border-[#262626] dark:hover:bg-[#0D0D0F] px-2 sm:px-2.5 py-1 text-xs sm:text-sm font-bold text-neutral-800 dark:text-neutral-200 transition-all cursor-pointer backdrop-blur-md shrink-0">
-              <span>Archova.ai 4o</span>
-              <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
-            </div>
-
             {!isEmpty && (
-              <span className="truncate text-xs font-medium text-neutral-400/70 dark:text-neutral-500/70 opacity-60 ml-1 hidden md:inline max-w-[200px] lg:max-w-[320px]">
-                / {sessionTitle}
+              <span className="truncate text-xs sm:text-sm font-semibold text-neutral-800 dark:text-neutral-200 ml-1 hidden md:inline max-w-[200px] lg:max-w-[320px]">
+                {sessionTitle}
               </span>
             )}
           </div>
