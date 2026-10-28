@@ -554,7 +554,7 @@ export default function TubelightChatBar() {
                     Live
                   </span>
                 </div>
-                <p className="truncate text-[10px] text-neutral-400/70 dark:text-neutral-500/70 opacity-60">
+                <p className="truncate text-[10px] text-neutral-500 dark:text-neutral-400">
                   {activeSession?.title || "Active Architecture Chat"}
                 </p>
               </div>

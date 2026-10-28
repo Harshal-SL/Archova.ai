@@ -650,7 +650,7 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
 
           {/* ════ Right Side: Interactive Architecture Showcase (Black, Blue & White Theme) ════ */}
           <motion.div
-            className="lg:col-span-5 hidden lg:flex flex-col justify-between p-6 sm:p-8 border-l border-neutral-200/80 dark:border-white/[0.08] bg-[#0A0A0C] text-white backdrop-blur-2xl relative overflow-hidden"
+            className="lg:col-span-5 hidden lg:flex flex-col justify-between p-6 sm:p-8 border-l border-neutral-200/80 bg-neutral-50/70 text-neutral-900 dark:border-white/[0.08] dark:bg-[#0A0A0C] dark:text-white backdrop-blur-2xl relative overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
@@ -667,23 +667,22 @@ function LiveArchitectureShowcase() {
   return (
     <div className="relative flex flex-col justify-between h-full space-y-6 select-none">
       {/* ── Soft Ambient Glow ── */}
-      <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#005dff]/12 blur-3xl" />
+      <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#005dff]/10 dark:bg-[#005dff]/15 blur-3xl" />
 
       {/* ── Top Header: Minimal Brand Mark ── */}
       <div className="relative z-10 flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white backdrop-blur-md">
+        <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200/80 bg-white/80 px-3 py-1 text-xs text-neutral-800 shadow-2xs dark:border-white/10 dark:bg-white/[0.04] dark:text-white backdrop-blur-md">
           <span className="h-1.5 w-1.5 rounded-full bg-[#005dff] animate-pulse" />
-          <span className="font-semibold tracking-wide text-neutral-200">Archova.ai Studio</span>
+          <span className="font-semibold tracking-wide text-neutral-900 dark:text-neutral-200">Archova.ai Studio</span>
         </div>
-        <span className="text-[11px] font-mono text-neutral-500">v2.4</span>
       </div>
 
       {/* ── Hero Statement ── */}
       <div className="relative z-10 space-y-2 text-left">
-        <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
+        <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white leading-snug">
           Enterprise architecture, synthesized in seconds.
         </h2>
-        <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
+        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed max-w-sm">
           Transform natural language requirements into verified system topologies, microservice specifications, and compliance audits.
         </p>
       </div>
@@ -691,36 +690,36 @@ function LiveArchitectureShowcase() {
       {/* ── 3 Simple, Clean Capabilities (No Clutter, No Heavy Boxes) ── */}
       <div className="relative z-10 space-y-3.5 text-left py-1">
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-[#005dff]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50/80 border border-blue-200/60 text-[#005dff] dark:bg-white/[0.04] dark:border-white/10 dark:text-[#3b82f6] shadow-2xs">
             <Network className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-white">Visual System Topologies</div>
-            <div className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">
+            <div className="text-xs font-semibold text-neutral-900 dark:text-white">Visual System Topologies</div>
+            <div className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">
               Interactive React Flow DAG diagrams with verified edge protocol contracts
             </div>
           </div>
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-[#005dff]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50/80 border border-blue-200/60 text-[#005dff] dark:bg-white/[0.04] dark:border-white/10 dark:text-[#3b82f6] shadow-2xs">
             <Layers className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-white">Multi-Domain Specifications</div>
-            <div className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">
+            <div className="text-xs font-semibold text-neutral-900 dark:text-white">Multi-Domain Specifications</div>
+            <div className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">
               Complete backend, frontend, database, security, and cloud blueprints
             </div>
           </div>
         </div>
 
         <div className="flex items-start gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-[#005dff]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50/80 border border-blue-200/60 text-[#005dff] dark:bg-white/[0.04] dark:border-white/10 dark:text-[#3b82f6] shadow-2xs">
             <ShieldCheck className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-xs font-semibold text-white">Automated Verification</div>
-            <div className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">
+            <div className="text-xs font-semibold text-neutral-900 dark:text-white">Automated Verification</div>
+            <div className="text-[11px] text-neutral-600 dark:text-neutral-400 mt-0.5 leading-relaxed">
               Closed-loop formal consistency and architectural compliance audit
             </div>
           </div>
@@ -728,9 +727,9 @@ function LiveArchitectureShowcase() {
       </div>
 
       {/* ── Bottom Minimal Status ── */}
-      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[11px] text-neutral-400">
+      <div className="relative z-10 flex items-center justify-between border-t border-neutral-200/80 dark:border-white/10 pt-4 text-[11px] text-neutral-500 dark:text-neutral-400">
         <span className="font-mono">Deterministic AI Engine</span>
-        <span className="flex items-center gap-1.5 text-white font-medium">
+        <span className="flex items-center gap-1.5 text-neutral-900 dark:text-white font-medium">
           <span className="h-1.5 w-1.5 rounded-full bg-[#005dff] animate-pulse" />
           All Systems Operational
         </span>

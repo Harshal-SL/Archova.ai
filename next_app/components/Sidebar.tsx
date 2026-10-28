@@ -194,17 +194,17 @@ export default function Sidebar() {
 
         {/* History / Sessions List */}
         <div className="relative z-10 flex-1 overflow-y-auto px-2.5 py-2 space-y-1 min-h-[140px]">
-          <div className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400/70 dark:text-neutral-500/70 opacity-60">
+          <div className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Recent Architectures
           </div>
 
           {sessions.length === 0 ? (
             <div className="px-3 py-10 text-center">
-              <MessageSquare className="mx-auto h-7 w-7 text-neutral-300/80 dark:text-neutral-700/80 mb-2" />
-              <p className="text-xs font-semibold text-neutral-700/80 dark:text-neutral-300/80">
+              <MessageSquare className="mx-auto h-7 w-7 text-neutral-400 dark:text-neutral-600 mb-2" />
+              <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                 No architecture sessions yet
               </p>
-              <p className="text-[11px] text-neutral-500/70 dark:text-neutral-400/70 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
                 Enter your requirements prompt to synthesize HLD diagrams
               </p>
             </div>
@@ -219,7 +219,7 @@ export default function Sidebar() {
                     "group relative flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-all cursor-pointer",
                     isActive
                       ? "bg-neutral-100 font-bold text-black dark:bg-white/[0.08] dark:text-white shadow-2xs border border-neutral-200/80 dark:border-white/15 border-l-2 border-l-black dark:border-l-white"
-                      : "text-neutral-700/80 hover:bg-neutral-100/60 hover:text-black dark:text-neutral-400/80 dark:hover:bg-white/[0.04] dark:hover:text-white"
+                      : "text-neutral-700 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-white"
                   )}
                 >
                   <MessageSquare
@@ -227,7 +227,7 @@ export default function Sidebar() {
                       "h-3.5 w-3.5 shrink-0 transition-colors",
                       isActive
                         ? "text-black dark:text-white"
-                        : "text-neutral-400/60 group-hover:text-neutral-700 dark:group-hover:text-neutral-300"
+                        : "text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200"
                     )}
                   />
                   <span className="truncate flex-1">{s.title}</span>
