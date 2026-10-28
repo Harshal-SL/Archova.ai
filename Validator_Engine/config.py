@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv
 
 _PACKAGE_ROOT = Path(__file__).resolve().parent
@@ -20,6 +21,7 @@ for env_candidate in [
 
 # Qdrant & Vector DB
 QDRANT_URL: str = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY: Optional[str] = os.getenv("QDRANT_API_KEY")
 QDRANT_LOCAL_PATH: str = os.getenv(
     "QDRANT_LOCAL_PATH",
     str(_WORKSPACE_ROOT / "ai_engine" / ".qdrant_data"),

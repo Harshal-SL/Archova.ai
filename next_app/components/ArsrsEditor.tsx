@@ -794,6 +794,9 @@ export default function ArsrsEditor({
           variant="glow"
           size="lg"
           neon={true}
+          shimmerColor="#38bdf8"
+          shimmerDuration="2.5s"
+          shimmerSize="1.5px"
           className="px-8 py-3.5 text-xs sm:text-sm font-bold tracking-wide cursor-pointer shadow-lg active:scale-98"
         >
           {isGenerating ? (

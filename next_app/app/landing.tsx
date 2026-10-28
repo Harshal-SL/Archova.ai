@@ -289,7 +289,7 @@ export default function LandingPage() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black dark:bg-white opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-black dark:bg-white" />
                 </span>
-                <span>ArchAI 2.5 • Autonomous Multi-Agent Systems Engineering</span>
+                <span>Archova.ai 2.5 • Autonomous Multi-Agent Systems Engineering</span>
                 <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
               </div>
 
@@ -368,19 +368,19 @@ export default function LandingPage() {
         {/* ════════════════════════════════════════════════════════════════════════════════════════════
             SECTION 2: ABOUT
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <section id="about" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800">
+        <section id="about" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 content-lazy-render">
           <div className="mx-auto max-w-6xl px-4">
             <AnimatedContainer delay={0.1}>
               <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3 shadow-xs">
                   <Sparkles className="h-3.5 w-3.5 text-neutral-800 dark:text-neutral-200" />
-                  <span>About ArchAI • Project, Idea & Solution</span>
+                  <span>About Archova.ai • Project, Idea & Solution</span>
                 </div>
                 <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
                   Transforming Architecture from Art to Science
                 </h2>
                 <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
-                  Modern distributed systems are too complex for whiteboard guesswork. Discover the idea behind ArchAI, the crisis it addresses, and how our autonomous multi-agent platform delivers production-ready systems engineering.
+                  Modern distributed systems are too complex for whiteboard guesswork. Discover the idea behind Archova.ai, the crisis it addresses, and how our autonomous multi-agent platform delivers production-ready systems engineering.
                 </p>
               </div>
             </AnimatedContainer>
@@ -464,10 +464,10 @@ export default function LandingPage() {
 
                     {/* Title & Body */}
                     <h3 className="font-heading text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                      ArchAI: Autonomous Architect
+                      Archova.ai: Autonomous Architect
                     </h3>
                     <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                      ArchAI is an autonomous multi-agent platform engineered to bridge the divide between high-level stakeholder intent and production-ready distributed system topologies, formal specs, and code contracts.
+                      Archova.ai is an autonomous multi-agent platform engineered to bridge the divide between high-level stakeholder intent and production-ready distributed system topologies, formal specs, and code contracts.
                     </p>
 
                     {/* Project Pillars */}
@@ -521,7 +521,7 @@ export default function LandingPage() {
                       Deterministic Full-Stack Synthesis
                     </h3>
                     <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                      ArchAI replaces subjective guesswork with deterministic multi-domain synthesis. It unifies high-level visual graphs and low-level code implementation blueprints into a living, verifiable architecture.
+                      Archova.ai replaces subjective guesswork with deterministic multi-domain synthesis. It unifies high-level visual graphs and low-level code implementation blueprints into a living, verifiable architecture.
                     </p>
 
                     {/* Solution Highlights */}
@@ -563,7 +563,7 @@ export default function LandingPage() {
                         The Continuous Architecture Continuum
                       </h4>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        How ArchAI transitions from raw concept to verified production systems
+                        How Archova.ai transitions from raw concept to verified production systems
                       </p>
                     </div>
                   </div>
@@ -630,7 +630,7 @@ export default function LandingPage() {
         {/* ════════════════════════════════════════════════════════════════════════════════════════════
             SECTION 3: SERVICES (ROADMAP PIPELINE)
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <section id="services" className="relative py-20 md:py-32 border-t border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <section id="services" className="relative py-20 md:py-32 border-t border-neutral-200 dark:border-neutral-800 overflow-hidden content-lazy-render">
           <div className="mx-auto max-w-6xl px-4">
             <AnimatedContainer delay={0.1}>
               <div className="text-center mb-16 md:mb-20">
@@ -822,7 +822,7 @@ export default function LandingPage() {
                     <Cpu className="h-4 w-4" />
                   </div>
                   <span className="font-heading font-extrabold text-base tracking-tight">
-                    Arch<span className="text-neutral-500 dark:text-neutral-400">AI</span>
+                    Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
                   </span>
                 </div>
                 <p className="text-xs text-neutral-500 leading-relaxed">
@@ -872,7 +872,7 @@ export default function LandingPage() {
             </div>
 
             <AnimatedContainer delay={0.5} className="border-t border-neutral-200 dark:border-neutral-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500">
-              <p>&copy; 2026 ArchAI Architecture Engine. All rights reserved.</p>
+              <p>&copy; 2026 Archova.ai Architecture Engine. All rights reserved.</p>
               <p className="mt-2 sm:mt-0 font-mono text-[11px]">Designed with UI-UX Pro Max • Pure Black & White Architecture</p>
             </AnimatedContainer>
           </div>

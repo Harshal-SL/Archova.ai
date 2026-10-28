@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Cpu, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAppStore } from "@/lib/store";
+import { syncAuthCookie } from "@/lib/auth-cookie";
 import BubbleBg from "@/components/BubbleBg";
 
 export default function AuthCallbackPage() {
@@ -26,6 +27,7 @@ export default function AuthCallbackPage() {
         }
 
         if (data?.session) {
+          syncAuthCookie(data.session.access_token);
           setUser(data.session.user);
           setSession(data.session);
           setStatus("success");
@@ -40,6 +42,7 @@ export default function AuthCallbackPage() {
           async (event, session) => {
             if (event === "SIGNED_IN" || event === "USER_UPDATED" || session) {
               if (session) {
+                syncAuthCookie(session.access_token);
                 setUser(session.user);
                 setSession(session);
                 setStatus("success");

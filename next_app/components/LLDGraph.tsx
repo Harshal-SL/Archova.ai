@@ -279,6 +279,11 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
 
   // Visual node styling with layer filtering & hover dimming
   const displayNodes = useMemo(() => {
+    const isFilterActive = hoveredNodeId !== null || selectedLayer !== "all" || searchQuery.trim() !== "";
+    if (!isFilterActive) {
+      return nodes;
+    }
+
     return nodes.map((n) => {
       if (n.type === "layerGroup") {
         let groupOpacity = 1;
@@ -290,7 +295,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           style: {
             ...n.style,
             opacity: groupOpacity,
-            transition: "opacity 0.2s ease",
+            transition: "opacity 0.15s ease",
           },
         };
       }
@@ -321,7 +326,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         style: {
           ...n.style,
           opacity,
-          transition: "opacity 0.2s ease, transform 0.2s ease",
+          transition: "opacity 0.15s ease",
         },
       };
     });
@@ -370,10 +375,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           opacity: isDimmed ? 0.12 : layerDimmed ? 0.08 : 1,
           stroke: strokeColor,
           strokeWidth: isHovered ? 3.4 : (isDark ? 2.0 : 2.4),
-          filter: isHovered
-            ? (isDark ? `drop-shadow(0 0 8px ${strokeColor})` : `drop-shadow(0 0 6px ${strokeColor}aa)`)
-            : undefined,
-          transition: "opacity 0.2s ease, stroke 0.2s ease, stroke-width 0.2s ease",
+          transition: "opacity 0.15s ease",
         },
       };
     });
@@ -449,6 +451,12 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           fitViewOptions={{ padding: 0.15 }}
           minZoom={0.2}
           maxZoom={2.5}
+          onlyRenderVisibleElements={true}
+          elevateNodesOnSelect={false}
+          snapToGrid={false}
+          panOnDrag={true}
+          zoomOnScroll={true}
+          zoomOnPinch={true}
           proOptions={{ hideAttribution: true }}
         >
           <Background gap={24} size={1.2} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(100, 116, 139, 0.22)"} />

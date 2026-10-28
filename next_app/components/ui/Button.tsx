@@ -38,6 +38,7 @@ export interface ButtonProps
   shimmer?: boolean;
   shimmerColor?: string;
   shimmerDuration?: string;
+  shimmerSize?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -48,6 +49,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       shimmer = true,
       shimmerColor = "#ffffff",
       shimmerDuration = "3s",
+      shimmerSize = "1.5px",
       size,
       variant,
       children,
@@ -74,19 +76,31 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {shimmer && (
           <>
-            {/* 1. Rotating perimeter border beam */}
+            {/* 1. Masked Rotating perimeter border beam - confined strictly to outer border */}
             <div
-              className="animate-spin-around absolute -inset-[200%] w-auto aspect-square m-auto pointer-events-none -z-30"
+              className="absolute -inset-px pointer-events-none overflow-hidden rounded-[inherit] z-0"
               style={{
-                background: `conic-gradient(from 0deg, transparent 0deg, transparent 40deg, var(--shimmer-color, #ffffff) 90deg, transparent 140deg, transparent 360deg)`,
+                padding: shimmerSize,
+                WebkitMask:
+                  "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                WebkitMaskComposite: "xor",
+                mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                maskComposite: "exclude",
               }}
-            />
+            >
+              <div
+                className="animate-spin-around absolute -inset-[200%] w-auto aspect-square m-auto pointer-events-none"
+                style={{
+                  background: `conic-gradient(from 0deg, transparent 0deg, transparent 40deg, var(--shimmer-color, #ffffff) 90deg, transparent 140deg, transparent 360deg)`,
+                }}
+              />
+            </div>
 
             {/* 2. Highlight */}
             <div
               className={cn(
-                "insert-0 absolute size-full pointer-events-none",
-                "rounded-2xl px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#ffffff1f]",
+                "inset-0 absolute size-full pointer-events-none rounded-[inherit]",
+                "px-4 py-1.5 text-sm font-medium shadow-[inset_0_-8px_10px_#ffffff1f]",
                 "transform-gpu transition-all duration-300 ease-in-out",
                 "group-hover:shadow-[inset_0_-6px_10px_#ffffff3f]",
                 "group-active:shadow-[inset_0_-10px_10px_#ffffff3f]"

@@ -2,13 +2,38 @@
 
 import React, { useState } from "react";
 import { useAppStore } from "@/lib/store";
-import HLDGraph from "./HLDGraph";
-import LldsView from "./LldsView";
-import ValidationView from "./ValidationView";
-import JsonViewer from "./JsonViewer";
-import ComparisonView from "./ComparisonView";
+import dynamic from "next/dynamic";
 import TubelightChatBar from "./TubelightChatBar";
-import VersionDiffDrawer from "./VersionDiffDrawer";
+
+const WorkspaceTabSkeleton = ({ label }: { label: string }) => (
+  <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-neutral-50/50 dark:bg-neutral-950/50 backdrop-blur-xs">
+    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black/5 dark:bg-white/10 animate-pulse text-neutral-600 dark:text-neutral-300">
+      <Cpu className="h-5 w-5 animate-spin text-[#005dff]" />
+    </div>
+    <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400">{label}</span>
+  </div>
+);
+
+const HLDGraph = dynamic(() => import("./HLDGraph"), {
+  ssr: false,
+  loading: () => <WorkspaceTabSkeleton label="Loading High-Level Topology..." />,
+});
+const LldsView = dynamic(() => import("./LldsView"), {
+  ssr: false,
+  loading: () => <WorkspaceTabSkeleton label="Loading Domain Architecture View..." />,
+});
+const ValidationView = dynamic(() => import("./ValidationView"), {
+  loading: () => <WorkspaceTabSkeleton label="Auditing Quality Gates..." />,
+});
+const JsonViewer = dynamic(() => import("./JsonViewer"), {
+  loading: () => <WorkspaceTabSkeleton label="Parsing Architecture Schema..." />,
+});
+const ComparisonView = dynamic(() => import("./ComparisonView"), {
+  loading: () => <WorkspaceTabSkeleton label="Loading Model Comparison Matrix..." />,
+});
+const VersionDiffDrawer = dynamic(() => import("./VersionDiffDrawer"), {
+  ssr: false,
+});
 import {
   Network,
   Layers,

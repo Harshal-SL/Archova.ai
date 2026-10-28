@@ -71,25 +71,28 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
           />
         )}
 
-        {/* 1. Rotating perimeter border beam (travels around all 4 sides of the border) */}
+        {/* 1. Masked Perimeter Border Beam - Strictly confined to outer border */}
         <div
-          className="animate-spin-around absolute -inset-[200%] w-auto aspect-square m-auto pointer-events-none -z-30"
+          className="absolute inset-0 pointer-events-none overflow-hidden"
           style={{
-            background: `conic-gradient(from 0deg, transparent 0deg, transparent 40deg, var(--shimmer-color, #ffffff) 90deg, transparent 140deg, transparent 360deg)`,
+            borderRadius: "var(--radius)",
+            padding: "var(--cut)",
+            WebkitMask:
+              "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            maskComposite: "exclude",
           }}
-        />
-
-        {/* 2. Sliding localized spark (horizontal translation sweep) */}
-        <div className="absolute inset-0 h-[100cqh] animate-shimmer-slide aspect-square [border-radius:0] [mask:none] -z-30 pointer-events-none blur-[1px]">
+        >
           <div
-            className="animate-spin-around absolute -inset-full w-auto rotate-0"
+            className="animate-spin-around absolute -inset-[200%] w-auto aspect-square m-auto pointer-events-none"
             style={{
-              background: `conic-gradient(from calc(270deg - (var(--spread) * 0.5)), transparent 0deg, var(--shimmer-color, #ffffff) var(--spread), transparent var(--spread))`,
+              background: `conic-gradient(from 0deg, transparent 0deg, transparent 40deg, var(--shimmer-color, #ffffff) 90deg, transparent 140deg, transparent 360deg)`,
             }}
           />
         </div>
 
-        {/* 3. Subtle background border track */}
+        {/* 2. Subtle background border track */}
         <div
           className={cn(
             "absolute inset-0 pointer-events-none -z-25 border",
@@ -98,7 +101,7 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
           style={{ borderRadius: "var(--radius)" }}
         />
 
-        {/* 4. Backdrop: covers button center with --bg, exposing only the --cut border gap */}
+        {/* 3. Backdrop: covers button center with --bg, exposing only the --cut border gap */}
         <div
           className="absolute -z-20 pointer-events-none transition-colors"
           style={{
@@ -108,10 +111,10 @@ const ShimmerButton = React.forwardRef<HTMLButtonElement, ShimmerButtonProps>(
           }}
         />
 
-        {/* 5. Inset highlight sheen */}
+        {/* 4. Inset highlight sheen */}
         <div
           className={cn(
-            "insert-0 absolute size-full pointer-events-none",
+            "inset-0 absolute size-full pointer-events-none",
             "px-4 py-1.5 text-sm font-medium",
             isLight
               ? "shadow-[inset_0_-4px_8px_rgba(0,0,0,0.06)]"

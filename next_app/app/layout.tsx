@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ArchAI — AI System Architecture Generator",
+  title: "Archova.ai — AI System Architecture Generator",
   description:
     "Generate, visualize, and explore system architectures with AI. HLD, LLD, and interactive diagrams.",
 };

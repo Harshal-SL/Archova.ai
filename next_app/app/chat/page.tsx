@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   PanelLeft,
   ArrowUpRight,
@@ -12,18 +13,37 @@ import {
   Layers,
   Plus,
   Trash2,
+  Cpu,
 } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
-import HldWorkspace from "@/components/HldWorkspace";
-import ExplainModal from "@/components/ExplainModal";
+import dynamic from "next/dynamic";
 import BubbleBg from "@/components/BubbleBg";
+
+const HldWorkspace = dynamic(() => import("@/components/HldWorkspace"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-white/50 dark:bg-black/50">
+      <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500">
+        <Cpu className="h-4 w-4 animate-spin text-[#005dff]" />
+        <span>Loading Studio Topology...</span>
+      </div>
+    </div>
+  ),
+});
+
+const ExplainModal = dynamic(() => import("@/components/ExplainModal"), {
+  ssr: false,
+});
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export default function ChatPage() {
+  const router = useRouter();
   const {
+    user,
+    authLoading,
     sidebarOpen,
     toggleSidebar,
     activeView,
@@ -40,9 +60,40 @@ export default function ChatPage() {
     initAuth();
   }, [initAuth]);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/signin?redirect=/chat");
+    }
+  }, [authLoading, user, router]);
+
   const activeSession = sessions.find((s) => s.id === activeSessionId);
   const sessionTitle = activeSession?.title || "New Architecture";
   const isEmpty = !activeSessionId || (activeSession?.messages?.length ?? 0) === 0;
+
+  if (authLoading) {
+    return (
+      <div className="relative flex h-screen w-full items-center justify-center bg-white dark:bg-black text-neutral-900 dark:text-white transition-colors">
+        <BubbleBg opacity="opacity-40" />
+        <div className="relative z-10 flex flex-col items-center gap-4 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-lg animate-pulse">
+            <Cpu className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <div className="font-heading font-extrabold text-base tracking-tight">
+              Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
+            </div>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Verifying studio authorization...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden bg-white text-neutral-900 dark:bg-black dark:text-white transition-colors select-none">
@@ -77,7 +128,7 @@ export default function ChatPage() {
             )}
 
             <div className="flex items-center gap-1 rounded-xl border border-transparent hover:border-neutral-200/80 hover:bg-white/70 dark:hover:border-[#262626] dark:hover:bg-[#0D0D0F] px-2 sm:px-2.5 py-1 text-xs sm:text-sm font-bold text-neutral-800 dark:text-neutral-200 transition-all cursor-pointer backdrop-blur-md shrink-0">
-              <span>ArchAI 4o</span>
+              <span>Archova.ai 4o</span>
               <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
             </div>
 

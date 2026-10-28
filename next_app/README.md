@@ -1,6 +1,6 @@
-# ArchAI — AI System Architecture Engine
+# Archova.ai — AI System Architecture Engine
 
-ArchAI is an end-to-end multi-agent AI System Architecture generation platform built entirely with **Next.js 16 (App Router)**, React 19, TypeScript, Tailwind CSS, and React Flow.
+Archova.ai is an end-to-end multi-agent AI System Architecture generation platform built entirely with **Next.js 16 (App Router)**, React 19, TypeScript, Tailwind CSS, and React Flow.
 
 It automatically generates:
 1. **Interactive Stakeholder Clarification Interview** (REE - Requirements Engineering Engine)

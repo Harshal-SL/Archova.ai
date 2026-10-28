@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Node, Edge } from "@xyflow/react";
 import { supabase } from "./supabaseClient";
+import { syncAuthCookie } from "./auth-cookie";
 import {
   aiEngineApi,
   type LldType,
@@ -62,7 +63,6 @@ interface AppState {
   authLoading: boolean;
   setUser: (u: User | null) => void;
   setSession: (s: Session | null) => void;
-  loginAsGuest: (name?: string) => void;
   initAuth: () => Promise<void>;
   signOut: () => Promise<void>;
 
@@ -277,68 +277,29 @@ export const useAppStore = create<AppState>((set, get) => ({
   setUser: (user) => set({ user }),
   setSession: (session) => set({ session, user: session?.user ?? null }),
 
-  loginAsGuest: (name?: string) => {
-    const guestUser = {
-      id: `guest-${Date.now()}`,
-      email: "guest@archai.local",
-      app_metadata: { provider: "guest" },
-      user_metadata: {
-        name: name || "Guest Architect",
-        full_name: name || "Guest Architect",
-      },
-      aud: "authenticated",
-      created_at: new Date().toISOString(),
-    } as unknown as User;
-
-    set({ user: guestUser, session: null, authLoading: false });
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("archai-guest-user", JSON.stringify(guestUser));
-      } catch {
-        // ignore
-      }
-    }
-  },
-
   initAuth: async () => {
     try {
-      // 1. Check for previously saved guest user in localStorage
-      let hasGuest = false;
-      if (typeof window !== "undefined") {
-        try {
-          const guestRaw = localStorage.getItem("archai-guest-user");
-          if (guestRaw) {
-            const guestUser = JSON.parse(guestRaw);
-            if (guestUser && guestUser.id) {
-              hasGuest = true;
-              set({ user: guestUser, session: null, authLoading: false });
-            }
-          }
-        } catch {
-          // ignore
-        }
-      }
-
-      // 2. Check Supabase session
+      // 1. Check Supabase session
       const { data } = await supabase.auth.getSession();
       if (data?.session) {
+        syncAuthCookie(data.session.access_token);
         set({
           session: data.session,
           user: data.session.user,
           authLoading: false,
         });
         await get().loadSessionsFromSupabase();
-      } else if (!hasGuest) {
-        set({ session: null, user: null, authLoading: false });
       } else {
-        set({ authLoading: false });
+        syncAuthCookie(null);
+        set({ session: null, user: null, authLoading: false });
       }
 
-      // 3. Attach a single onAuthStateChange listener
+      // 2. Attach a single onAuthStateChange listener
       if (!authListenerInitialized) {
         authListenerInitialized = true;
         supabase.auth.onAuthStateChange(async (event, session) => {
-          if (event === "SIGNED_OUT" || (!session && !localStorage.getItem("archai-guest-user"))) {
+          if (event === "SIGNED_OUT" || !session) {
+            syncAuthCookie(null);
             set({
               session: null,
               user: null,
@@ -347,6 +308,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               activeSessionId: null,
             });
           } else if (session) {
+            syncAuthCookie(session.access_token);
             set({
               session,
               user: session.user,
@@ -357,11 +319,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         });
       }
     } catch {
+      syncAuthCookie(null);
       set({ authLoading: false });
     }
   },
 
   signOut: async () => {
+    syncAuthCookie(null);
     // 1. Instantly reset all in-memory store states to eliminate stale session/user data
     set({
       user: null,
@@ -826,7 +790,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         try {
           const currentUser = get().user;
           const activeSid = get().activeSessionId;
-          if (currentUser && currentUser.app_metadata?.provider !== "guest" && activeSid && !activeSid.startsWith("demo-")) {
+          if (currentUser && activeSid && !activeSid.startsWith("demo-")) {
             const userPrompt = get().sessions.find(s => s.id === activeSid)?.messages.find(m => m.role === 'user')?.content || "Architecture Design";
             const fullPackage = {
               hld: finalHld,
@@ -998,7 +962,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadSessionsFromSupabase: async () => {
     const currentUser = get().user;
-    if (!currentUser || currentUser.app_metadata?.provider === "guest") return;
+    if (!currentUser) return;
 
     try {
       const { data: dbSessions, error } = await supabase
@@ -1046,7 +1010,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const currentUser = get().user;
     const newId = generateUUID();
 
-    if (currentUser && currentUser.app_metadata?.provider !== "guest") {
+    if (currentUser) {
       try {
         const { error } = await supabase
           .from("chat_sessions")
@@ -1112,9 +1076,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     const currentUser = get().user;
-    const isGuest = !currentUser || currentUser.app_metadata?.provider === "guest";
 
-    if (isGuest || !isUUID(id)) {
+    if (!currentUser || !isUUID(id)) {
       return;
     }
 
@@ -1253,7 +1216,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     const currentUser = get().user;
-    if (!currentUser || currentUser.app_metadata?.provider === "guest" || !isUUID(sessionId)) {
+    if (!currentUser || !isUUID(sessionId)) {
       return;
     }
 
@@ -1328,7 +1291,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   saveCurrentArchitecture: async (targetSessionId?: string) => {
     const activeSid = targetSessionId || get().activeSessionId;
     const currentUser = get().user;
-    if (!activeSid || !currentUser || currentUser.app_metadata?.provider === "guest" || !isUUID(activeSid)) {
+    if (!activeSid || !currentUser || !isUUID(activeSid)) {
       return;
     }
 
@@ -1464,7 +1427,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     // 2. Cascade delete from Supabase if authenticated and is UUID
     const currentUser = get().user;
-    if (currentUser && currentUser.app_metadata?.provider !== "guest" && isUUID(sessionId)) {
+    if (currentUser && isUUID(sessionId)) {
       try {
         await supabase
           .from("architecture_designs")
@@ -1652,7 +1615,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     // Persist to Supabase if authenticated
-    if (currentUser && currentUser.app_metadata?.provider !== "guest" && activeSid && !activeSid.startsWith("demo-")) {
+    if (currentUser && activeSid && !activeSid.startsWith("demo-")) {
       try {
         const { data: existingLatest } = await supabase
           .from("architecture_designs")
@@ -1848,9 +1811,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       const resultsMap: Record<string, ModelBenchmarkResult> = { ...state.benchmarkResults };
       response.models.forEach((m) => {
-        resultsMap[m.model_id] = m;
-        if (m.model_name) {
-          resultsMap[m.model_name.toLowerCase()] = m;
+        if (m.model_id) {
+          resultsMap[m.model_id] = m;
         }
       });
 

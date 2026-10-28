@@ -14,6 +14,7 @@ setattr(backend_mod, "rag", sys.modules[__name__])
 
 from .config import (
     QDRANT_URL,
+    QDRANT_API_KEY,
     QDRANT_LOCAL_PATH,
     COLLECTION_NAME,
     EMBEDDING_MODEL,

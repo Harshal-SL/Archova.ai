@@ -17,8 +17,6 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-
-import ShootingStarsGrid from "@/components/ui/shooting-stars-grid";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 export default function Sidebar() {
@@ -69,9 +67,9 @@ export default function Sidebar() {
     user?.user_metadata?.name ||
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
-    (user ? "Architect" : "Guest Mode");
+    "Architect";
 
-  const emailDisplay = user?.email || (user ? "Guest Architecture Mode" : "Sign in to sync history");
+  const emailDisplay = user?.email || "architect@archova.ai";
   const userInitial = displayName.charAt(0).toUpperCase();
 
   const filteredSessions = sessions.filter((s) =>
@@ -121,21 +119,6 @@ export default function Sidebar() {
             className="absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-cyan-500/15 dark:bg-cyan-500/15 blur-3xl animate-pulse"
             style={{ animationDuration: "5s" }}
           />
-
-          {/* Shooting Stars Grid Animation */}
-          {mounted && (
-            <ShootingStarsGrid
-              starCount={24}
-              shootingStarCount={3}
-              gridSize={36}
-              speed="slow"
-              glow={true}
-              interactive={false}
-              className="h-full w-full rounded-none border-none shadow-none min-h-0 bg-transparent dark:bg-transparent"
-            >
-              {null}
-            </ShootingStarsGrid>
-          )}
         </div>
 
         {/* Top Header & Brand */}
@@ -147,7 +130,7 @@ export default function Sidebar() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black shadow-xs">
               <Cpu className="h-4 w-4" />
             </div>
-            <span className="tracking-tight font-extrabold text-base">ArchAI</span>
+            <span className="tracking-tight font-extrabold text-base">Archova.ai</span>
             <span className="rounded-md bg-neutral-200/80 px-1.5 py-0.5 text-[10px] font-mono text-neutral-700 dark:bg-white/10 dark:text-neutral-300">
               v2.5
             </span>
@@ -297,10 +280,10 @@ export default function Sidebar() {
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-neutral-900/90 dark:text-white/90 leading-tight">
-                    Guest Mode
+                    Not Signed In
                   </p>
                   <p className="truncate text-[10px] text-sky-600 dark:text-sky-400 font-medium">
-                    Sign in to save history
+                    Sign in to access studio
                   </p>
                 </div>
               </Link>

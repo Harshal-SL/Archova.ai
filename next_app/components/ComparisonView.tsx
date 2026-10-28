@@ -57,8 +57,15 @@ export default function ComparisonView() {
     setHldWorkspaceTab("hld");
   };
 
-  // Build model cards list
-  const modelsList = Object.values(benchmarkResults);
+  // Build unique model cards list
+  const seenModelCardKeys = new Set<string>();
+  const modelsList = Object.values(benchmarkResults).filter((m) => {
+    if (!m) return false;
+    const key = (m.model_name || m.model_id || "").trim().toLowerCase();
+    if (!key || seenModelCardKeys.has(key)) return false;
+    seenModelCardKeys.add(key);
+    return true;
+  });
   const hasModels = modelsList.length > 0;
 
   // Fallback demo comparison data if not yet generated

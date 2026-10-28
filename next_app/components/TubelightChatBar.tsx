@@ -470,7 +470,7 @@ export default function TubelightChatBar() {
                       handleSendMessage(input);
                     }
                   }}
-                  placeholder="Ask ArchAI to refine components, protocols, or schemas..."
+                  placeholder="Ask Archova.ai to refine components, protocols, or schemas..."
                   className="w-full bg-transparent px-2.5 py-1.5 text-xs sm:text-sm font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none dark:text-white dark:placeholder:text-neutral-500"
                 />
               </div>
@@ -480,7 +480,7 @@ export default function TubelightChatBar() {
                 {/* Model Pill */}
                 <div className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/80 dark:bg-neutral-900/80 px-2.5 py-1 text-[11px] font-semibold text-neutral-600 dark:text-neutral-400">
                   <Sparkles className="h-3 w-3 text-cyan-500" />
-                  <span>ArchAI 4o</span>
+                  <span>Archova.ai 4o</span>
                 </div>
 
                 {/* Send Button with Shimmer Animation */}
@@ -600,7 +600,7 @@ export default function TubelightChatBar() {
                   No conversation history yet
                 </p>
                 <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1 max-w-xs">
-                  Ask ArchAI below to refine services, inspect schemas, or explain protocols in your HLD/LLD diagrams.
+                  Ask Archova.ai below to refine services, inspect schemas, or explain protocols in your HLD/LLD diagrams.
                 </p>
                 <div className="mt-4 flex flex-wrap justify-center gap-1.5 max-w-sm">
                   {[
@@ -680,7 +680,7 @@ export default function TubelightChatBar() {
                   <Cpu className="h-3 w-3" />
                 </div>
                 <span className="font-mono text-[11px] animate-pulse">
-                  {hldData ? "Evolving architecture & updating diagram (v1.x)..." : "ArchAI is analyzing architecture..."}
+                  {hldData ? "Evolving architecture & updating diagram (v1.x)..." : "Archova.ai is analyzing architecture..."}
                 </span>
               </div>
             )}

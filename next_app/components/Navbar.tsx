@@ -117,13 +117,13 @@ export default function Navbar() {
           <Link
             href="/"
             className="flex items-center gap-2.5 group"
-            title="ArchAI - Autonomous Multi-Agent Systems Engineering"
+            title="Archova.ai - Autonomous Multi-Agent Systems Engineering"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-xs transition-transform duration-200 group-hover:scale-105">
               <Cpu className="h-4 w-4" />
             </div>
             <span className="font-heading font-extrabold text-base sm:text-lg tracking-tight text-neutral-900 dark:text-white">
-              Arch<span className="text-neutral-500 dark:text-neutral-400">AI</span>
+              Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
             </span>
           </Link>
           <span className="hidden sm:inline-flex items-center gap-1 rounded-full border border-neutral-200/60 dark:border-white/10 bg-white/30 dark:bg-white/[0.04] px-2 py-0.5 text-[10px] font-mono text-neutral-600 dark:text-neutral-300 backdrop-blur-md">

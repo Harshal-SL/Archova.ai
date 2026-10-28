@@ -144,9 +144,10 @@ export const VersionBadge = memo(({ data }: { data: any }) => {
 });
 VersionBadge.displayName = "VersionBadge";
 
-// ── 1. Layer Group Node (Container / Bounding Box) ──
 export const LayerGroupNode = memo(({ id, data }: NodeProps) => {
-  const { theme: appTheme, jumpToLld, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const jumpToLld = useAppStore((s) => s.jumpToLld);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Architecture Layer");
   const count = typeof data?.count === "number" ? data.count : undefined;
@@ -287,7 +288,8 @@ LayerGroupNode.displayName = "LayerGroupNode";
 
 // ── 2. User / Actor Node ──
 export const ActorNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "User Actor");
   const role = String(data?.role || data?.description || "Stakeholder");
@@ -369,7 +371,8 @@ ActorNode.displayName = "ActorNode";
 
 // ── 3. Frontend Client Node ──
 export const FrontendNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Web Application");
   const tech = String(data?.tech || data?.description || "React / Next.js");
@@ -453,7 +456,8 @@ FrontendNode.displayName = "FrontendNode";
 
 // ── 4. API Gateway / Ingress Node ──
 export const GatewayNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "API Gateway / Ingress");
   const tech = String(data?.tech || "NGINX · TLS 1.3 · Rate Limiting · RBAC");
@@ -537,7 +541,8 @@ GatewayNode.displayName = "GatewayNode";
 
 // ── 5. Modular Microservice Node ──
 export const ServiceNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Service");
   const code = String(data?.code || "SVC");
@@ -646,7 +651,8 @@ ServiceNode.displayName = "ServiceNode";
 
 // ── 6. Database / Storage Node ──
 export const DatabaseNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Database");
   const engine = String(data?.engine || "PostgreSQL");
@@ -736,7 +742,8 @@ DatabaseNode.displayName = "DatabaseNode";
 
 // ── 7. Cache & Redis Node ──
 export const CacheNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "Redis Cluster");
   const subtitle = String(data?.subtitle || data?.description || "Cache · Tokens · PubSub");
@@ -820,7 +827,8 @@ CacheNode.displayName = "CacheNode";
 
 // ── 8. Message Queue / Event Bus Node ──
 export const QueueNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "RabbitMQ");
   const subtitle = String(data?.subtitle || data?.description || "Event Messaging · DLQ · Retry x3");
@@ -904,7 +912,8 @@ QueueNode.displayName = "QueueNode";
 
 // ── 9. DevOps & Observability Node ──
 export const DevOpsNode = memo(({ id, data, selected }: NodeProps) => {
-  const { theme: appTheme, openTechRationale } = useAppStore();
+  const appTheme = useAppStore((s) => s.theme);
+  const openTechRationale = useAppStore((s) => s.openTechRationale);
   const isDark = appTheme !== "light";
   const label = String(data?.label || "DevOps Tool");
   const role = String(data?.role || data?.description || "");

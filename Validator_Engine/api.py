@@ -31,6 +31,7 @@ app.add_middleware(
 _engine = ValidatorEngine()
 
 
+@app.get("/")
 @app.get("/health")
 def health_check() -> Dict[str, str]:
     """Health status check."""
