@@ -893,11 +893,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       const updatedItems = correctionPlan.items.map((it) =>
         it.id === itemId
           ? {
-              ...it,
-              status: "APPROVED_FOR_CORRECTION" as CorrectionItemStatus,
-              status_reason: "Approved by user. Synthesizing targeted AI correction...",
-              review_decision: decision,
-            }
+            ...it,
+            status: "APPROVED_FOR_CORRECTION" as CorrectionItemStatus,
+            status_reason: "Approved by user. Synthesizing targeted AI correction...",
+            review_decision: decision,
+          }
           : it
       );
 
@@ -986,12 +986,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     const updatedItems = correctionPlan.items.map((it) =>
       it.id === itemId
         ? {
-            ...it,
-            status: "MANUAL_REVIEW_REQUIRED" as CorrectionItemStatus,
-            status_reason: decision.notes,
-            requires_manual_review: true,
-            review_decision: decision,
-          }
+          ...it,
+          status: "MANUAL_REVIEW_REQUIRED" as CorrectionItemStatus,
+          status_reason: decision.notes,
+          requires_manual_review: true,
+          review_decision: decision,
+        }
         : it
     );
 
@@ -1063,11 +1063,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const updatedItems = correctionPlan.items.map((it) =>
       it.id === itemId
         ? {
-            ...it,
-            status: "DISMISSED" as CorrectionItemStatus,
-            status_reason: decision.notes,
-            review_decision: decision,
-          }
+          ...it,
+          status: "DISMISSED" as CorrectionItemStatus,
+          status_reason: decision.notes,
+          review_decision: decision,
+        }
         : it
     );
 
@@ -1115,11 +1115,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const updatedItems = correctionPlan.items.map((it) =>
       it.id === itemId
         ? {
-            ...it,
-            status: revertedStatus,
-            status_reason: revertedStatus === "MANUAL_REVIEW_REQUIRED" ? "Manual review required due to evidence constraints." : "Awaiting user review.",
-            review_decision: null,
-          }
+          ...it,
+          status: revertedStatus,
+          status_reason: revertedStatus === "MANUAL_REVIEW_REQUIRED" ? "Manual review required due to evidence constraints." : "Awaiting user review.",
+          review_decision: null,
+        }
         : it
     );
 
@@ -1384,10 +1384,10 @@ export const useAppStore = create<AppState>((set, get) => ({
           items: correctionPlan.items.map((it) =>
             it.finding_id === activeCorrectionDraft.finding_id
               ? {
-                  ...it,
-                  status: "APPLIED" as CorrectionItemStatus,
-                  status_reason: `Applied in version ${newVer}: ${activeCorrectionDraft.change_summary}`,
-                }
+                ...it,
+                status: "APPLIED" as CorrectionItemStatus,
+                status_reason: `Applied in version ${newVer}: ${activeCorrectionDraft.change_summary}`,
+              }
               : it
           ),
         };
@@ -1434,7 +1434,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               activePipelineStep: 3,
             };
             localStorage.setItem("archai-guest-workspace", JSON.stringify(ws));
-          } catch {}
+          } catch { }
         }
       }
 
@@ -1562,22 +1562,24 @@ export const useAppStore = create<AppState>((set, get) => ({
         Object.keys(currentLldStatus).length >= 5 &&
         Object.values(currentLldStatus).every((s) => (s as string) === "READY" || (s as string) === "COMPLETED" || (s as string) === "FAILED");
 
-      if (!packagePayload && generationId && !isAlreadyComplete) {
-        set({ validationCurrentStep: "Waiting for all 5 LLD blueprints to finalize..." });
+      if (!packagePayload && generationId) {
+        if (!isAlreadyComplete) {
+          set({ validationCurrentStep: "Waiting for all 5 LLD blueprints to finalize..." });
 
-        let attempts = 0;
-        while (attempts < 30) {
-          try {
-            const stat = await aiEngineApi.getStatus(generationId);
-            const llds = stat.llds || {};
-            const lldVals = Object.values(llds);
-            const allDone = lldVals.length >= 5 && lldVals.every((s: any) => s === "READY" || s === "COMPLETED" || s === "FAILED");
-            if (stat.status === "COMPLETED" || allDone) {
-              break;
-            }
-          } catch {}
-          await new Promise((r) => setTimeout(r, 1000));
-          attempts++;
+          let attempts = 0;
+          while (attempts < 30) {
+            try {
+              const stat = await aiEngineApi.getStatus(generationId);
+              const llds = stat.llds || {};
+              const lldVals = Object.values(llds);
+              const allDone = lldVals.length >= 5 && lldVals.every((s: any) => s === "READY" || s === "COMPLETED" || s === "FAILED");
+              if (stat.status === "COMPLETED" || allDone) {
+                break;
+              }
+            } catch { }
+            await new Promise((r) => setTimeout(r, 1000));
+            attempts++;
+          }
         }
 
         try {
@@ -1674,6 +1676,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     try {
       let packagePayload = pkg;
+      if (!packagePayload && effectiveGenId) {
+        try {
+          packagePayload = await aiEngineApi.getPackage(effectiveGenId);
+        } catch (fetchErr) {
+          console.warn("[Archova] Could not fetch raw package from AI Engine for V2 pipeline:", fetchErr);
+        }
+      }
       if (!packagePayload) {
         packagePayload = {
           generation_id: effectiveGenId,
@@ -1792,11 +1801,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newProcess =
         entry.process || entry.stage
           ? {
-              process: entry.process || entry.stage,
-              stage: entry.stage,
-              message: entry.message,
-              status: entry.process_status || (entry.level === "ERROR" ? "FAILED" : "IN_PROGRESS"),
-            }
+            process: entry.process || entry.stage,
+            stage: entry.stage,
+            message: entry.message,
+            status: entry.process_status || (entry.level === "ERROR" ? "FAILED" : "IN_PROGRESS"),
+          }
           : s.activeProcess;
 
       const newLldStatus = entry.lld_status
@@ -2019,9 +2028,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           sessions: s.sessions.map((ses) =>
             ses.id === id
               ? {
-                  ...ses,
-                  messages: mappedMsgs,
-                }
+                ...ses,
+                messages: mappedMsgs,
+              }
               : ses
           ),
         }));
@@ -2160,10 +2169,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       sessions: s.sessions.map((ses) =>
         ses.id === sessionId
           ? {
-              ...ses,
-              messages: [...ses.messages, msg],
-              hasArchitecture: ses.hasArchitecture || msg.role === "ai",
-            }
+            ...ses,
+            messages: [...ses.messages, msg],
+            hasArchitecture: ses.hasArchitecture || msg.role === "ai",
+          }
           : ses
       ),
     }));
@@ -2264,10 +2273,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     const scorePercent = validation
       ? Math.round(
-          (validation.validation?.summary?.overall_score ??
-            validation.validation?.scorecard?.overall_composite_score ??
-            0.95) * 100
-        )
+        (validation.validation?.summary?.overall_score ??
+          validation.validation?.scorecard?.overall_composite_score ??
+          0.95) * 100
+      )
       : 95;
     const verdict = validation?.validation?.summary?.verdict || "APPROVED";
 
@@ -2564,10 +2573,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (activeSid) {
       const addedCompNames = Array.isArray(diff.added_nodes)
         ? diff.added_nodes
-            .map((n: any) =>
-              typeof n === "string" ? n : n.label || n.data?.label || n.id || "Component"
-            )
-            .join(", ")
+          .map((n: any) =>
+            typeof n === "string" ? n : n.label || n.data?.label || n.id || "Component"
+          )
+          .join(", ")
         : "None";
 
       const evolvedNotice: ChatMessage = {

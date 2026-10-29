@@ -6,6 +6,7 @@ import asyncio
 import copy
 import json
 import logging
+import os
 import re
 import uuid
 from datetime import datetime, timezone
@@ -100,9 +101,10 @@ class CorrectionLLMClient:
     def __init__(self, provider: Optional[OpenRouterProvider] = None) -> None:
         self.provider = provider or OpenRouterProvider(debug=False)
         self.fallback_models = [
-            "nvidia/nemotron-3.5-lightning:free",
             "cohere/north-mini-code:free",
             "openrouter/free",
+            "liquid/lfm-2.5-2.6b:free",
+            "nvidia/nemotron-3.5-lightning:free",
             self.provider.default_model,
         ]
 
@@ -169,7 +171,7 @@ class CorrectionLLMClient:
                 }
 
                 try:
-                    async with httpx.AsyncClient(timeout=float(self.provider.timeout or 35.0)) as client:
+                    async with httpx.AsyncClient(timeout=float(self.provider.timeout or 60.0)) as client:
                         resp = await client.post(
                             f"{self.provider.base_url}/chat/completions",
                             json=payload,

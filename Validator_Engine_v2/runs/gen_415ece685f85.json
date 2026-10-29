@@ -126,8 +126,8 @@
         }
       },
       "corrections": [],
-      "started_at": "2026-10-28T17:35:36.931096+00:00",
-      "finished_at": "2026-10-28T17:35:36.977839+00:00"
+      "started_at": "2026-10-29T09:16:16.547391+00:00",
+      "finished_at": "2026-10-29T09:16:16.579147+00:00"
     },
     {
       "n": 2,
@@ -333,8 +333,8 @@
           "patterns_still_missing": []
         }
       ],
-      "started_at": "2026-10-28T17:35:36.984891+00:00",
-      "finished_at": "2026-10-28T17:35:37.035078+00:00"
+      "started_at": "2026-10-29T09:16:16.585811+00:00",
+      "finished_at": "2026-10-29T09:16:16.618335+00:00"
     }
   ],
   "final_status": "PROVISIONAL",
@@ -355,7 +355,7 @@
   "overall_r": 50,
   "overall_w": null,
   "overall_d": 0,
-  "model_used": "nvidia/nemotron-3.5-lightning:free",
+  "model_used": "cohere/north-mini-code:free",
   "models_used_per_artifact": {},
   "reviewer_mode": "live",
   "corpus_status": "ok",
@@ -404,11 +404,11 @@
     "accept_threshold": 80,
     "max_rounds": 2,
     "validator_mock": "0",
-    "allow_mock_accept": 0,
+    "allow_mock_accept": 1,
     "rw_weight": 0.35,
     "rw_min": 60
   },
-  "created_at": "2026-10-28T17:35:36.885941+00:00",
+  "created_at": "2026-10-29T09:16:16.517372+00:00",
   "final_package": {
     "generation_id": "gen_415ece685f85",
     "prompt": "Design a bookstore management system",

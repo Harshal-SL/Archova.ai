@@ -15,7 +15,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _MODULE_DIR = Path(__file__).resolve().parent
 _LOCAL_ENV = _MODULE_DIR / ".env"
 if _LOCAL_ENV.exists():
-    load_dotenv(_LOCAL_ENV, override=False)
+    load_dotenv(_LOCAL_ENV, override=True)
 load_dotenv(".env", override=False)
 
 
@@ -50,12 +50,12 @@ class ValidatorConfig(BaseSettings):
     VALIDATOR_MODEL: str = os.getenv("VALIDATOR_MODEL", "cohere/north-mini-code:free")
     VALIDATOR_FALLBACK_MODELS: str = os.getenv(
         "VALIDATOR_FALLBACK_MODELS",
-        "nvidia/nemotron-3.5-lightning:free,openrouter/free,liquid/lfm-2.5-2.6b:free",
+        "openrouter/free,liquid/lfm-2.5-2.6b:free,nvidia/nemotron-3.5-lightning:free",
     )
 
     # Testing & Mock mode
-    VALIDATOR_MOCK: str = os.getenv("VALIDATOR_MOCK", "1")  # Default to mock=1 in development/testing
-    ALLOW_MOCK_ACCEPT: int = int(os.getenv("ALLOW_MOCK_ACCEPT", "0"))
+    VALIDATOR_MOCK: str = os.getenv("VALIDATOR_MOCK", "0")
+    ALLOW_MOCK_ACCEPT: int = int(os.getenv("ALLOW_MOCK_ACCEPT", "1"))
     VALIDATOR_CONCURRENCY: int = int(os.getenv("VALIDATOR_CONCURRENCY", "1"))
 
     # Decision thresholds
@@ -74,9 +74,9 @@ class ValidatorConfig(BaseSettings):
     )
 
     # Timeout limits
-    LLM_TIMEOUT_SECONDS: float = 60.0
-    ITERATION_TIMEOUT_SECONDS: float = 180.0
-    RUN_TIMEOUT_SECONDS: float = 600.0
+    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "120.0"))
+    ITERATION_TIMEOUT_SECONDS: float = float(os.getenv("ITERATION_TIMEOUT_SECONDS", "180.0"))
+    RUN_TIMEOUT_SECONDS: float = float(os.getenv("RUN_TIMEOUT_SECONDS", "600.0"))
 
     def get_fallback_models(self) -> List[str]:
         """Return ordered list of configured free fallback models starting with primary."""
