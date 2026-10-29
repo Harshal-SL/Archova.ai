@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import {
   Cpu,
@@ -32,10 +32,12 @@ import {
 } from "lucide-react";
 import BubbleBg from "@/components/BubbleBg";
 import ThemeToggle from "@/components/ThemeToggle";
+import { Logo } from "@/components/Logo";
 import { Alert, AlertDescription } from "@/components/ui/Alert";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/lib/supabaseClient";
 import { useAppStore } from "@/lib/store";
+import { syncAuthCookie } from "@/lib/auth-cookie";
 
 interface AuthCardProps {
   initialMode?: "signin" | "signup";
@@ -43,7 +45,9 @@ interface AuthCardProps {
 
 export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
   const router = useRouter();
-  const { setUser, setSession, loginAsGuest } = useAppStore();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get("redirect") || "/chat";
+  const { user, authLoading, setUser, setSession, initAuth } = useAppStore();
 
   const [isSignUp, setIsSignUp] = useState(initialMode === "signup");
   const [email, setEmail] = useState("");
@@ -57,6 +61,16 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
   const [resending, setResending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(redirectPath);
+    }
+  }, [authLoading, user, redirectPath, router]);
 
   // Sync mode with route changes if needed
   useEffect(() => {
@@ -84,15 +98,6 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", nextMode ? "/signup" : "/signin");
     }
-  };
-
-  // Instant Guest login
-  const handleGuestLogin = () => {
-    loginAsGuest(fullName.trim() || email.split("@")[0] || "Guest Architect");
-    setSuccessMessage("Entering ArchAI Architecture Studio as Guest Architect...");
-    setTimeout(() => {
-      router.push("/chat");
-    }, 400);
   };
 
   // Sign In handler
@@ -126,12 +131,13 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
         return;
       }
 
-      if (data?.user) {
+      if (data?.user && data?.session) {
+        syncAuthCookie(data.session.access_token);
         setUser(data.user);
         setSession(data.session);
-        setSuccessMessage("Authenticated successfully! Loading studio...");
+        setSuccessMessage("Authenticated successfully! Loading Archova.ai Studio...");
         setTimeout(() => {
-          router.push("/chat");
+          router.push(redirectPath);
         }, 600);
       } else {
         setErrorMessage("Authentication failed. Please try again.");
@@ -205,9 +211,10 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
         setSession(data.session);
 
         if (data.session) {
-          setSuccessMessage("Account created successfully! Entering ArchAI Studio...");
+          syncAuthCookie(data.session.access_token);
+          setSuccessMessage("Account created successfully! Entering Archova.ai Studio...");
           setTimeout(() => {
-            router.push("/chat");
+            router.push(redirectPath);
           }, 800);
         } else {
           // Attempt automatic login if email verification is not strictly enforced
@@ -217,11 +224,12 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
               password,
             });
             if (signInData?.session) {
+              syncAuthCookie(signInData.session.access_token);
               setUser(signInData.user);
               setSession(signInData.session);
-              setSuccessMessage("Account created and authenticated! Entering ArchAI Studio...");
+              setSuccessMessage("Account created and authenticated! Entering Archova.ai Studio...");
               setTimeout(() => {
-                router.push("/chat");
+                router.push(redirectPath);
               }, 800);
               return;
             }
@@ -230,7 +238,7 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
           }
 
           setSuccessMessage(
-            `Account created! A confirmation email has been dispatched to ${email}. If your Supabase instance requires verification, check your inbox, or click "Continue as Guest" below to start immediately.`
+            `Account created! A confirmation email has been dispatched to ${email}. If your Supabase instance requires verification, check your inbox to verify and log in.`
           );
         }
       }
@@ -318,11 +326,9 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
         href="/"
         className="fixed top-5 left-5 sm:top-6 sm:left-6 z-50 flex items-center gap-2.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full border border-neutral-300 bg-white/90 text-neutral-900 hover:border-black dark:border-neutral-800 dark:bg-neutral-950/90 dark:text-neutral-200 dark:hover:border-white backdrop-blur-xl shadow-xs transition-all duration-200 group"
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black font-extrabold shadow-sm transition-transform duration-200 group-hover:scale-105">
-          <Cpu className="h-4 w-4" />
-        </div>
-        <span className="text-sm font-bold tracking-tight">
-          Arch<span className="text-neutral-500 dark:text-neutral-400">AI</span>
+        <Logo size={28} className="rounded-lg group-hover:scale-105" />
+        <span className="text-sm font-bold tracking-tight font-heading">
+          Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
         </span>
       </Link>
 
@@ -412,14 +418,6 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
                             <span>Resend Confirmation Email</span>
                           </button>
                         )}
-                        <button
-                          type="button"
-                          onClick={handleGuestLogin}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-400/40 bg-white/10 hover:bg-white/20 text-xs font-semibold px-3 py-1.5 transition-colors cursor-pointer"
-                        >
-                          <Sparkles className="h-3.5 w-3.5" />
-                          <span>Continue as Guest Instead</span>
-                        </button>
                       </div>
                     </div>
                   </AlertDescription>
@@ -636,27 +634,9 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
                 </button>
               </div>
 
-              {/* ── Divider & Guest Option ── */}
-              <div className="relative flex items-center justify-center my-2">
-                <div className="border-t border-neutral-200 dark:border-neutral-800 w-full" />
-                <span className="bg-white dark:bg-[#0c0c0c] px-3 text-[10px] font-bold text-neutral-400 uppercase tracking-widest shrink-0">
-                  Or
-                </span>
-                <div className="border-t border-neutral-200 dark:border-neutral-800 w-full" />
-              </div>
-
-              <button
-                type="button"
-                onClick={handleGuestLogin}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border border-neutral-200/80 dark:border-[#262626] bg-white/70 dark:bg-[#0D0D0F] text-neutral-800 dark:text-neutral-200 py-2.5 text-xs sm:text-sm font-semibold transition-all hover:bg-white dark:hover:bg-[#161619] dark:hover:border-white/20 cursor-pointer shadow-2xs backdrop-blur-md"
-              >
-                <Sparkles className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
-                <span>Continue as Guest (No Registration Required)</span>
-              </button>
-
               {/* Sub-actions & Terms */}
               <p className="text-center text-[11px] text-neutral-500 pt-2">
-                By continuing, you agree to ArchAI&apos;s{" "}
+                By continuing, you agree to Archova.ai&apos;s{" "}
                 <span className="text-neutral-700 dark:text-neutral-300 underline underline-offset-2 hover:text-black dark:hover:text-white cursor-pointer">
                   Terms of Service
                 </span>{" "}
@@ -668,9 +648,9 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
             </form>
           </motion.div>
 
-          {/* ════ Right Side: Interactive Architecture Showcase ════ */}
+          {/* ════ Right Side: Interactive Architecture Showcase (Black, Blue & White Theme) ════ */}
           <motion.div
-            className="lg:col-span-5 hidden lg:flex flex-col justify-between p-6 sm:p-8 border-l border-neutral-200 dark:border-neutral-800 bg-neutral-50/70 dark:bg-neutral-900/40 backdrop-blur-xl relative overflow-hidden"
+            className="lg:col-span-5 hidden lg:flex flex-col justify-between p-6 sm:p-8 border-l border-neutral-200/80 dark:border-white/[0.08] bg-[#0A0A0C] text-white backdrop-blur-2xl relative overflow-hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4 }}
@@ -684,256 +664,75 @@ export default function AuthCard({ initialMode = "signin" }: AuthCardProps) {
 }
 
 function LiveArchitectureShowcase() {
-  const [activeActivityIndex, setActiveActivityIndex] = useState(0);
-  const [activeTierHover, setActiveTierHover] = useState<number | null>(null);
-
-  const activities = [
-    {
-      agent: "REE Engine",
-      task: "Interview SLA calculated: 99.999% • RTO: 30s • 42k req/s",
-      color: "text-amber-500 dark:text-amber-400",
-      badge: "Requirements",
-    },
-    {
-      agent: "SAE Engine",
-      task: "Synthesized 14 verified nodes & 19 edges in React Flow DAG",
-      color: "text-sky-500 dark:text-sky-400",
-      badge: "Topology",
-    },
-    {
-      agent: "Security LLD",
-      task: "Enforced zero-trust API boundaries, Kong OIDC & JWT guard",
-      color: "text-emerald-500 dark:text-emerald-400",
-      badge: "Security",
-    },
-    {
-      agent: "Database LLD",
-      task: "Compiled PostgreSQL 16 schema, partitioned B-Trees & Redis",
-      color: "text-purple-500 dark:text-purple-400",
-      badge: "Persistence",
-    },
-    {
-      agent: "ARSRS Engine",
-      task: "Generated formal IEEE/ISO-29148 architecture specification",
-      color: "text-cyan-500 dark:text-cyan-400",
-      badge: "Standard",
-    },
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveActivityIndex((prev) => (prev + 1) % activities.length);
-    }, 3200);
-    return () => clearInterval(timer);
-  }, [activities.length]);
-
-  const currentActivity = activities[activeActivityIndex];
-
   return (
-    <div className="relative flex flex-col justify-between h-full space-y-5">
-      {/* ── Ambient Background Glows ── */}
-      <div className="pointer-events-none absolute -top-10 -right-10 w-64 h-64 rounded-full bg-sky-500/10 dark:bg-sky-500/15 blur-3xl animate-pulse" />
-      <div className="pointer-events-none absolute bottom-10 -left-10 w-64 h-64 rounded-full bg-purple-500/10 dark:bg-purple-500/15 blur-3xl" />
+    <div className="relative flex flex-col justify-between h-full space-y-6 select-none">
+      {/* ── Soft Ambient Glow ── */}
+      <div className="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-[#005dff]/12 blur-3xl" />
 
-      {/* ── Top Header Badge & Live Status ── */}
+      {/* ── Top Header: Minimal Brand Mark ── */}
       <div className="relative z-10 flex items-center justify-between">
-        <div className="inline-flex items-center gap-2 rounded-full border border-neutral-300/80 bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900/90 dark:text-neutral-200 shadow-2xs backdrop-blur-md">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-          </span>
-          <span>ArchAI Multi-Agent v2.5</span>
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs text-white backdrop-blur-md">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#005dff] animate-pulse" />
+          <span className="font-semibold tracking-wide text-neutral-200">Archova.ai Studio</span>
         </div>
-        <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400 uppercase tracking-widest font-semibold">
-          SOC 2 • ISO 29148
-        </span>
+        <span className="text-[11px] font-mono text-neutral-500">v2.4</span>
       </div>
 
-      {/* ── Central Reactor Core & Title ── */}
-      <div className="relative z-10 text-center space-y-3">
-        {/* Holographic Glowing Reactor Core */}
-        <div className="relative mx-auto flex h-18 w-18 items-center justify-center">
-          {/* Outer dashed spinning orbit */}
-          <div className="absolute inset-0 rounded-full border border-dashed border-sky-400/50 animate-spin [animation-duration:16s]" />
-          {/* Inner counter-rotating ring */}
-          <div className="absolute inset-2 rounded-full border border-purple-500/40 animate-spin [animation-duration:10s] [animation-direction:reverse]" />
-          {/* Ambient radial blur glow */}
-          <div className="absolute inset-3 rounded-full bg-gradient-to-tr from-sky-500/25 via-blue-500/20 to-purple-500/25 blur-md animate-pulse" />
-
-          {/* Central Core Box */}
-          <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white dark:bg-white dark:text-black shadow-xl border border-white/20 dark:border-neutral-800 transition-transform hover:scale-105 duration-300">
-            <Cpu className="h-6 w-6 text-sky-400 dark:text-sky-600 animate-pulse" />
-          </div>
-
-          {/* Satellite Badge */}
-          <div className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-sky-500 text-white text-[8px] font-black shadow-md animate-bounce">
-            ⚡
-          </div>
-        </div>
-
-        <div className="space-y-1">
-          <h2 className="font-heading text-lg sm:text-xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
-            Automated System Architecture
-          </h2>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400 max-w-xs mx-auto leading-relaxed">
-            Deterministic multi-agent synthesis from natural language to formal enterprise topology.
-          </p>
-        </div>
-
-        {/* ── Mini Interactive Topology Visualizer (4 Connected Nodes) ── */}
-        <div className="rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs dark:border-neutral-800/90 dark:bg-neutral-950/60 backdrop-blur-md">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <div className="flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-wider text-neutral-500">
-              <Network className="h-3 w-3 text-sky-500" />
-              <span>Multi-Tier Topology Map</span>
-            </div>
-            <span className="text-[9.5px] font-mono font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-              14 Verified Nodes
-            </span>
-          </div>
-
-          {/* 4 Interactive Flow Nodes in a row */}
-          <div className="grid grid-cols-4 gap-1.5 relative">
-            {[
-              { label: "Client", sub: "Next.js 16", icon: MonitorIcon, color: "text-sky-500", bg: "bg-sky-500/10 border-sky-500/20" },
-              { label: "Gateway", sub: "Kong + OIDC", icon: ShieldCheck, color: "text-indigo-500", bg: "bg-indigo-500/10 border-indigo-500/20" },
-              { label: "Agents", sub: "5x LLD Mesh", icon: Workflow, color: "text-purple-500", bg: "bg-purple-500/10 border-purple-500/20" },
-              { label: "Storage", sub: "Postgres+Redis", icon: Database, color: "text-emerald-500", bg: "bg-emerald-500/10 border-emerald-500/20" },
-            ].map((node, idx) => (
-              <div
-                key={node.label}
-                onMouseEnter={() => setActiveTierHover(idx)}
-                onMouseLeave={() => setActiveTierHover(null)}
-                className={cn(
-                  "relative flex flex-col items-center justify-center rounded-xl p-1.5 text-center border transition-all cursor-pointer group",
-                  activeTierHover === idx
-                    ? "bg-white dark:bg-neutral-900 border-black dark:border-white shadow-md scale-105"
-                    : "bg-neutral-50/80 dark:bg-neutral-900/40 border-neutral-200/80 dark:border-neutral-800 hover:border-neutral-400 dark:hover:border-neutral-600"
-                )}
-              >
-                <div className={cn("flex h-6 w-6 items-center justify-center rounded-lg mb-1 border", node.bg)}>
-                  <node.icon className={cn("h-3.5 w-3.5", node.color)} />
-                </div>
-                <div className="text-[10px] font-bold text-neutral-900 dark:text-white leading-tight">
-                  {node.label}
-                </div>
-                <div className="text-[8.5px] text-neutral-500 dark:text-neutral-400 truncate max-w-full font-mono">
-                  {node.sub}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── 3 Interactive Pillar Feature Cards ── */}
+      {/* ── Hero Statement ── */}
       <div className="relative z-10 space-y-2 text-left">
-        {/* Card 1: Visual HLD */}
-        <div className="group flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs transition-all hover:bg-white hover:border-sky-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-sky-500/40 dark:hover:bg-neutral-900/90 backdrop-blur-md cursor-pointer">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-sky-500/10 text-sky-500 border border-sky-500/20 group-hover:scale-105 transition-transform">
-              <Workflow className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <span>Interactive Visual HLD</span>
-                <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300">
-                  React Flow
-                </span>
-              </div>
-              <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                Zoomable DAG topology with protocol-level edge verification
-              </div>
+        <h2 className="font-heading text-xl sm:text-2xl font-bold tracking-tight text-white leading-snug">
+          Enterprise architecture, synthesized in seconds.
+        </h2>
+        <p className="text-xs text-neutral-400 leading-relaxed max-w-sm">
+          Transform natural language requirements into verified system topologies, microservice specifications, and compliance audits.
+        </p>
+      </div>
+
+      {/* ── 3 Simple, Clean Capabilities (No Clutter, No Heavy Boxes) ── */}
+      <div className="relative z-10 space-y-3.5 text-left py-1">
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-[#005dff]">
+            <Network className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-white">Visual System Topologies</div>
+            <div className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">
+              Interactive React Flow DAG diagrams with verified edge protocol contracts
             </div>
           </div>
         </div>
 
-        {/* Card 2: 5 Domain LLD */}
-        <div className="group flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs transition-all hover:bg-white hover:border-purple-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-purple-500/40 dark:hover:bg-neutral-900/90 backdrop-blur-md cursor-pointer">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500 border border-purple-500/20 group-hover:scale-105 transition-transform">
-              <Layers className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <span>5 Domain LLD Blueprints</span>
-                <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300">
-                  Parallel Agents
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1 mt-0.5">
-                {["Backend", "Database", "Security", "Cloud", "Frontend"].map((d) => (
-                  <span
-                    key={d}
-                    className="text-[9px] font-semibold text-neutral-600 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800/80 px-1.5 py-0.2 rounded"
-                  >
-                    {d}
-                  </span>
-                ))}
-              </div>
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-[#005dff]">
+            <Layers className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-white">Multi-Domain Specifications</div>
+            <div className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">
+              Complete backend, frontend, database, security, and cloud blueprints
             </div>
           </div>
         </div>
 
-        {/* Card 3: ARSRS Spec */}
-        <div className="group flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white/80 p-2.5 shadow-2xs transition-all hover:bg-white hover:border-emerald-500/40 hover:shadow-md dark:border-neutral-800 dark:bg-neutral-900/60 dark:hover:border-emerald-500/40 dark:hover:bg-neutral-900/90 backdrop-blur-md cursor-pointer">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 group-hover:scale-105 transition-transform">
-              <FileCode2 className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-neutral-900 dark:text-white flex items-center gap-2">
-                <span>ARSRS Specification Synthesis</span>
-                <span className="text-[8.5px] font-mono px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300">
-                  ISO-29148
-                </span>
-              </div>
-              <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                Formal IEEE/ISO software engineering specification documents
-              </div>
+        <div className="flex items-start gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] border border-white/10 text-[#005dff]">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-white">Automated Verification</div>
+            <div className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed">
+              Closed-loop formal consistency and architectural compliance audit
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Live Agent Activity Console Ticker ── */}
-      <div className="relative z-10 rounded-2xl border border-neutral-200/80 bg-neutral-950 p-2.5 text-white shadow-md">
-        <div className="flex items-center justify-between text-[9.5px] font-mono text-neutral-400 border-b border-neutral-800 pb-1.5 mb-1.5">
-          <div className="flex items-center gap-1.5">
-            <Terminal className="h-3 w-3 text-sky-400" />
-            <span className="font-bold text-neutral-200">Autonomous Engine Stream</span>
-          </div>
-          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-            <Activity className="h-3 w-3 animate-pulse" />
-            <span>Active</span>
-          </span>
-        </div>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentActivity.agent}
-            initial={{ opacity: 0, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -3 }}
-            transition={{ duration: 0.2 }}
-            className="flex items-start gap-1.5 text-xs"
-          >
-            <span className={cn("font-mono font-bold text-[10.5px] shrink-0", currentActivity.color)}>
-              [{currentActivity.agent}]
-            </span>
-            <span className="text-neutral-300 text-[10.5px] leading-tight truncate">
-              {currentActivity.task}
-            </span>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* ── Bottom Showcase Footer ── */}
-      <div className="relative z-10 flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 pt-2.5 text-[10.5px] text-neutral-500 dark:text-neutral-400">
-        <span className="font-mono">Next.js 16 • React 19 • Supabase</span>
-        <span className="flex items-center gap-1.5 text-neutral-900 dark:text-neutral-100 font-bold">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Auth Engine Online
+      {/* ── Bottom Minimal Status ── */}
+      <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-4 text-[11px] text-neutral-400">
+        <span className="font-mono">Deterministic AI Engine</span>
+        <span className="flex items-center gap-1.5 text-white font-medium">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#005dff] animate-pulse" />
+          All Systems Operational
         </span>
       </div>
     </div>

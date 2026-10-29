@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 import {
   Cpu,
   Sparkles,
@@ -265,12 +266,6 @@ function PushPin({ color = "#f97316" }: { color?: string }) {
 export default function LandingPage() {
   const router = useRouter();
 
-  const handleLoadTemplate = () => {
-    useAppStore.getState().loadDemoData();
-    router.push("/chat");
-  };
-
-
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-white text-black dark:bg-black dark:text-white selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors">
       <BubbleBg />
@@ -289,7 +284,7 @@ export default function LandingPage() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black dark:bg-white opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-black dark:bg-white" />
                 </span>
-                <span>ArchAI 2.5 • Autonomous Multi-Agent Systems Engineering</span>
+                <span>Archova.ai • Autonomous Multi-Agent Systems Engineering</span>
                 <ChevronRight className="h-3.5 w-3.5 text-neutral-500" />
               </div>
 
@@ -340,20 +335,6 @@ export default function LandingPage() {
                     </div>
                   </ShimmerButton>
                 </Link>
-                <ShimmerButton
-                  type="button"
-                  onClick={handleLoadTemplate}
-                  shimmerColor="rgba(59, 130, 246, 0.85)"
-                  shimmerDuration="3s"
-                  borderRadius="9999px"
-                  background="rgba(15, 23, 42, 0.85)"
-                  className="px-7 py-4 text-sm font-bold text-blue-300 border border-blue-500/30 shadow-md backdrop-blur-sm hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Layers className="h-4 w-4 text-blue-400 transition-transform duration-200 group-hover:scale-110" />
-                    <span>Load Basic HLD & LLD Template</span>
-                  </div>
-                </ShimmerButton>
                 <a
                   href="#services"
                   className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-7 py-4 text-sm font-bold text-neutral-800 backdrop-blur-sm transition-all duration-200 hover:border-black hover:text-black dark:border-neutral-700 dark:bg-black dark:text-neutral-200 dark:hover:border-white dark:hover:text-white"
@@ -368,19 +349,19 @@ export default function LandingPage() {
         {/* ════════════════════════════════════════════════════════════════════════════════════════════
             SECTION 2: ABOUT
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <section id="about" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800">
+        <section id="about" className="relative py-20 md:py-28 border-t border-neutral-200 dark:border-neutral-800 content-lazy-render">
           <div className="mx-auto max-w-6xl px-4">
             <AnimatedContainer delay={0.1}>
               <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-neutral-300 bg-neutral-100 px-3.5 py-1 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-200 mb-3 shadow-xs">
                   <Sparkles className="h-3.5 w-3.5 text-neutral-800 dark:text-neutral-200" />
-                  <span>About ArchAI • Project, Idea & Solution</span>
+                  <span>About Archova.ai • Project, Idea & Solution</span>
                 </div>
                 <h2 className="font-heading text-3xl font-extrabold sm:text-5xl tracking-tight">
                   Transforming Architecture from Art to Science
                 </h2>
                 <p className="mt-4 text-base sm:text-lg text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed">
-                  Modern distributed systems are too complex for whiteboard guesswork. Discover the idea behind ArchAI, the crisis it addresses, and how our autonomous multi-agent platform delivers production-ready systems engineering.
+                  Modern distributed systems are too complex for whiteboard guesswork. Discover the idea behind Archova.ai, the crisis it addresses, and how our autonomous multi-agent platform delivers production-ready systems engineering.
                 </p>
               </div>
             </AnimatedContainer>
@@ -453,9 +434,7 @@ export default function LandingPage() {
                   <div>
                     {/* Header: Icon & Badge */}
                     <div className="flex items-center justify-between mb-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/20 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
-                        <Cpu className="h-6 w-6" />
-                      </div>
+                      <Logo size={48} className="rounded-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 shadow-md border-blue-500/20" />
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-300/60 bg-blue-50/80 px-3 py-1 text-xs font-bold text-blue-900 dark:border-blue-800/60 dark:bg-blue-950/50 dark:text-blue-300">
                         <span className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
                         02 • The Project
@@ -464,10 +443,10 @@ export default function LandingPage() {
 
                     {/* Title & Body */}
                     <h3 className="font-heading text-xl lg:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                      ArchAI: Autonomous Architect
+                      Archova.ai: Autonomous Architect
                     </h3>
                     <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                      ArchAI is an autonomous multi-agent platform engineered to bridge the divide between high-level stakeholder intent and production-ready distributed system topologies, formal specs, and code contracts.
+                      Archova.ai is an autonomous multi-agent platform engineered to bridge the divide between high-level stakeholder intent and production-ready distributed system topologies, formal specs, and code contracts.
                     </p>
 
                     {/* Project Pillars */}
@@ -521,7 +500,7 @@ export default function LandingPage() {
                       Deterministic Full-Stack Synthesis
                     </h3>
                     <p className="mt-3 text-xs sm:text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-                      ArchAI replaces subjective guesswork with deterministic multi-domain synthesis. It unifies high-level visual graphs and low-level code implementation blueprints into a living, verifiable architecture.
+                      Archova.ai replaces subjective guesswork with deterministic multi-domain synthesis. It unifies high-level visual graphs and low-level code implementation blueprints into a living, verifiable architecture.
                     </p>
 
                     {/* Solution Highlights */}
@@ -563,7 +542,7 @@ export default function LandingPage() {
                         The Continuous Architecture Continuum
                       </h4>
                       <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        How ArchAI transitions from raw concept to verified production systems
+                        How Archova.ai transitions from raw concept to verified production systems
                       </p>
                     </div>
                   </div>
@@ -630,7 +609,7 @@ export default function LandingPage() {
         {/* ════════════════════════════════════════════════════════════════════════════════════════════
             SECTION 3: SERVICES (ROADMAP PIPELINE)
         ════════════════════════════════════════════════════════════════════════════════════════════ */}
-        <section id="services" className="relative py-20 md:py-32 border-t border-neutral-200 dark:border-neutral-800 overflow-hidden">
+        <section id="services" className="relative py-20 md:py-32 border-t border-neutral-200 dark:border-neutral-800 overflow-hidden content-lazy-render">
           <div className="mx-auto max-w-6xl px-4">
             <AnimatedContainer delay={0.1}>
               <div className="text-center mb-16 md:mb-20">
@@ -818,11 +797,9 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
               <AnimatedContainer delay={0.1} className="space-y-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black shadow-sm">
-                    <Cpu className="h-4 w-4" />
-                  </div>
+                  <Logo size={28} className="rounded-lg shadow-sm" />
                   <span className="font-heading font-extrabold text-base tracking-tight">
-                    Arch<span className="text-neutral-500 dark:text-neutral-400">AI</span>
+                    Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span>
                   </span>
                 </div>
                 <p className="text-xs text-neutral-500 leading-relaxed">
@@ -872,7 +849,7 @@ export default function LandingPage() {
             </div>
 
             <AnimatedContainer delay={0.5} className="border-t border-neutral-200 dark:border-neutral-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500">
-              <p>&copy; 2026 ArchAI Architecture Engine. All rights reserved.</p>
+              <p>&copy; 2026 Archova.ai Architecture Engine. All rights reserved.</p>
               <p className="mt-2 sm:mt-0 font-mono text-[11px]">Designed with UI-UX Pro Max • Pure Black & White Architecture</p>
             </AnimatedContainer>
           </div>

@@ -210,11 +210,12 @@ class SAEPipeline:
         self.runbook_agent = RunbookAgent(self.llm_provider)
         self.adversarial_agent = AdversarialReviewAgent(self.llm_provider)
 
-        # Pre-warm RAG vector index & embeddings
-        try:
-            get_architecture_knowledge_service().warmup()
-        except Exception as e:
-            logger.warning(f"RAG pre-warm warning: {e}")
+        # Pre-warm RAG vector index & embeddings only if explicitly requested
+        if os.getenv("RAG_PRELOAD", "false").lower() in ("true", "1"):
+            try:
+                get_architecture_knowledge_service().warmup()
+            except Exception as e:
+                logger.warning(f"RAG pre-warm warning: {e}")
 
     def _save_json(self, filename: str, data: Any) -> Path:
         """Save a dictionary or Pydantic model to output directory."""

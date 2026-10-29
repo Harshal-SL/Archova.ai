@@ -5,13 +5,20 @@ All tuneable values live here.  No magic numbers elsewhere.
 """
 
 from pathlib import Path
+from typing import Optional
 import os
+from dotenv import load_dotenv
+
+_PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
+for _candidate in [_PROJECT_ROOT / ".env", _PROJECT_ROOT.parent / ".env", Path.cwd() / ".env"]:
+    if _candidate.exists():
+        load_dotenv(_candidate, override=False)
 
 # ── Qdrant connection ──────────────────────────────────────────────────────────
 # Set QDRANT_URL to a remote server; leave at default to use local on-disk mode.
 QDRANT_URL: str = os.getenv("QDRANT_URL", "http://localhost:6333")
+QDRANT_API_KEY: Optional[str] = os.getenv("QDRANT_API_KEY")
 
-_PROJECT_ROOT: Path = Path(__file__).resolve().parent.parent.parent
 QDRANT_LOCAL_PATH: str = os.getenv(
     "QDRANT_LOCAL_PATH",
     str(_PROJECT_ROOT / ".qdrant_data"),
@@ -64,7 +71,7 @@ CACHE_DIR: Path = Path.home() / ".cache" / "architecture_rag"
 
 # ── Misc ──────────────────────────────────────────────────────────────────────
 LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-VECTOR_STORE_BATCH_SIZE: int = 64
+VECTOR_STORE_BATCH_SIZE: int = 32
 ENABLE_PROGRESS_BAR: bool = True
 
 

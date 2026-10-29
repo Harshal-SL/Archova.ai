@@ -120,7 +120,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 Textarea.displayName = "Textarea";
 
 export interface AnimatedAIChatProps {
-  onSend?: (text: string) => void;
+  onSend?: (text: string, files?: File[]) => void;
   disabled?: boolean;
   userName?: string;
   className?: string;
@@ -137,7 +137,7 @@ export function AnimatedAIChat({
 
   const [value, setValue] = useState("");
   const [showBenchmarkModal, setShowBenchmarkModal] = useState(false);
-  const [attachments, setAttachments] = useState<string[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [, startTransition] = useTransition();
   const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
@@ -255,7 +255,7 @@ export function AnimatedAIChat({
       }
     } else if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      if (value.trim()) {
+      if (value.trim() || attachedFiles.length > 0) {
         handleSendMessage();
       }
     }
@@ -263,11 +263,12 @@ export function AnimatedAIChat({
 
   const handleSendMessage = () => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
+    if ((!trimmed && attachedFiles.length === 0) || disabled) return;
 
     if (onSend) {
-      onSend(trimmed);
+      onSend(trimmed, attachedFiles);
       setValue("");
+      setAttachedFiles([]);
       adjustHeight(true);
     } else {
       startTransition(() => {
@@ -275,6 +276,7 @@ export function AnimatedAIChat({
         setTimeout(() => {
           setIsTyping(false);
           setValue("");
+          setAttachedFiles([]);
           adjustHeight(true);
         }, 2500);
       });
@@ -288,12 +290,12 @@ export function AnimatedAIChat({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const names = Array.from(files).map((f) => f.name);
-    setAttachments((prev) => [...prev, ...names]);
+    const newFiles = Array.from(files);
+    setAttachedFiles((prev) => [...prev, ...newFiles]);
   };
 
   const removeAttachment = (index: number) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const selectCommandSuggestion = (index: number) => {
@@ -316,6 +318,7 @@ export function AnimatedAIChat({
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
+        accept=".pdf,.docx,.txt,.md,.png,.jpg,.jpeg"
         multiple
         className="hidden"
       />
@@ -448,26 +451,30 @@ export function AnimatedAIChat({
 
             {/* Attachments List */}
             <AnimatePresence>
-              {attachments.length > 0 && (
+              {attachedFiles.length > 0 && (
                 <motion.div
                   className="px-4 pb-3 flex gap-2 flex-wrap"
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                 >
-                  {attachments.map((file, index) => (
+                  {attachedFiles.map((file, index) => (
                     <motion.div
-                      key={index}
-                      className="flex items-center gap-2 text-xs bg-neutral-100 dark:bg-white/[0.05] py-1.5 px-3 rounded-lg text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-white/5"
+                      key={`${file.name}-${index}`}
+                      className="flex items-center gap-2 text-xs bg-neutral-100 dark:bg-white/[0.05] py-1.5 px-3 rounded-lg text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-white/5 shadow-2xs"
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
                     >
-                      <span>{file}</span>
+                      <Paperclip className="w-3.5 h-3.5 text-blue-500" />
+                      <span className="font-medium truncate max-w-[180px]">{file.name}</span>
+                      <span className="text-[10px] text-neutral-400">
+                        ({(file.size / 1024).toFixed(1)} KB)
+                      </span>
                       <button
                         type="button"
                         onClick={() => removeAttachment(index)}
-                        className="text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white transition-colors cursor-pointer"
+                        className="text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white transition-colors cursor-pointer ml-1"
                       >
                         <XIcon className="w-3 h-3" />
                       </button>
@@ -485,7 +492,7 @@ export function AnimatedAIChat({
                   type="button"
                   onClick={handleAttachFile}
                   whileTap={{ scale: 0.94 }}
-                  title="Attach requirements spec or architecture doc"
+                  title="Attach requirements (.pdf, .docx, .txt, .md, images)"
                   className="p-2 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white rounded-lg transition-colors relative group cursor-pointer"
                 >
                   <Paperclip className="w-4 h-4" />
@@ -522,7 +529,7 @@ export function AnimatedAIChat({
               <ShimmerButton
                 type="button"
                 onClick={handleSendMessage}
-                disabled={disabled || isTyping || !value.trim()}
+                disabled={disabled || isTyping || (!value.trim() && attachedFiles.length === 0)}
                 borderRadius="12px"
                 shimmerColor={isDark ? "#000000" : "#ffffff"}
                 shimmerDuration="2.5s"
@@ -533,7 +540,7 @@ export function AnimatedAIChat({
                   isDark
                     ? "text-black border border-neutral-300"
                     : "text-white border border-neutral-800 shadow-neutral-950/20",
-                  value.trim() && !disabled
+                  (value.trim() || attachedFiles.length > 0) && !disabled
                     ? isDark
                       ? "cursor-pointer hover:shadow-lg hover:bg-neutral-50 active:scale-[0.98]"
                       : "cursor-pointer hover:shadow-lg hover:bg-neutral-900 active:scale-[0.98]"

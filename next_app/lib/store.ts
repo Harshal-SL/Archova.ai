@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { User, Session } from "@supabase/supabase-js";
 import type { Node, Edge } from "@xyflow/react";
 import { supabase } from "./supabaseClient";
+import { syncAuthCookie } from "./auth-cookie";
 import {
   aiEngineApi,
   type LldType,
@@ -78,7 +79,6 @@ interface AppState {
   authLoading: boolean;
   setUser: (u: User | null) => void;
   setSession: (s: Session | null) => void;
-  loginAsGuest: (name?: string) => void;
   initAuth: () => Promise<void>;
   signOut: () => Promise<void>;
 
@@ -90,6 +90,7 @@ interface AppState {
   // ── Sidebar ──
   sidebarOpen: boolean;
   toggleSidebar: () => void;
+  setSidebarOpen: (open: boolean) => void;
 
   // ── Active Workspace View (ChatGPT style) ──
   activeView: WorkspaceView;
@@ -246,6 +247,7 @@ interface AppState {
   addMessage: (sessionId: string, msg: ChatMessage) => Promise<void>;
   loadSessionsFromSupabase: () => Promise<void>;
   saveCurrentArchitecture: (targetSessionId?: string) => Promise<void>;
+  deleteSession: (sessionId: string) => Promise<void>;
   resetGenerationSession: () => void;
 
   // ── Demo & Offline Testing ──
@@ -298,14 +300,6 @@ interface AppState {
   selectModel: (modelId: string) => void;
   runBenchmarkSuite: (promptText: string) => Promise<void>;
 }
-
-import {
-  hldNodes as initialHldNodes,
-  hldEdges as initialHldEdges,
-  dummyHldData,
-  dummyAllLldData,
-  dummyArsrs,
-} from "./mock-data";
 
 const initialLldStatus: Record<LldType, LldStatusType> = {
   backend: "NOT_STARTED",
@@ -367,29 +361,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   setUser: (user) => set({ user }),
   setSession: (session) => set({ session, user: session?.user ?? null }),
 
-  loginAsGuest: (name?: string) => {
-    const guestUser = {
-      id: `guest-${Date.now()}`,
-      email: "guest@archai.local",
-      app_metadata: { provider: "guest" },
-      user_metadata: {
-        name: name || "Guest Architect",
-        full_name: name || "Guest Architect",
-      },
-      aud: "authenticated",
-      created_at: new Date().toISOString(),
-    } as unknown as User;
-
-    set({ user: guestUser, session: null, authLoading: false });
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("archai-guest-user", JSON.stringify(guestUser));
-      } catch {
-        // ignore
-      }
-    }
-  },
-
   initAuth: async () => {
     try {
       // 1. Check for previously saved guest user in localStorage
@@ -441,23 +412,26 @@ export const useAppStore = create<AppState>((set, get) => ({
       // 2. Check Supabase session
       const { data } = await supabase.auth.getSession();
       if (data?.session) {
+        syncAuthCookie(data.session.access_token);
         set({
           session: data.session,
           user: data.session.user,
           authLoading: false,
         });
         await get().loadSessionsFromSupabase();
-      } else if (!hasGuest) {
-        set({ session: null, user: null, authLoading: false });
       } else {
-        set({ authLoading: false });
+        syncAuthCookie(null);
+        if (!hasGuest) {
+          set({ session: null, user: null, authLoading: false });
+        }
       }
 
-      // 3. Attach a single onAuthStateChange listener
+      // 2. Attach a single onAuthStateChange listener
       if (!authListenerInitialized) {
         authListenerInitialized = true;
         supabase.auth.onAuthStateChange(async (event, session) => {
-          if (event === "SIGNED_OUT" || (!session && !localStorage.getItem("archai-guest-user"))) {
+          if (event === "SIGNED_OUT" || !session) {
+            syncAuthCookie(null);
             set({
               session: null,
               user: null,
@@ -466,6 +440,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               activeSessionId: null,
             });
           } else if (session) {
+            syncAuthCookie(session.access_token);
             set({
               session,
               user: session.user,
@@ -476,11 +451,13 @@ export const useAppStore = create<AppState>((set, get) => ({
         });
       }
     } catch {
+      syncAuthCookie(null);
       set({ authLoading: false });
     }
   },
 
   signOut: async () => {
+    syncAuthCookie(null);
     // 1. Instantly reset all in-memory store states to eliminate stale session/user data
     set({
       user: null,
@@ -580,6 +557,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   // Sidebar
   sidebarOpen: true,
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
   // Active Workspace View
   activeView: "chat",
@@ -748,18 +726,15 @@ export const useAppStore = create<AppState>((set, get) => ({
   setActiveLldType: (type) => set({ activeLldType: type }),
   jumpToLld: (type) => {
     const state = get();
-    const existingLld = state.lldData[type];
-    const fallbackData = (dummyAllLldData as Record<LldType, any>)[type] || null;
-    const effectiveData = existingLld || fallbackData;
+    const existingLld = state.lldData[type] || null;
 
     set({
       activeLldType: type,
       hldWorkspaceTab: "lld",
       activePipelineStep: 4,
-      lldData: existingLld ? state.lldData : { ...state.lldData, [type]: effectiveData },
       lldStatus: {
         ...state.lldStatus,
-        [type]: "READY",
+        [type]: existingLld ? "READY" : state.lldStatus[type] || "NOT_STARTED",
       },
     });
 
@@ -1882,7 +1857,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   loadSessionsFromSupabase: async () => {
     const currentUser = get().user;
-    if (!currentUser || currentUser.app_metadata?.provider === "guest") return;
+    if (!currentUser) return;
 
     try {
       const { data: dbSessions, error } = await supabase
@@ -1930,7 +1905,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const currentUser = get().user;
     const newId = generateUUID();
 
-    if (currentUser && currentUser.app_metadata?.provider !== "guest") {
+    if (currentUser) {
       try {
         const { error } = await supabase
           .from("chat_sessions")
@@ -2016,9 +1991,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
 
     const currentUser = get().user;
-    const isGuest = !currentUser || currentUser.app_metadata?.provider === "guest";
 
-    if (isGuest || !isUUID(id)) {
+    if (!currentUser || !isUUID(id)) {
       return;
     }
 
@@ -2094,6 +2068,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           interviewCompleted: true,
           activePipelineStep: 3,
           generationStatus: "COMPLETED",
+          activeView: "hld", // DIRECTLY DISPLAY THE DESIGN
         }));
       } else {
         // Fallback: check if any message had json_response with hld
@@ -2115,6 +2090,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             interviewCompleted: true,
             activePipelineStep: 3,
             generationStatus: "COMPLETED",
+            activeView: "hld", // DIRECTLY DISPLAY THE DESIGN
           }));
         } else {
           // Reset architecture data for sessions without an architecture diagram
@@ -2131,6 +2107,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             interviewCompleted: false,
             activePipelineStep: 1,
             generationStatus: "IDLE",
+            activeView: "chat",
           });
         }
       }
@@ -2154,7 +2131,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }));
 
     const currentUser = get().user;
-    if (!currentUser || currentUser.app_metadata?.provider === "guest" || !isUUID(sessionId)) {
+    if (!currentUser || !isUUID(sessionId)) {
       return;
     }
 
@@ -2229,7 +2206,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   saveCurrentArchitecture: async (targetSessionId?: string) => {
     const activeSid = targetSessionId || get().activeSessionId;
     const currentUser = get().user;
-    if (!activeSid || !currentUser || currentUser.app_metadata?.provider === "guest" || !isUUID(activeSid)) {
+    if (!activeSid || !currentUser || !isUUID(activeSid)) {
       return;
     }
 
@@ -2322,79 +2299,72 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  // Demo & Offline Testing: Load basic HLD & LLD Template
-  loadDemoData: () => {
-    const demoGenId = "demo-template-arch-01";
-    let activeSid = get().activeSessionId;
-    let currentSessions = get().sessions;
+  deleteSession: async (sessionId: string) => {
+    if (!sessionId) return;
 
-    const demoMessages: ChatMessage[] = [
-      {
-        id: "msg-demo-user",
-        role: "user",
-        content: "Build a High-Scale Enterprise Video Streaming Platform with adaptive bitrate transcoding, CDN edge caching, subscription billing, and real-time viewer analytics.",
-      },
-      {
-        id: "msg-demo-ai",
-        role: "ai",
-        content: `Loaded the **Enterprise Video Streaming Platform** architecture template!\n\n• **High-Level Design (HLD)**: Event-driven microservices topology with 8 interconnected nodes.\n• **5 Low-Level Designs (LLDs)**: Backend, Frontend, Database, Security, and Cloud blueprints.`,
-      },
-    ];
+    const currentSessions = get().sessions;
+    const remainingSessions = currentSessions.filter((s) => s.id !== sessionId);
+    const wasActive = get().activeSessionId === sessionId;
 
-    if (!activeSid) {
-      activeSid = `demo-session-${Date.now()}`;
-      const demoSession: ChatSession = {
-        id: activeSid,
-        title: "Enterprise Video Streaming Platform (Template)",
-        messages: demoMessages,
-        hasArchitecture: true,
-      };
-      currentSessions = [demoSession, ...currentSessions];
+    // 1. Instantly update in-memory store
+    if (wasActive) {
+      if (remainingSessions.length > 0) {
+        set({ sessions: remainingSessions });
+        await get().setActiveSession(remainingSessions[0].id);
+      } else {
+        set({
+          sessions: [],
+          activeSessionId: null,
+          activeView: "chat",
+          activePipelineStep: 1,
+          generationId: null,
+          generationStatus: "IDLE",
+          currentQuestion: null,
+          interviewCompleted: false,
+          activeProcess: null,
+          arsrsData: null,
+          hldData: null,
+          hldNodes: [],
+          hldEdges: [],
+          selectedNode: null,
+          validationData: null,
+          validatedGenerationId: null,
+          validationError: null,
+          lldStatus: initialLldStatus,
+          lldData: initialLldData,
+          logs: [],
+          availableVersions: [],
+          activeVersionTag: "v1.0",
+          activeDiff: null,
+        });
+      }
     } else {
-      currentSessions = currentSessions.map((ses) =>
-        ses.id === activeSid
-          ? {
-              ...ses,
-              title: ses.title === "New Architecture" ? "Enterprise Video Streaming Platform (Template)" : ses.title,
-              hasArchitecture: true,
-              messages: ses.messages.length === 0 ? demoMessages : ses.messages,
-            }
-          : ses
-      );
+      set({ sessions: remainingSessions });
     }
 
-    set({
-      sessions: currentSessions,
-      activeSessionId: activeSid,
-      generationId: demoGenId,
-      arsrsData: dummyArsrs,
-      hldData: dummyHldData as Record<string, unknown>,
-      hldNodes: initialHldNodes,
-      hldEdges: initialHldEdges,
-      lldData: dummyAllLldData as Record<LldType, Record<string, unknown> | null>,
-      lldStatus: {
-        backend: "READY",
-        frontend: "READY",
-        database: "READY",
-        security: "READY",
-        cloud: "READY",
-      },
-      generationStatus: "COMPLETED",
-      activePipelineStep: 3,
-      activeView: "hld",
-      interviewCompleted: true,
-      activeAgent: {
-        id: "agent-sae-system-architect",
-        name: "Systems Architect & Microservices Synthesizer",
-        role: "Architecture Generation & Microservices Topology Synthesis",
-        icon: "cpu",
-        task: "Synthesized production-ready HLD topology and 5 LLD domain specifications.",
-        status: "completed",
-        stage: "HLD",
-        progressPercent: 100,
-        thought: "Interactive HLD & 5 LLD microservices templates loaded successfully.",
-      },
-    });
+    // 2. Cascade delete from Supabase if authenticated and is UUID
+    const currentUser = get().user;
+    if (currentUser && isUUID(sessionId)) {
+      try {
+        await supabase
+          .from("architecture_designs")
+          .delete()
+          .eq("session_id", sessionId);
+
+        await supabase
+          .from("chat_sessions")
+          .delete()
+          .eq("id", sessionId);
+      } catch (err) {
+        console.warn("Could not delete session from Supabase:", err);
+      }
+    }
+  },
+
+  loadDemoData: () => {
+    // Dummy HLD/LLD templates completely removed.
+    // Creates a fresh clean session instead.
+    get().createSession();
   },
 
   // ── Versioning & Architectural Evolution ──
@@ -2554,7 +2524,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const evolvedNotice: ChatMessage = {
         id: generateMsgId(),
         role: "ai",
-        content: `✨ **Architecture Evolved to ${response.version}**\n\n• **Summary**: ${diff.feature_summary}\n• **Added Components**: ${addedCompNames}\n• **Database Changes**: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• **Invariance Guarantee**: 100% verified baseline preservation (0 existing components modified or deleted).`,
+        content: `✨ Architecture Evolved to ${response.version}\n\n• Summary: ${diff.feature_summary}\n• Added Components: ${addedCompNames}\n• Database Changes: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• Invariance Guarantee: 100% verified baseline preservation (0 existing components modified or deleted).`,
       };
       set((s) => ({
         sessions: s.sessions.map((ses) =>
@@ -2566,7 +2536,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     // Persist to Supabase if authenticated
-    if (currentUser && currentUser.app_metadata?.provider !== "guest" && activeSid && !activeSid.startsWith("demo-")) {
+    if (currentUser && activeSid && !activeSid.startsWith("demo-")) {
       try {
         const { data: existingLatest } = await supabase
           .from("architecture_designs")
@@ -2598,7 +2568,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         await supabase.from("messages").insert([{
           session_id: activeSid,
           role: "assistant",
-          content: `✨ **Architecture Evolved to ${response.version}**\n\n• **Summary**: ${diff.feature_summary}\n• **Added Components**: ${diff.added_nodes?.join(", ") || "None"}\n• **Database Changes**: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• **Invariance Guarantee**: 100% verified baseline preservation (0 existing components modified or deleted).`,
+          content: `✨ Architecture Evolved to ${response.version}\n\n• Summary: ${diff.feature_summary}\n• Added Components: ${diff.added_nodes?.join(", ") || "None"}\n• Database Changes: ${diff.added_tables?.length || 0} new tables, ${diff.added_columns?.length || 0} new columns\n• Invariance Guarantee: 100% verified baseline preservation (0 existing components modified or deleted).`,
           json_response: evolvedPkg,
         }]);
 
@@ -2762,9 +2732,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       const resultsMap: Record<string, ModelBenchmarkResult> = { ...state.benchmarkResults };
       response.models.forEach((m) => {
-        resultsMap[m.model_id] = m;
-        if (m.model_name) {
-          resultsMap[m.model_name.toLowerCase()] = m;
+        if (m.model_id) {
+          resultsMap[m.model_id] = m;
         }
       });
 

@@ -1,15 +1,17 @@
 services:
+  # ── 1. AI Architecture Engine (FastAPI) ──
   - type: web
     name: archova-ai-engine
     runtime: python
-    rootDir: ai_engine
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
-    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install --upgrade pip && pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && pip install --no-cache-dir -r ai_engine/requirements.txt
+    startCommand: uvicorn app.main:app --app-dir ai_engine --host 0.0.0.0 --port $PORT
     plan: free
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: PYTHONPATH
+        value: .
       - key: OPENROUTER_API_KEY
         sync: false
       - key: ALLOW_PAID_MODELS
@@ -18,3 +20,43 @@ services:
         value: "google/gemini-2.5-flash-lite:free"
       - key: CORS_ORIGINS
         value: "*"
+      - key: DISABLE_LOCAL_EMBEDDINGS
+        value: "true"
+      - key: RAG_PRELOAD
+        value: "false"
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: QSTASH_TOKEN
+        sync: false
+
+  # ── 2. Validator Engine (FastAPI) ──
+  - type: web
+    name: archova-validator-engine
+    runtime: python
+    buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r Validator_Engine/requirements.txt
+    startCommand: uvicorn Validator_Engine.api:app --host 0.0.0.0 --port $PORT
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PYTHONPATH
+        value: .
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: DISABLE_LOCAL_EMBEDDINGS
+        value: "true"
+      - key: RAG_PRELOAD
+        value: "false"
+      - key: QDRANT_URL
+        sync: false
+      - key: QDRANT_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false

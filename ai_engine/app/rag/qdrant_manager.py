@@ -11,6 +11,7 @@ Connection strategy (tried in order):
 
 import atexit
 import logging
+import time
 import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -31,6 +32,7 @@ from .config import (
     EMBEDDING_MODEL,
     QDRANT_LOCAL_PATH,
     QDRANT_URL,
+    QDRANT_API_KEY,
 )
 from .embeddings import get_embedding_dimension
 
@@ -44,9 +46,9 @@ _DISTANCE_MAP: Dict[str, Distance] = {
 }
 
 
-def _try_remote(url: str) -> Optional[QdrantClient]:
+def _try_remote(url: str, api_key: Optional[str] = None) -> Optional[QdrantClient]:
     """
-    Attempt to connect to a remote Qdrant server.
+    Attempt to connect to a remote Qdrant server (local or Qdrant Cloud).
 
     Returns a connected QdrantClient, or None if the server is unreachable.
     The version-compatibility warning is suppressed to keep output clean.
@@ -54,7 +56,7 @@ def _try_remote(url: str) -> Optional[QdrantClient]:
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            client = QdrantClient(url=url, check_compatibility=False, timeout=3)
+            client = QdrantClient(url=url, api_key=api_key, check_compatibility=False, timeout=60)
             client.get_collections()          # real round-trip to confirm server is up
         logger.info(f"Connected to remote Qdrant at {url}")
         return client
@@ -85,6 +87,7 @@ class QdrantManager:
     def __init__(
         self,
         url: str = QDRANT_URL,
+        api_key: Optional[str] = QDRANT_API_KEY,
         collection_name: str = COLLECTION_NAME,
         local_path: str = QDRANT_LOCAL_PATH,
     ) -> None:
@@ -93,6 +96,7 @@ class QdrantManager:
 
         Args:
             url: Remote Qdrant server URL (tried first).
+            api_key: Optional API key for Qdrant Cloud.
             collection_name: Name of the vector collection.
             local_path: Fallback on-disk storage directory.
 
@@ -101,10 +105,11 @@ class QdrantManager:
         """
         self.collection_name = collection_name
         self.url = url
+        self.api_key = api_key
         self.local_path = local_path
         self.is_local = False
 
-        client = _try_remote(url)
+        client = _try_remote(url, api_key=api_key)
         if client is not None:
             self.client: QdrantClient = client
         else:
@@ -267,13 +272,23 @@ class QdrantManager:
             total = 0
             for i in range(0, len(points), batch_size):
                 batch = points[i : i + batch_size]
-                self.client.upsert(
-                    collection_name=self.collection_name,
-                    points=batch,
-                )
+                retries = 3
+                for attempt in range(1, retries + 1):
+                    try:
+                        self.client.upsert(
+                            collection_name=self.collection_name,
+                            points=batch,
+                        )
+                        break
+                    except Exception as err:
+                        if attempt == retries:
+                            raise
+                        logger.warning(
+                            f"Batch upload attempt {attempt} failed ({err}). Retrying in {attempt * 2}s..."
+                        )
+                        time.sleep(attempt * 2)
                 total += len(batch)
-                logger.debug(f"Upserted {total}/{len(points)} points")
-            logger.info(f"Upserted {total} points successfully.")
+                logger.info(f"Upserted {total}/{len(points)} points to {self.collection_name}")
             return total
         except Exception as exc:
             logger.error(f"Failed to upsert points: {exc}")

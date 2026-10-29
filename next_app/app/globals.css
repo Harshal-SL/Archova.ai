@@ -68,6 +68,38 @@
 html[data-scroll-behavior="smooth"],
 html {
   scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+}
+
+@keyframes star-twinkle {
+  0% {
+    opacity: 0.25;
+    transform: translate3d(0, 0, 0) scale(0.85);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate3d(0, 0, 0) scale(1.12);
+  }
+  100% {
+    opacity: 0.3;
+    transform: translate3d(0, 0, 0) scale(0.9);
+  }
+}
+
+/* ── Hardware-Accelerated Smooth Scrolling Containers ── */
+.smooth-scroll,
+.overflow-y-auto,
+.overflow-x-auto,
+[data-smooth-scroll] {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-y: contain;
+}
+
+/* ── Performance: Skip Layout & Paint for Offscreen Sections ── */
+.content-lazy-render {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 650px;
 }
 
 /* ── Universal Manrope Font Enforcement ── */

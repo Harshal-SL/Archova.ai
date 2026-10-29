@@ -1,8 +1,9 @@
 "use client";
 
 import clsx from "clsx";
-import { Bot, User } from "lucide-react";
+import { User } from "lucide-react";
 import type { ChatMessage as ChatMsg } from "@/lib/store";
+import { Logo } from "@/components/Logo";
 
 export default function ChatMessage({ msg }: { msg: ChatMsg }) {
   const isUser = msg.role === "user";
@@ -15,9 +16,7 @@ export default function ChatMessage({ msg }: { msg: ChatMsg }) {
       )}
     >
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black text-white dark:bg-white dark:text-black shadow-sm">
-          <Bot className="h-4 w-4" />
-        </div>
+        <Logo size={32} className="rounded-xl shadow-sm" />
       )}
 
       <div
@@ -28,7 +27,7 @@ export default function ChatMessage({ msg }: { msg: ChatMsg }) {
             : "border-l-4 border-l-black dark:border-l-white border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0a0a0a] text-black dark:text-white shadow-sm"
         )}
       >
-        {msg.content}
+        {msg.role === "ai" ? msg.content.replace(/\*\*/g, "") : msg.content}
       </div>
 
       {isUser && (

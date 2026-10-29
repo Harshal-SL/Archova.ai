@@ -133,6 +133,8 @@ function GridRunner({
         height: isHorizontal ? 1.75 : runner.length,
         background: `linear-gradient(${gradientDirection}, transparent 0%, var(--shooting-star-head, rgba(0,0,0,0.55)) 15%, var(--shooting-star-body, rgba(0,0,0,0.95)) 48%, var(--shooting-star-core, #000000) 65%, transparent 100%)`,
         boxShadow: "var(--shooting-star-shadow, 0 0 6px rgba(0,0,0,0.7), 0 0 14px rgba(0,0,0,0.35))",
+        willChange: "transform, opacity",
+        transform: "translateZ(0)",
       }}
       initial={{ opacity: 0, scaleX: isHorizontal ? 0.35 : 1, scaleY: isHorizontal ? 1 : 0.35 }}
       animate={
@@ -172,19 +174,25 @@ export function ShootingStarsGrid({
   interactive = false,
 }: ShootingStarsGridProps) {
   const [mounted, setMounted] = React.useState(false);
+  const [isVisible, setIsVisible] = React.useState(true);
   const reduceMotion = useReducedMotion() === true;
   const rootRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setMounted(true);
+    const onVisibility = () => {
+      setIsVisible(!document.hidden);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
   const staticStars = React.useMemo(
-    () => createStaticStars(Math.max(0, Math.min(starCount, 90))),
+    () => createStaticStars(Math.max(0, Math.min(starCount, 40))),
     [starCount],
   );
   const shootingStars = React.useMemo(
-    () => createShootingStars(Math.max(0, Math.min(shootingStarCount, 10))),
+    () => createShootingStars(Math.max(0, Math.min(shootingStarCount, 6))),
     [shootingStarCount],
   );
   const speedScale = getSpeedScale(speed);
@@ -203,7 +211,7 @@ export function ShootingStarsGrid({
     [interactive, reduceMotion],
   );
 
-  const shouldAnimate = mounted && (!reduceMotion || !reducedMotionFallback);
+  const shouldAnimate = mounted && isVisible && (!reduceMotion || !reducedMotionFallback);
 
   return (
     <section
@@ -251,11 +259,11 @@ export function ShootingStarsGrid({
       {showStaticStars && mounted && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10" suppressHydrationWarning>
           {staticStars.map((star, index) => (
-            <motion.span
+            <span
               key={index}
               className={cn(
-                "absolute rounded-full bg-neutral-900 shadow-[0_0_8px_rgba(0,0,0,0.35)] dark:bg-white dark:shadow-[0_0_12px_rgba(255,255,255,0.6)]",
-                index > 34 && "max-sm:hidden",
+                "absolute rounded-full bg-neutral-900 shadow-[0_0_6px_rgba(0,0,0,0.3)] dark:bg-white dark:shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                index > 24 && "max-sm:hidden",
               )}
               style={{
                 left: `${star.x}%`,
@@ -263,17 +271,11 @@ export function ShootingStarsGrid({
                 width: star.size,
                 height: star.size,
                 opacity: star.opacity,
-              }}
-              animate={
-                shouldAnimate
-                  ? { opacity: [star.opacity * 0.65, star.opacity, star.opacity * 0.7], scale: [0.85, 1.16, 0.9] }
-                  : undefined
-              }
-              transition={{
-                duration: star.duration,
-                delay: star.delay,
-                repeat: Infinity,
-                ease: "easeInOut",
+                animation: shouldAnimate
+                  ? `star-twinkle ${star.duration}s ease-in-out ${star.delay}s infinite alternate`
+                  : "none",
+                willChange: "opacity, transform",
+                transform: "translateZ(0)",
               }}
             />
           ))}
@@ -315,7 +317,7 @@ export function ShootingStarsGrid({
           <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-neutral-300 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-800 backdrop-blur dark:border-white/20 dark:bg-white/10 dark:text-white">
               <Sparkles className="size-3.5" />
-              ArchAI Architecture Engine
+              Archova.ai Architecture Engine
             </div>
             <h2 className="text-balance text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-neutral-900 dark:text-white">
               Build systems that feel alive

@@ -17,19 +17,20 @@ import {
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-
-import ShootingStarsGrid from "@/components/ui/shooting-stars-grid";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { Logo } from "./Logo";
 
 export default function Sidebar() {
   const router = useRouter();
   const {
     sidebarOpen,
     toggleSidebar,
+    setSidebarOpen,
     sessions,
     activeSessionId,
     createSession,
     setActiveSession,
+    deleteSession,
     user,
     signOut,
   } = useAppStore();
@@ -39,7 +40,25 @@ export default function Sidebar() {
 
   React.useEffect(() => {
     setMounted(true);
-  }, []);
+    // Auto collapse sidebar on mobile devices on initial render
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  }, [setSidebarOpen]);
+
+  const handleSelectSession = (id: string) => {
+    setActiveSession(id);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
+
+  const handleNewArchitecture = async () => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+    await createSession();
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -49,9 +68,9 @@ export default function Sidebar() {
     user?.user_metadata?.name ||
     user?.user_metadata?.full_name ||
     user?.email?.split("@")[0] ||
-    (user ? "Architect" : "Guest Mode");
+    "Architect";
 
-  const emailDisplay = user?.email || (user ? "Guest Architecture Mode" : "Sign in to sync history");
+  const emailDisplay = user?.email || "architect@archova.ai";
   const userInitial = displayName.charAt(0).toUpperCase();
 
   const filteredSessions = sessions.filter((s) =>
@@ -73,55 +92,32 @@ export default function Sidebar() {
         </button>
       )}
 
-      {/* Main Sidebar Aside with Glassmorphism */}
+      {/* Mobile Backdrop Overlay when Drawer is open */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Main Sidebar Aside with Glassmorphism (Mobile Drawer + Desktop Fixed/Relative) */}
       <aside
         className={cn(
-          "relative flex h-full flex-col border-r border-neutral-200/50 bg-white/35 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300 ease-in-out dark:border-white/[0.08] dark:bg-black/35 shadow-[4px_0_24px_-2px_rgba(0,0,0,0.03)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.4)] z-30 shrink-0 select-none overflow-hidden",
-          sidebarOpen ? "w-72 lg:w-80" : "w-0 -translate-x-full overflow-hidden border-r-0"
+          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/80 bg-white transition-all duration-300 ease-in-out dark:border-[#262626] dark:bg-[#0D0D0F] shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white md:dark:bg-[#0D0D0F]",
+          sidebarOpen ? "w-[280px] sm:w-80 translate-x-0" : "w-0 -translate-x-full overflow-hidden border-r-0 md:w-0"
         )}
       >
-        {/* ── Background Animation Layer inside Sidebar ── */}
-        <div
-          className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-45 dark:opacity-35"
-          aria-hidden="true"
-        >
-          {/* Subtle Ambient Glowing Orbs */}
-          <div className="absolute -top-16 -left-16 h-48 w-48 rounded-full bg-blue-500/15 dark:bg-blue-600/20 blur-3xl animate-pulse" />
-          <div className="absolute top-1/2 -right-16 h-56 w-56 rounded-full bg-indigo-500/10 dark:bg-indigo-600/15 blur-3xl" />
-          <div
-            className="absolute -bottom-16 left-1/3 h-48 w-48 rounded-full bg-cyan-500/15 dark:bg-cyan-500/15 blur-3xl animate-pulse"
-            style={{ animationDuration: "5s" }}
-          />
-
-          {/* Shooting Stars Grid Animation */}
-          {mounted && (
-            <ShootingStarsGrid
-              starCount={24}
-              shootingStarCount={3}
-              gridSize={36}
-              speed="slow"
-              glow={true}
-              interactive={false}
-              className="h-full w-full rounded-none border-none shadow-none min-h-0 bg-transparent dark:bg-transparent"
-            >
-              {null}
-            </ShootingStarsGrid>
-          )}
-        </div>
+        
 
         {/* Top Header & Brand */}
-        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/40 dark:border-white/[0.06] shrink-0 bg-white/20 dark:bg-white/[0.01] backdrop-blur-md">
+        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-[#262626] shrink-0 bg-white dark:bg-[#0D0D0F]">
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
           >
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-black text-white dark:bg-white dark:text-black shadow-xs">
-              <Cpu className="h-4 w-4" />
-            </div>
-            <span className="tracking-tight font-extrabold text-base">ArchAI</span>
-            <span className="rounded-md bg-neutral-200/80 px-1.5 py-0.5 text-[10px] font-mono text-neutral-700 dark:bg-white/10 dark:text-neutral-300">
-              v2.5
-            </span>
+            <Logo size={28} className="rounded-lg" />
+            <span className="tracking-tight font-extrabold text-base">Archova.ai</span>
           </Link>
 
           <button
@@ -137,7 +133,7 @@ export default function Sidebar() {
         {/* New Architecture Button */}
         <div className="relative z-10 p-3 shrink-0">
           <ShimmerButton
-            onClick={() => createSession()}
+            onClick={handleNewArchitecture}
             borderRadius="16px"
             shimmerColor="#005dff"
             shimmerDuration="2.5s"
@@ -155,7 +151,7 @@ export default function Sidebar() {
         {/* Search Filter when sessions exist */}
         {sessions.length > 3 && (
           <div className="relative z-10 px-3 pb-2 shrink-0">
-            <div className="flex items-center gap-2 rounded-xl border border-neutral-200/50 bg-white/30 px-2.5 py-1.5 text-xs backdrop-blur-md shadow-2xs dark:border-white/[0.06] dark:bg-white/[0.02]">
+            <div className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-100/70 px-2.5 py-1.5 text-xs shadow-2xs dark:border-[#262626] dark:bg-[#161619]">
               <Search className="h-3.5 w-3.5 text-neutral-400" />
               <input
                 type="text"
@@ -190,12 +186,12 @@ export default function Sidebar() {
               return (
                 <div
                   key={s.id}
-                  onClick={() => setActiveSession(s.id)}
+                  onClick={() => handleSelectSession(s.id)}
                   className={cn(
-                    "group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-xs transition-all cursor-pointer",
+                    "group relative flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-all cursor-pointer",
                     isActive
-                      ? "bg-white/30 font-bold text-black backdrop-blur-md dark:bg-white/[0.02] dark:text-white shadow-2xs border border-neutral-200/50 dark:border-white/[0.06] border-l-2 border-l-black dark:border-l-white"
-                      : "text-neutral-700/80 hover:bg-white/20 hover:text-black dark:text-neutral-400/80 dark:hover:bg-white/[0.02] dark:hover:text-white"
+                      ? "bg-neutral-100 font-bold text-black dark:bg-[#161619] dark:text-white shadow-2xs border border-neutral-200/80 dark:border-[#262626] border-l-2 border-l-black dark:border-l-white"
+                      : "text-neutral-700/80 hover:bg-neutral-100/60 hover:text-black dark:text-neutral-400/80 dark:hover:bg-[#161619]/60 dark:hover:text-white"
                   )}
                 >
                   <MessageSquare
@@ -212,6 +208,17 @@ export default function Sidebar() {
                       HLD
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSession(s.id);
+                    }}
+                    title="Delete architecture"
+                    className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-500/10 dark:hover:text-red-400 dark:hover:bg-red-950/40 transition-all cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               );
             })
@@ -219,9 +226,9 @@ export default function Sidebar() {
         </div>
 
         {/* Docked User Profile below the sidebar */}
-        <div className="relative z-10 border-t border-neutral-200/40 p-3 dark:border-white/[0.06] shrink-0 bg-white/15 dark:bg-white/[0.01] backdrop-blur-xl">
+        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-[#262626] shrink-0 bg-white dark:bg-[#0D0D0F]">
           {user ? (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/30 p-2.5 shadow-2xs backdrop-blur-md dark:border-white/[0.06] dark:bg-white/[0.02] opacity-85 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
               <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black/80 text-white text-xs font-bold dark:bg-white/90 dark:text-black shadow-xs">
                   {userInitial}
@@ -247,7 +254,7 @@ export default function Sidebar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/30 p-2.5 shadow-2xs backdrop-blur-md dark:border-white/[0.06] dark:bg-white/[0.02] opacity-85 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
               <Link
                 href="/signin"
                 className="flex min-w-0 items-center gap-2.5 flex-1 hover:opacity-80 transition-opacity"
@@ -257,10 +264,10 @@ export default function Sidebar() {
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold text-neutral-900/90 dark:text-white/90 leading-tight">
-                    Guest Mode
+                    Not Signed In
                   </p>
                   <p className="truncate text-[10px] text-sky-600 dark:text-sky-400 font-medium">
-                    Sign in to save history
+                    Sign in to access studio
                   </p>
                 </div>
               </Link>

@@ -82,18 +82,22 @@ class ArchitectureKnowledgeService:
         self,
         min_similarity_threshold: float = MIN_SIMILARITY_THRESHOLD,
         default_timeout: float = DEFAULT_RAG_TIMEOUT,
-        preload: bool = True,
+        preload: bool = False,
     ) -> None:
         self.min_similarity_threshold = min_similarity_threshold
         self.default_timeout = default_timeout
         self._retriever: Optional[Any] = None
         self._cache: Dict[str, List[RetrievedChunk]] = {}
         self._init_failed: bool = False
-        if preload:
+        should_preload = preload or os.getenv("RAG_PRELOAD", "false").lower() in ("true", "1")
+        if should_preload:
             self.warmup()
 
     def _get_retriever(self) -> Any:
         """Lazy-initialize the RAG Retriever from app.rag."""
+        if os.getenv("DISABLE_LOCAL_EMBEDDINGS", "false").lower() in ("true", "1"):
+            raise RAGUnavailableError("Local embeddings disabled via DISABLE_LOCAL_EMBEDDINGS=true to fit low-RAM instances.")
+
         if self._retriever is not None:
             return self._retriever
         if self._init_failed:
@@ -114,6 +118,9 @@ class ArchitectureKnowledgeService:
 
     def warmup(self) -> None:
         """Pre-warm retriever and embedding model to eliminate cold-start latency."""
+        if os.getenv("DISABLE_LOCAL_EMBEDDINGS", "false").lower() in ("true", "1"):
+            logger.info("Local embeddings disabled (DISABLE_LOCAL_EMBEDDINGS=true), skipping RAG warm-up.")
+            return
         try:
             retriever = self._get_retriever()
             from app.rag.embeddings import get_embedder

@@ -1,4 +1,4 @@
-# Archova.ai (ArchAI) — Autonomous Multi-Agent AI System Architecture Platform
+# Archova.ai — Autonomous Multi-Agent AI System Architecture Platform
 
 > **Transforming raw, ambiguous requirements into production-ready software architectures, formal specifications, and interactive visual topologies.**
 
@@ -17,7 +17,7 @@
 
 ## 📌 Executive Summary
 
-**Archova.ai** (internally branded as **ArchAI**) is an enterprise-grade, multi-agent AI software architecture generation platform. It automates the entire software architecture lifecycle: from ingesting high-level, unstructured stakeholder problem statements or multimodal documents (PDF, DOCX, TXT, OCR images) to generating complete, verified, and production-ready architectural deliverables.
+**Archova.ai** is an enterprise-grade, multi-agent AI software architecture generation platform. It automates the entire software architecture lifecycle: from ingesting high-level, unstructured stakeholder problem statements or multimodal documents (PDF, DOCX, TXT, OCR images) to generating complete, verified, and production-ready architectural deliverables.
 
 ### The Problem It Solves
 Translating vague, ambiguity-ridden stakeholder expectations into resilient, scalable, and enterprise-grade software architectures is traditionally one of the slowest and most expensive phases of software engineering. Manual requirements elicitation often misses edge cases, architectural patterns are inconsistently applied, and translating High-Level Designs (HLD) into domain-specific Low-Level Designs (LLDs) across frontend, backend, database, security, and cloud infrastructure takes weeks of senior engineering effort.

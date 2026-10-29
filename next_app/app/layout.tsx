@@ -17,9 +17,19 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ArchAI — AI System Architecture Generator",
+  title: "Archova.ai — AI System Architecture Generator",
   description:
     "Generate, visualize, and explore system architectures with AI. HLD, LLD, and interactive diagrams.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.png", sizes: "64x64", type: "image/png" },
+      { url: "/logo-128.png", sizes: "128x128", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({

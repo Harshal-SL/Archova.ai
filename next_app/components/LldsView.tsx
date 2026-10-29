@@ -17,7 +17,6 @@ import { useAppStore } from "@/lib/store";
 import { aiEngineApi, type LldType } from "@/lib/ai-engine-client";
 import LLDGraph from "./LLDGraph";
 import JsonViewer from "./JsonViewer";
-import { dummyAllLldData } from "@/lib/mock-data";
 import clsx from "clsx";
 import Select, { type TSelectData } from "@/components/ui/select";
 
@@ -127,24 +126,24 @@ export default function LldsView({ onBackToHld }: Props = {}) {
               </div>
             )}
 
-            {currentStatus === "NOT_STARTED" && !currentData && !(dummyAllLldData as any)?.[activeLldType] && (
+            {currentStatus === "NOT_STARTED" && !currentData && (
               <div className="flex h-full flex-col items-center justify-center p-6 text-center">
                 <Server className="mb-2 h-10 w-10 text-neutral-400 dark:text-neutral-600" />
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {activeLldType.toUpperCase()} LLD has not started yet. Complete the interview to generate.
+                  {activeTabObj.label} has not been generated yet for this architecture.
                 </p>
               </div>
             )}
 
-            {(currentData || (dummyAllLldData as any)?.[activeLldType]) && currentStatus !== "GENERATING" && currentStatus !== "FAILED" && (
-              <LLDGraph customLldType={activeLldType} customLldData={currentData || (dummyAllLldData as any)?.[activeLldType]} />
+            {currentData && currentStatus !== "GENERATING" && currentStatus !== "FAILED" && (
+              <LLDGraph customLldType={activeLldType} customLldData={currentData} />
             )}
           </>
         )}
       </div>
 
       {/* Bottom Slider Footer with Navigation Controls & Bottom-Right LLD Dropdown */}
-      <div className="flex items-center justify-between border-t border-neutral-200/70 bg-white/70 px-6 py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200/70 bg-white/70 px-3 sm:px-6 py-2 sm:py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg shrink-0">
         {/* Left: Back to Visual HLD */}
         <button
           onClick={() => {
@@ -154,14 +153,14 @@ export default function LldsView({ onBackToHld }: Props = {}) {
               setActivePipelineStep(3);
             }
           }}
-          className="flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white/80 px-4 py-2 text-xs font-semibold text-neutral-700 backdrop-blur-md transition-colors hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer"
+          className="flex items-center gap-1.5 rounded-lg border border-neutral-200/80 bg-white/80 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-semibold text-neutral-700 backdrop-blur-md transition-colors hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Back to Visual HLD</span>
+          <span className="hidden sm:inline">Back to </span><span>Visual HLD</span>
         </button>
 
         {/* Right: Only keep the dropdown menu of selecting the LLD designs */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Select
             id="lld-view-select"
             title="Switch Low-Level Design"

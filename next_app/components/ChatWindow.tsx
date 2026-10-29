@@ -19,6 +19,7 @@ import MultiAgentSwarmLoader from "./MultiAgentSwarmLoader";
 import { AiLoader } from "@/components/ui/ai-loader";
 import { AnimatedAIChat } from "@/components/ui/animated-ai-chat";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/Logo";
 
 const ARCHITECTURE_TEMPLATES = [
   {
@@ -101,21 +102,74 @@ export default function ChatWindow() {
     }
   }, [activeSessionId]);
 
-  const handleStartGeneration = async (promptText: string) => {
+  const handleStartGeneration = async (promptText: string, attachedFiles?: File[]) => {
     let sid = activeSessionId;
+    const hasFiles = attachedFiles && attachedFiles.length > 0;
+
+    const initialTitle = promptText
+      ? promptText.slice(0, 32)
+      : hasFiles
+      ? attachedFiles[0].name.replace(/\.[^/.]+$/, "").slice(0, 32)
+      : "New Architecture";
+
     if (!sid) {
-      sid = await createSession(promptText.slice(0, 32));
+      sid = await createSession(initialTitle);
+    }
+
+    // Format chat message content
+    let displayContent = promptText;
+    if (hasFiles) {
+      const docList = attachedFiles.map((f) => `\`${f.name}\``).join(", ");
+      displayContent = promptText
+        ? `${promptText}\n\n📎 Uploaded Requirements: ${docList}`
+        : `📎 Uploaded Requirements Document${attachedFiles.length > 1 ? "s" : ""}: ${docList}`;
     }
 
     // 1. Post user prompt into chat
     await addMessage(sid, {
       id: generateMsgId(),
       role: "user",
-      content: promptText,
+      content: displayContent,
     });
 
     setStarting(true);
     const now = new Date().toTimeString().split(" ")[0];
+
+    // If documents are attached, ingest them through backend parser
+    let effectivePrompt = promptText;
+    if (hasFiles) {
+      setActiveAgent({
+        id: "agent-doc-ingestion",
+        name: "Document Ingestion Agent",
+        role: "Requirements Document Extraction & OCR",
+        icon: "brain",
+        task: `Extracting requirements from ${attachedFiles.map((f) => f.name).join(", ")}...`,
+        status: "working",
+        stage: "REE",
+        progressPercent: 15,
+        thought: "Parsing document structure (PDF/DOCX/TXT/OCR) into structured architecture requirements...",
+      });
+
+      addLogEntry({
+        timestamp: now,
+        stage: "REE",
+        message: `📄 Ingesting ${attachedFiles.length} uploaded document(s): ${attachedFiles.map((f) => f.name).join(", ")}...`,
+        level: "INFO",
+      });
+
+      try {
+        const ingested = await aiEngineApi.processInput(promptText, attachedFiles);
+        effectivePrompt = ingested.combined_prompt || promptText;
+        addLogEntry({
+          timestamp: new Date().toTimeString().split(" ")[0],
+          stage: "REE",
+          message: `✓ Ingestion complete. Extracted ${ingested.block_count} requirement block(s) from: ${ingested.sources.join(", ")}.`,
+          level: "INFO",
+        });
+      } catch (err) {
+        console.warn("Document parsing warning, using raw prompt:", err);
+      }
+    }
 
     // Check if an architecture baseline already exists in this session
     const hasBaseline = Boolean(hldData && typeof hldData === "object" && Object.keys(hldData).length > 0);
@@ -144,7 +198,7 @@ export default function ChatWindow() {
       });
 
       try {
-        const result = await evolveArchitecture(promptText);
+        const result = await evolveArchitecture(effectivePrompt);
 
         addLogEntry({
           timestamp: new Date().toTimeString().split(" ")[0],
@@ -169,7 +223,7 @@ export default function ChatWindow() {
         await addMessage(sid, {
           id: generateMsgId(),
           role: "ai",
-          content: `⚠️ **Error evolving architecture**: ${msg}`,
+          content: `⚠️ Error evolving architecture: ${msg}`,
         });
       } finally {
         setStarting(false);
@@ -205,11 +259,11 @@ export default function ChatWindow() {
       useAppStore.getState().startAgentTelemetryPolling(clientGenId);
 
       // Concurrently initiate direct 1-shot baseline LLM benchmark in background
-      useAppStore.getState().runBenchmarkSuite(promptText).catch((e) => {
+      useAppStore.getState().runBenchmarkSuite(effectivePrompt).catch((e) => {
         console.warn("Background benchmark suite non-blocking error:", e);
       });
 
-      const response = await aiEngineApi.startGeneration(promptText, clientGenId);
+      const response = await aiEngineApi.startGeneration(effectivePrompt, clientGenId);
 
       useAppStore.setState({
         generationId: response.generation_id,
@@ -234,14 +288,14 @@ export default function ChatWindow() {
       await addMessage(sid, {
         id: generateMsgId(),
         role: "ai",
-        content: `I've analyzed your requirements and initiated the **Architecture Engineering Pipeline**.\n\nPlease answer the clarifying questions in the animated **AI Interview** below to synthesize the High-Level Design (HLD).`,
+        content: `I've analyzed your requirements and initiated the Architecture Engineering Pipeline.\n\nPlease answer the clarifying questions in the animated AI Interview below to synthesize the High-Level Design (HLD).`,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to process requirements.";
       await addMessage(sid, {
         id: generateMsgId(),
         role: "ai",
-        content: `⚠️ **Error initializing Architecture Engine**\n\n${msg}`,
+        content: `⚠️ Error initializing Architecture Engine\n\n${msg}`,
       });
     } finally {
       setStarting(false);
@@ -278,9 +332,7 @@ export default function ChatWindow() {
                   )}
                 >
                   {!isUser && (
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-neutral-950 text-white border border-neutral-800 dark:bg-white dark:text-black shadow-xs mt-0.5">
-                      <Cpu className="h-4 w-4" />
-                    </div>
+                    <Logo size={32} className="rounded-xl mt-0.5 shadow-xs" />
                   )}
 
                   <div
@@ -291,7 +343,7 @@ export default function ChatWindow() {
                         : "max-w-[85%] border border-neutral-200/80 bg-white dark:border-[#262626] dark:bg-[#0D0D0F] text-neutral-900 dark:text-neutral-100 rounded-bl-sm"
                     )}
                   >
-                    {m.content}
+                    {m.role === "ai" ? m.content.replace(/\*\*/g, "") : m.content}
                   </div>
 
                   {isUser && (
@@ -330,9 +382,9 @@ export default function ChatWindow() {
 
             {/* Quick HLD Architecture ready prompt banner */}
             {hldData && (
-              <div className="my-3 flex items-center justify-between rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs">
+              <div className="my-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-3 sm:p-4 text-xs">
                 <div className="flex items-center gap-2.5">
-                  <Workflow className="h-5 w-5 text-blue-500" />
+                  <Workflow className="h-5 w-5 text-blue-500 shrink-0" />
                   <div>
                     <span className="font-bold text-neutral-900 dark:text-white">
                       High-Level Design (HLD) Ready
@@ -346,7 +398,7 @@ export default function ChatWindow() {
                 <button
                   type="button"
                   onClick={() => setActiveView("hld")}
-                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 text-xs transition-colors cursor-pointer shadow-md"
+                  className="flex items-center gap-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs transition-colors cursor-pointer shadow-md shrink-0 self-end sm:self-auto"
                 >
                   <span>Open HLD Diagram</span>
                   <ArrowRight className="h-3.5 w-3.5" />

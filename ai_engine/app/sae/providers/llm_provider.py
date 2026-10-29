@@ -347,6 +347,16 @@ class OpenRouterProvider:
             "reasoning": {"max_tokens": reasoning_max},
         }
 
+        # Check Redis Cache
+        try:
+            from app.core.redis_client import get_cached_llm
+            cached_text = await get_cached_llm(prompt, model)
+            if cached_text:
+                print(f"  [{agent_role}] ⚡ Redis Cache HIT ({model}) — skipped API call in < 5ms", flush=True)
+                return self.parse_and_validate(cached_text, response_model, agent_name=agent_role)
+        except Exception:
+            pass
+
         key_idx = ((DEFAULT_ROLE_KEY_INDEX.get(agent_role.lower().strip(), 0) % len(self.api_keys)) + 1) if self.api_keys else 0
         if self.sae_logger:
             try:
@@ -440,6 +450,13 @@ class OpenRouterProvider:
                         raise ValueError(f"Empty or null content returned from model {payload.get('model')}")
 
                     print(f"  [{agent_role}] ✅ Completed in {latency}s ({len(content)} chars)", flush=True)
+
+                    # Cache successful completion in Redis
+                    try:
+                        from app.core.redis_client import set_cached_llm
+                        await set_cached_llm(prompt, model, content)
+                    except Exception:
+                        pass
 
                     if self.debug:
                         resp_lines = content.splitlines()

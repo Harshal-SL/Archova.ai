@@ -40,6 +40,12 @@ export interface AgentTelemetryResponse {
   timestamp: string;
 }
 
+export interface ProcessInputResponse {
+  combined_prompt: string;
+  sources: string[];
+  block_count: number;
+}
+
 export interface StartGenerationResponse {
   generation_id: string;
   status: "INTERVIEW_IN_PROGRESS" | "INTERVIEW_COMPLETED" | string;
@@ -98,7 +104,11 @@ export interface StatusResponse {
 
 // In-memory question tracker for frontend simulation
 const answerCounts: Record<string, number> = {};
-const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+const isBrowser = typeof window !== "undefined";
+const directUrl = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "").trim().replace(/\/+$/, "");
+const AI_HOST = isBrowser
+  ? (directUrl || "/api/engine")
+  : (process.env.AI_ENGINE_URL || directUrl || "http://localhost:8000").trim().replace(/\/+$/, "");
 
 export const aiEngineApi = {
   // 1. Health check — Tries FastAPI on port 8000
@@ -114,6 +124,28 @@ export const aiEngineApi = {
       }
     } catch {}
     return { ok: false, version: "Offline", host: AI_HOST };
+  },
+
+  // 1b. Ingest documents and/or prompt text
+  async processInput(text?: string, files?: File[]): Promise<ProcessInputResponse> {
+    const formData = new FormData();
+    if (text && text.trim()) {
+      formData.append("text", text.trim());
+    }
+    if (files && files.length > 0) {
+      for (const file of files) {
+        formData.append("files", file);
+      }
+    }
+    const res = await fetch(`${AI_HOST}/api/input`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to process requirement documents (HTTP ${res.status})`);
+    }
+    return await res.json();
   },
 
   // 2. Start generation with problem statement
@@ -245,7 +277,7 @@ export const aiEngineApi = {
 
   // 9. Get architecture package for validation
   async getPackage(generationId: string): Promise<Record<string, any>> {
-    const AI_HOST = (process.env.NEXT_PUBLIC_AI_ENGINE_URL || "http://localhost:8000").trim().replace(/\/+$/, "");
+    // Top-level AI_HOST used (routed via secure proxy)
     const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/package`);
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
@@ -256,6 +288,24 @@ export const aiEngineApi = {
 
   // 10. Automated Validation & AI Review with Validator Engine v2 (Port 8002)
   async validateAndCorrect(generationId: string, maxRetries = 2): Promise<any> {
+    // Top-level AI_HOST used (routed via secure proxy)
+    try {
+      const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/validate-and-correct?max_retries=${maxRetries}`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+      const errData = await res.json().catch(() => null);
+      if (res.status !== 404 && errData?.detail) {
+        throw new Error(errData.detail);
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message && !err.message.includes("fetch")) {
+        throw err;
+      }
+    }
+    // Standalone fallback: validate package directly with Validator Engine v2 (Port 8002)
     const pkg = await this.getPackage(generationId);
     const { validatorV2Client } = await import("./validator-v2-client");
     const v2Report = await validatorV2Client.directValidate(pkg);
