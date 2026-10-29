@@ -9,7 +9,7 @@ import {
   Loader2,
   CornerDownLeft,
 } from "lucide-react";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, generateMsgId } from "@/lib/store";
 import { aiEngineApi } from "@/lib/ai-engine-client";
 import { parseHldToReactFlow } from "@/lib/graph-parser";
 import clsx from "clsx";
@@ -168,37 +168,64 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       const initialNodes = parsedHld.nodes;
       const initialEdges = parsedHld.edges;
 
+      // ── Immediately display HLD in the frontend ──
       useAppStore.setState({
         arsrsData: response.arsrs || null,
         hldData: response.hld || null,
         hldNodes: initialNodes as any,
         hldEdges: initialEdges as any,
-        generationStatus: "VALIDATING_ARCH",
+        generationStatus: "HLD_READY",
+        activePipelineStep: 3,
+        activeView: "hld",
+        hldWorkspaceTab: "hld",
       });
 
-      addLogEntry({
-        timestamp: new Date().toTimeString().split(" ")[0],
-        stage: "VALIDATOR",
-        message: "🛡️ Executing automated Validator-AI correction loop (max 2 retries)...",
-        level: "INFO",
-      });
-
-      await useAppStore.getState().runCorrectionWorkflow(2);
+      setGeneratingArch(false);
 
       if (onArchitectureGenerated) {
         onArchitectureGenerated();
       }
+
+      // ── Immediately persist the synthesized HLD architecture to Supabase ──
+      await useAppStore.getState().saveCurrentArchitecture().catch((saveErr) => {
+        console.warn("[Archova] Initial HLD saveCurrentArchitecture warning:", saveErr);
+      });
+
+      // Add completion message with json_response fallback into the chat session
+      const sid = useAppStore.getState().activeSessionId;
+      if (sid) {
+        await useAppStore.getState().addMessage(sid, {
+          id: generateMsgId(),
+          role: "ai",
+          content: "✅ High-Level Design (HLD) architecture synthesized successfully! The interactive topology diagram is displayed. Synthesizing low-level designs (LLDs) and validation in parallel...",
+          json_response: {
+            hld: response.hld,
+            arsrs: response.arsrs,
+          },
+        }).catch(() => {});
+      }
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "HLD",
+        message: "✓ High-Level Design (HLD) ready! Displaying diagram. Synthesizing 5 LLD specifications in parallel...",
+        level: "INFO",
+      });
+
+      // ── In parallel: Background LLD generation and automated validation ──
+      useAppStore.getState().pollBackgroundLldsAndValidate(generationId).catch((bgErr) => {
+        console.warn("[Archova] Parallel LLD background polling warning:", bgErr);
+      });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Architecture generation and validation failed.";
+      const msg = err instanceof Error ? err.message : "Architecture generation failed.";
       setError(msg);
+      setGeneratingArch(false);
       addLogEntry({
         timestamp: new Date().toTimeString().split(" ")[0],
         stage: "CLIENT",
         message: `❌ Generation failed: ${msg}`,
         level: "ERROR",
       });
-    } finally {
-      setGeneratingArch(false);
     }
   };
 

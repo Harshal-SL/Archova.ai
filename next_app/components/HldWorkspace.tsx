@@ -71,6 +71,7 @@ export default function HldWorkspace() {
     isBenchmarking,
     validationReport,
     isValidatingV2,
+    isGeneratingLlds,
   } = useAppStore();
 
   const [showDiffDrawer, setShowDiffDrawer] = useState(false);
@@ -160,6 +161,15 @@ export default function HldWorkspace() {
             <Code2 className="h-3.5 w-3.5 text-emerald-500" />
             <span className="hidden sm:inline">Raw </span><span>JSON</span>
           </button>
+
+          {/* LLD Generation Parallel Progress Indicator */}
+          {isGeneratingLlds && (
+            <div className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-2 sm:px-2.5 py-0.5 text-[11px] font-semibold text-blue-600 dark:text-blue-400 shadow-2xs animate-pulse">
+              <RefreshCw className="h-3 w-3 animate-spin text-blue-500" />
+              <span className="hidden md:inline">Generating 5 LLDs in parallel...</span>
+              <span className="md:hidden">LLDs generating...</span>
+            </div>
+          )}
         </div>
 
         {/* ── Right Section: Version Dropdown, Changelog, and HLD/LLD Toggle Switch ── */}
@@ -251,6 +261,12 @@ export default function HldWorkspace() {
             >
               <Layers className="h-3.5 w-3.5" />
               <span>LLD</span>
+              {isGeneratingLlds && (
+                <span className="flex h-2 w-2 relative ml-0.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+              )}
             </button>
           </div>
         </div>

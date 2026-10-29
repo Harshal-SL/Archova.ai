@@ -14,7 +14,7 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
-import { useAppStore } from "@/lib/store";
+import { useAppStore, generateMsgId } from "@/lib/store";
 import { aiEngineApi } from "@/lib/ai-engine-client";
 import { Button } from "@/components/ui/Button";
 import { AiLoader } from "@/components/ui/ai-loader";
@@ -248,63 +248,64 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
       // Start live swarm telemetry polling
       useAppStore.getState().startAgentTelemetryPolling(generationId);
 
-      // 1. Initial AI generation
+      // 1. Initial AI generation (synthesizes ARSRS and HLD)
       const response = await aiEngineApi.generateArchitecture(generationId);
       const parsedHld = response.hld ? parseHldToReactFlow(response.hld as Record<string, unknown>) : { nodes: [], edges: [] };
       const initialNodes = parsedHld.nodes;
       const initialEdges = parsedHld.edges;
 
-      // Keep generation and validation progress distinct - do not mark as COMPLETED yet!
+      // ── Immediately display HLD in the frontend ──
       useAppStore.setState({
         arsrsData: response.arsrs || finalArsrs,
         hldData: response.hld || null,
         hldNodes: initialNodes as any,
         hldEdges: initialEdges as any,
-        generationStatus: "VALIDATING_ARCH",
+        generationStatus: "HLD_READY",
+        activePipelineStep: 3,
+        activeView: "hld",
+        hldWorkspaceTab: "hld",
       });
 
-      setActiveAgent({
-        id: "agent-validator",
-        name: "Architectural Validator Engine",
-        role: "Automated Verification & AI Correction",
-        icon: "shield",
-        task: "Executing automated Validator Engine verification and AI correction loop (max 2 retries)...",
-        status: "working",
-        stage: "VALIDATOR",
-        progressPercent: 90,
-        thought: "Auditing ARSRS alignment, cross-artifact consistency, and NFR feasibility across all 6 architecture artifacts.",
-      });
-
-      // 2. Automated Validation & AI Correction Workflow (calls POST /api/v1/generations/{id}/validate-and-correct?max_retries=2)
-      const validatedResult = await useAppStore.getState().runCorrectionWorkflow(2);
-
-      const isAccepted = validatedResult
-        ? ("is_fully_validated" in validatedResult && Boolean((validatedResult as any).is_fully_validated)) ||
-          ("final_verdict" in validatedResult && ((validatedResult as any).final_verdict === "ACCEPTED" || (validatedResult as any).final_verdict === "ACCEPT"))
-        : false;
-
-      setActiveAgent({
-        id: "agent-validator",
-        name: "Architectural Validator Engine",
-        role: "Multi-Artifact Closed-Loop Verification",
-        icon: "shield",
-        task: isAccepted
-          ? "Architecture verified and fully validated! Visual diagram active."
-          : "Architecture generation complete with validation audit report.",
-        status: "completed",
-        stage: "VALIDATOR",
-        progressPercent: 100,
-        thought: "Final validated architecture package loaded into HLD and LLD visualization.",
-      });
+      // Clear the fullscreen synthesizing loader immediately so HLD displays instantly!
+      setGeneratingArch(false);
 
       if (onHldReady) {
         onHldReady();
       }
+
+      // ── Immediately persist the synthesized HLD architecture to Supabase ──
+      await useAppStore.getState().saveCurrentArchitecture().catch((saveErr) => {
+        console.warn("[Archova] Initial HLD saveCurrentArchitecture warning:", saveErr);
+      });
+
+      // Add completion message with json_response fallback into the chat session
+      const sid = useAppStore.getState().activeSessionId;
+      if (sid) {
+        await useAppStore.getState().addMessage(sid, {
+          id: generateMsgId(),
+          role: "ai",
+          content: "✅ High-Level Design (HLD) architecture synthesized successfully! The interactive topology diagram is displayed. Synthesizing low-level designs (LLDs) and validation in parallel...",
+          json_response: {
+            hld: response.hld,
+            arsrs: response.arsrs || finalArsrs,
+          },
+        }).catch(() => {});
+      }
+
+      addLogEntry({
+        timestamp: new Date().toTimeString().split(" ")[0],
+        stage: "HLD",
+        message: "✓ High-Level Design (HLD) ready! Displaying diagram. Synthesizing 5 LLD specifications in parallel...",
+        level: "INFO",
+      });
+
+      // ── In parallel: Background LLD generation and automated validation ──
+      useAppStore.getState().pollBackgroundLldsAndValidate(generationId).catch((bgErr) => {
+        console.warn("[Archova] Parallel LLD background polling warning:", bgErr);
+      });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to generate and validate architecture.";
-      await useAppStore.getState().saveCurrentArchitecture().catch(() => {});
+      const msg = err instanceof Error ? err.message : "Failed to generate architecture.";
       setError(msg);
-    } finally {
       setGeneratingArch(false);
       useAppStore.getState().stopAgentTelemetryPolling();
     }
