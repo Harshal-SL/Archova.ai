@@ -113,7 +113,7 @@ export default function Sidebar() {
       {/* Main Sidebar Aside with Glassmorphism (Mobile Drawer + Desktop Fixed/Relative) */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/80 bg-white transition-all duration-300 ease-in-out dark:border-white/10 dark:bg-black shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white md:dark:bg-black",
+          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/50 bg-white/40 dark:border-white/10 dark:bg-black/40 backdrop-blur-2xl backdrop-saturate-150 transition-all duration-300 ease-in-out shadow-[4px_0_24px_-2px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.5)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white/30 md:dark:bg-black/40",
           sidebarOpen ? "w-[280px] sm:w-80 translate-x-0" : "w-0 -translate-x-full overflow-hidden border-r-0 md:w-0"
         )}
       >
@@ -139,7 +139,7 @@ export default function Sidebar() {
         
 
         {/* Top Header & Brand */}
-        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-white/10 shrink-0 bg-white/70 dark:bg-black/70 backdrop-blur-md">
+        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-white/10 shrink-0 bg-white/30 dark:bg-black/30 backdrop-blur-md">
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
@@ -254,7 +254,7 @@ export default function Sidebar() {
         </div>
 
         {/* Docked User Profile below the sidebar */}
-        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-white/10 shrink-0 bg-white/70 dark:bg-black/70 backdrop-blur-md">
+        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-white/10 shrink-0 bg-white/30 dark:bg-black/30 backdrop-blur-md">
           {user ? (
             <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-white/10 dark:bg-white/[0.04] opacity-85 hover:opacity-100 transition-all duration-200">
               <div className="flex min-w-0 items-center gap-2.5">

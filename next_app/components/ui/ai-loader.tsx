@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Brain, Mic, Cpu, Network, Sparkles, Activity, X } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,11 @@ export const Component: React.FC<LoaderProps> = ({
   className,
   onDismiss,
 }) => {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const letters = text.split("");
   const activeAgentsList = useAppStore((s) => s.activeAgentsList);
 
@@ -169,7 +175,7 @@ export const Component: React.FC<LoaderProps> = ({
                 <span>STAGE PIPELINE</span>
                 <span>{progressPercent}%</span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
+              <div className="h-1.5 w-full rounded-full bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xs">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 transition-all duration-500 shadow-[0_0_10px_rgba(56,189,248,0.5)]"
                   style={{ width: `${progressPercent}%` }}
@@ -208,12 +214,23 @@ export const Component: React.FC<LoaderProps> = ({
     );
   }
 
-  return (
+  const fullscreenOverlay = (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-[#1a3379]/85 via-[#0f172a]/95 to-black/98 backdrop-blur-2xl transition-all",
+        "fixed inset-0 z-[9999] flex items-center justify-center w-screen h-screen bg-gradient-to-b from-[#1a3379]/85 via-[#0f172a]/95 to-black/98 backdrop-blur-2xl transition-all overflow-hidden",
         className
       )}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: "100vw",
+        height: "100vh",
+        margin: 0,
+        padding: 0,
+      }}
     >
       {/* Background ambient lighting */}
       <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-to-b from-sky-500/20 via-blue-600/10 to-transparent blur-3xl rounded-full" />
@@ -229,9 +246,17 @@ export const Component: React.FC<LoaderProps> = ({
         </button>
       )}
 
-      {content}
+      <div className="flex flex-col items-center justify-center m-auto">
+        {content}
+      </div>
     </div>
   );
+
+  if (mounted && typeof document !== "undefined") {
+    return createPortal(fullscreenOverlay, document.body);
+  }
+
+  return fullscreenOverlay;
 };
 
 export const AiLoader = Component;
