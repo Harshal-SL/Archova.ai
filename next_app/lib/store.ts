@@ -41,6 +41,7 @@ export interface ChatMessage {
   id: string;
   role: "user" | "ai" | "system";
   content: string;
+  json_response?: any;
 }
 
 export interface ChatSession {
@@ -150,6 +151,8 @@ interface AppState {
   activeLldType: LldType;
   setActiveLldType: (type: LldType) => void;
   jumpToLld: (type: LldType) => void;
+  isGeneratingLlds: boolean;
+  pollBackgroundLldsAndValidate: (generationId: string) => Promise<void>;
 
   // ── Standalone Validator Engine & Correction Workflow ──
   validatorConnected: boolean;
@@ -246,7 +249,7 @@ interface AppState {
   setActiveSession: (id: string) => Promise<void>;
   addMessage: (sessionId: string, msg: ChatMessage) => Promise<void>;
   loadSessionsFromSupabase: () => Promise<void>;
-  saveCurrentArchitecture: (targetSessionId?: string) => Promise<void>;
+  saveCurrentArchitecture: (targetSessionId?: string, forceNewVersion?: boolean) => Promise<void>;
   deleteSession: (sessionId: string) => Promise<void>;
   resetGenerationSession: () => void;
 
@@ -346,7 +349,7 @@ export function generateUUID(): string {
 
 export function isUUID(str: string | null | undefined): boolean {
   if (!str) return false;
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str);
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 }
 
 let agentPollingInterval: ReturnType<typeof setInterval> | null = null;
@@ -723,6 +726,100 @@ export const useAppStore = create<AppState>((set, get) => ({
   lldData: initialLldData,
   lldMessages: initialLldMessages,
   activeLldType: "backend",
+  isGeneratingLlds: false,
+  pollBackgroundLldsAndValidate: async (generationId: string) => {
+    const lldTypes: LldType[] = ["backend", "frontend", "database", "security", "cloud"];
+    set((s) => ({
+      isGeneratingLlds: true,
+      lldStatus: lldTypes.reduce(
+        (acc, t) => ({ ...acc, [t]: s.lldData[t] ? "READY" : "GENERATING" }),
+        s.lldStatus
+      ),
+    }));
+
+    get().startAgentTelemetryPolling(generationId);
+
+    let attempts = 0;
+    const maxAttempts = 60;
+    let allDone = false;
+
+    while (attempts < maxAttempts) {
+      try {
+        const stat = await aiEngineApi.getStatus(generationId);
+        const lldStatusMap = (stat.llds || {}) as Record<LldType, LldStatusType>;
+
+        set((s) => ({
+          lldStatus: { ...s.lldStatus, ...lldStatusMap },
+        }));
+
+        // Fetch any newly completed LLD data that is not loaded yet
+        const currentStore = get();
+        for (const t of lldTypes) {
+          if (lldStatusMap[t] === "READY" && !currentStore.lldData[t]) {
+            try {
+              const lldRes = await aiEngineApi.getLLD(generationId, t);
+              if (lldRes.data) {
+                set((s) => ({
+                  lldData: { ...s.lldData, [t]: lldRes.data },
+                  lldStatus: { ...s.lldStatus, [t]: "READY" },
+                }));
+              }
+            } catch (fetchErr) {
+              console.warn(`[Archova] Background fetch ${t} LLD error:`, fetchErr);
+            }
+          }
+        }
+
+        allDone = lldTypes.every((t) => {
+          const st = lldStatusMap[t];
+          return st === "READY" || (st as string) === "COMPLETED" || st === "FAILED";
+        });
+
+        if (stat.status === "COMPLETED" || allDone) {
+          break;
+        }
+      } catch (err) {
+        console.warn("[Archova] Background LLD polling tick error:", err);
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      attempts++;
+    }
+
+    set({ isGeneratingLlds: false });
+
+    // Fetch full package to ensure all LLDs are completely populated in store
+    try {
+      const pkg = await aiEngineApi.getPackage(generationId);
+      if (pkg && pkg.llds) {
+        set((s) => ({
+          lldData: {
+            backend: pkg.llds.backend?.data || pkg.llds.backend || s.lldData.backend,
+            frontend: pkg.llds.frontend?.data || pkg.llds.frontend || s.lldData.frontend,
+            database: pkg.llds.database?.data || pkg.llds.database || s.lldData.database,
+            security: pkg.llds.security?.data || pkg.llds.security || s.lldData.security,
+            cloud: pkg.llds.cloud?.data || pkg.llds.cloud || s.lldData.cloud,
+          },
+          generationStatus: "COMPLETED",
+        }));
+      }
+    } catch (pkgErr) {
+      console.warn("[Archova] Could not fetch final package:", pkgErr);
+    }
+
+    // Run validation in background without interrupting user HLD view
+    try {
+      await get().runCorrectionWorkflow(2);
+    } catch (valErr) {
+      console.warn("[Archova] Background validation error:", valErr);
+    }
+
+    try {
+      await get().saveCurrentArchitecture();
+    } catch (saveErr) {
+      console.warn("[Archova] Background saveCurrentArchitecture error:", saveErr);
+    }
+  },
   setActiveLldType: (type) => set({ activeLldType: type }),
   jumpToLld: (type) => {
     const state = get();
@@ -1889,6 +1986,19 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       const designSessionIds = new Set((userDesigns || []).map((d) => d.session_id));
 
+      try {
+        const { data: msgDesigns } = await supabase
+          .from("messages")
+          .select("session_id")
+          .not("json_response", "is", null);
+
+        (msgDesigns || []).forEach((m) => {
+          if (m.session_id) designSessionIds.add(m.session_id);
+        });
+      } catch {
+        // Continue
+      }
+
       const loadedSessions: ChatSession[] = dbSessions.map((s, idx) => ({
         id: s.id,
         title: s.title || `Architecture Session ${idx + 1}`,
@@ -2243,6 +2353,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           session_id: sessionId,
           role: msg.role === "ai" ? "assistant" : "user",
           content: msg.content,
+          json_response: msg.json_response || null,
         },
       ]);
     } catch (err) {
@@ -2250,10 +2361,23 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  saveCurrentArchitecture: async (targetSessionId?: string) => {
+  saveCurrentArchitecture: async (targetSessionId?: string, forceNewVersion: boolean = false) => {
     const activeSid = targetSessionId || get().activeSessionId;
-    const currentUser = get().user;
+    let currentUser = get().user;
+    if (!currentUser) {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        if (authData?.user) {
+          currentUser = authData.user;
+          set({ user: currentUser });
+        }
+      } catch {
+        // Continue
+      }
+    }
+
     if (!activeSid || !currentUser || !isUUID(activeSid)) {
+      console.warn("[Archova] saveCurrentArchitecture skipped: missing session or user", { activeSid, hasUser: !!currentUser });
       return;
     }
 
@@ -2261,9 +2385,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     const arsrs = get().arsrsData;
     const llds = get().lldData;
     const validation = get().validationData;
-    const hldNodes = get().hldNodes;
 
-    if (!hld) return;
+    if (!hld) {
+      console.warn("[Archova] saveCurrentArchitecture skipped: no hldData in store");
+      return;
+    }
 
     const currentSession = get().sessions.find((s) => s.id === activeSid);
     const userPrompt =
@@ -2296,41 +2422,74 @@ export const useAppStore = create<AppState>((set, get) => ({
     };
 
     try {
-      const { data: existingLatest } = await supabase
+      const { data: existingLatest, error: fetchErr } = await supabase
         .from("architecture_designs")
         .select("id, version, version_tag")
         .eq("session_id", activeSid)
         .eq("is_latest", true)
         .maybeSingle();
 
-      let nextVerTag = "v1.0";
-      let parentId: string | null = null;
-
-      if (existingLatest) {
-        parentId = existingLatest.id;
-        await supabase
-          .from("architecture_designs")
-          .update({ is_latest: false })
-          .eq("id", existingLatest.id);
-
-        const prevTag = existingLatest.version_tag || "v1.0";
-        const num = parseFloat(prevTag.replace("v", "")) || 1.0;
-        nextVerTag = `v${(num + 0.1).toFixed(1)}`;
+      if (fetchErr) {
+        console.warn("[Archova] Querying existing latest design warning:", fetchErr.message);
       }
 
-      await supabase.from("architecture_designs").insert([
-        {
-          session_id: activeSid,
-          user_id: currentUser.id,
-          prompt: userPrompt,
-          design_json: fullPackage,
-          version: parseInt(nextVerTag.replace("v", "").split(".")[0], 10) || 1,
-          version_tag: nextVerTag,
-          parent_id: parentId,
-          is_latest: true,
-          updated_at: new Date().toISOString(),
-        },
-      ]);
+      let activeVer = get().activeVersionTag || "v1.0";
+
+      if (existingLatest && !forceNewVersion) {
+        // Progressive in-place update for the current session's design
+        const { error: updateErr } = await supabase
+          .from("architecture_designs")
+          .update({
+            prompt: userPrompt,
+            design_json: fullPackage,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existingLatest.id);
+
+        if (updateErr) {
+          console.error("[Archova] Failed to update architecture design:", updateErr.message);
+        } else {
+          console.log("[Archova] ✓ Architecture design updated in Supabase for session:", activeSid);
+        }
+      } else {
+        // Insert new design version
+        let nextVerTag = "v1.0";
+        let parentId: string | null = null;
+
+        if (existingLatest) {
+          parentId = existingLatest.id;
+          await supabase
+            .from("architecture_designs")
+            .update({ is_latest: false })
+            .eq("id", existingLatest.id);
+
+          const prevTag = existingLatest.version_tag || "v1.0";
+          const num = parseFloat(prevTag.replace("v", "")) || 1.0;
+          nextVerTag = `v${(num + 0.1).toFixed(1)}`;
+        }
+
+        activeVer = nextVerTag;
+
+        const { error: insertErr } = await supabase.from("architecture_designs").insert([
+          {
+            session_id: activeSid,
+            user_id: currentUser.id,
+            prompt: userPrompt,
+            design_json: fullPackage,
+            version: parseInt(nextVerTag.replace("v", "").split(".")[0], 10) || 1,
+            version_tag: nextVerTag,
+            parent_id: parentId,
+            is_latest: true,
+            updated_at: new Date().toISOString(),
+          },
+        ]);
+
+        if (insertErr) {
+          console.error("[Archova] Failed to insert architecture design into Supabase:", insertErr.message);
+        } else {
+          console.log("[Archova] ✓ Architecture design inserted into Supabase for session:", activeSid);
+        }
+      }
 
       await supabase
         .from("chat_sessions")
@@ -2338,7 +2497,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         .eq("id", activeSid);
 
       set((s) => ({
-        activeVersionTag: nextVerTag,
+        activeVersionTag: activeVer,
         sessions: s.sessions.map((ses) =>
           ses.id === activeSid ? { ...ses, hasArchitecture: true } : ses
         ),
