@@ -2050,6 +2050,42 @@ export const useAppStore = create<AppState>((set, get) => ({
           parsedEdges = parsed.edges;
         }
 
+        let restoredBenchmarks: Record<string, ModelBenchmarkResult> = {};
+        let restoredComparison: BenchmarkComparisonSummary | null = null;
+
+        if (pkg.benchmarks) {
+          restoredBenchmarks = pkg.benchmarks.results || {};
+          restoredComparison = pkg.benchmarks.comparison || null;
+        }
+
+        try {
+          const { data: dbBenchmarks } = await supabase
+            .from("architecture_benchmarks")
+            .select("*")
+            .eq("session_id", id);
+
+          if (dbBenchmarks && dbBenchmarks.length > 0) {
+            dbBenchmarks.forEach((b: any) => {
+              if (b.model_id && !restoredBenchmarks[b.model_id]) {
+                restoredBenchmarks[b.model_id] = {
+                  model_id: b.model_id,
+                  model_name: b.model_name,
+                  is_archova: b.is_archova,
+                  status: b.status,
+                  latency_ms: Number(b.latency_ms) || 0,
+                  package: b.package_json,
+                  validation: b.validation_json,
+                };
+              }
+              if (b.comparison_json && !restoredComparison) {
+                restoredComparison = b.comparison_json;
+              }
+            });
+          }
+        } catch {
+          // Table fallback
+        }
+
         set((s) => ({
           sessions: s.sessions.map((ses) =>
             ses.id === id ? { ...ses, hasArchitecture: true } : ses
@@ -2065,6 +2101,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           validationData: pkg.validation
             ? ({ validation: { summary: pkg.validation } } as any)
             : null,
+          benchmarkResults: restoredBenchmarks,
+          comparisonData: restoredComparison,
           interviewCompleted: true,
           activePipelineStep: 3,
           generationStatus: "COMPLETED",
@@ -2242,6 +2280,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       correctionPlan: get().correctionPlan,
       score: scorePercent,
       verdict,
+      benchmarks: {
+        results: get().benchmarkResults,
+        comparison: get().comparisonData,
+      },
     };
 
     try {
@@ -2352,6 +2394,11 @@ export const useAppStore = create<AppState>((set, get) => ({
           .eq("session_id", sessionId);
 
         await supabase
+          .from("architecture_benchmarks")
+          .delete()
+          .eq("session_id", sessionId);
+
+        await supabase
           .from("chat_sessions")
           .delete()
           .eq("id", sessionId);
@@ -2417,6 +2464,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       correctionPlan: (pkg.correctionPlan || (pkg.validationReport ? buildCorrectionPlan(pkg.validationReport) : null)) as CorrectionPlan | null,
       correctionDecisions: {},
       correctionActionMessage: null,
+      benchmarkResults: pkg.benchmarks?.results || get().benchmarkResults,
+      comparisonData: pkg.benchmarks?.comparison || get().comparisonData,
     });
   },
 
@@ -2746,6 +2795,81 @@ export const useAppStore = create<AppState>((set, get) => ({
         comparisonData: response.comparison,
         isBenchmarking: false,
       });
+
+      // ── Persist all benchmark models' generated designs to Supabase ──
+      const currentUser = get().user;
+      const activeSid = get().activeSessionId;
+
+      if (currentUser && activeSid && isUUID(activeSid)) {
+        try {
+          const recordsToInsert = response.models.map((m) => ({
+            session_id: activeSid,
+            user_id: currentUser.id,
+            generation_id: state.generationId || null,
+            model_id: m.model_id,
+            model_name: m.model_name,
+            is_archova: false,
+            status: m.status || "COMPLETED",
+            latency_ms: m.latency_ms || 0,
+            package_json: m.package || {},
+            validation_json: m.validation || {},
+            comparison_json: response.comparison || null,
+            updated_at: new Date().toISOString(),
+          }));
+
+          if (response.archova) {
+            recordsToInsert.push({
+              session_id: activeSid,
+              user_id: currentUser.id,
+              generation_id: state.generationId || null,
+              model_id: "archova",
+              model_name: response.archova.model_name || "Archova AI",
+              is_archova: true,
+              status: response.archova.status || "COMPLETED",
+              latency_ms: response.archova.latency_ms || 0,
+              package_json: response.archova.package || {},
+              validation_json: response.archova.validation || {},
+              comparison_json: response.comparison || null,
+              updated_at: new Date().toISOString(),
+            });
+          }
+
+          if (recordsToInsert.length > 0) {
+            await supabase.from("architecture_benchmarks").insert(recordsToInsert);
+          }
+        } catch (dbErr) {
+          console.warn("Could not insert architecture_benchmarks to Supabase:", dbErr);
+        }
+
+        // Also update latest architecture_designs record if already created
+        try {
+          const { data: latestDesign } = await supabase
+            .from("architecture_designs")
+            .select("id, design_json")
+            .eq("session_id", activeSid)
+            .eq("is_latest", true)
+            .maybeSingle();
+
+          if (latestDesign) {
+            const updatedPkg = {
+              ...(latestDesign.design_json as Record<string, unknown>),
+              benchmarks: {
+                results: resultsMap,
+                comparison: response.comparison,
+              },
+            };
+            await supabase
+              .from("architecture_designs")
+              .update({
+                design_json: updatedPkg,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", latestDesign.id);
+          }
+        } catch (updateErr) {
+          console.warn("Could not embed benchmarks in architecture_designs:", updateErr);
+        }
+      }
     } catch {
       set({ isBenchmarking: false });
     }

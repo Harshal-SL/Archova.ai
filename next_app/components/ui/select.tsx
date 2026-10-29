@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion, MotionConfig } from "framer-motion";
-import { ChevronDownIcon, X } from "lucide-react";
+import { ChevronDownIcon, ChevronUp, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type TSelectData = {
@@ -24,6 +24,8 @@ export type SelectProps = {
   title?: string;
   placeholder?: string;
   className?: string;
+  direction?: "up" | "down";
+  dropup?: boolean;
 };
 
 export default function Select({
@@ -35,11 +37,36 @@ export default function Select({
   title = "Select Option",
   placeholder,
   className,
+  direction,
+  dropup = false,
 }: SelectProps) {
   const autoId = React.useId();
   const selectId = customId || autoId;
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isExplicitDropup = direction === "up" || Boolean(dropup);
+  const [resolvedDirection, setResolvedDirection] = useState<"up" | "down">(
+    isExplicitDropup ? "up" : (direction || "down")
+  );
+
+  useEffect(() => {
+    if (direction === "up" || dropup) {
+      setResolvedDirection("up");
+    } else if (direction === "down" && !dropup) {
+      setResolvedDirection("down");
+    } else if (containerRef.current && typeof window !== "undefined") {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < 280 && rect.top > 280) {
+        setResolvedDirection("up");
+      } else {
+        setResolvedDirection("down");
+      }
+    }
+  }, [direction, dropup, open]);
+
+  const isDropup = resolvedDirection === "up";
 
   const selectedValue = value !== undefined ? value : defaultValue;
 
@@ -112,14 +139,20 @@ export default function Select({
               onClick={() => setOpen(true)}
               className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/70 text-neutral-900 shadow-2xs backdrop-blur-md hover:border-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-100 dark:hover:bg-[#161619] dark:hover:border-white/20 transition-colors cursor-pointer"
             >
-              <SelectItem item={selected || { id: "empty", label: placeholder || "Select...", value: "" }} />
+              <SelectItem
+                direction={resolvedDirection}
+                item={selected || { id: "empty", label: placeholder || "Select...", value: "" }}
+              />
             </motion.div>
           ) : (
             <motion.div
               layout
               animate={{ borderRadius: 18 }}
               layoutId={`dropdown-${selectId}`}
-              className="absolute right-0 top-0 z-[9999] w-72 sm:w-80 overflow-hidden rounded-[18px] border border-neutral-200/80 bg-white/95 text-neutral-900 py-2 shadow-2xl backdrop-blur-2xl dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-100"
+              className={cn(
+                "absolute right-0 z-[9999] w-72 sm:w-80 overflow-hidden rounded-[18px] border border-neutral-200/80 bg-white/95 text-neutral-900 py-2 shadow-2xl backdrop-blur-2xl dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-100",
+                isDropup ? "bottom-0 origin-bottom" : "top-0 origin-top"
+              )}
             >
               <Head setOpen={setOpen} title={title} />
               <div className="w-full max-h-72 overflow-y-auto px-1">
@@ -172,6 +205,7 @@ type SelectItemProps = {
   order?: string;
   isSelected?: boolean;
   onChange?: (val: string) => void;
+  direction?: "up" | "down";
 };
 
 const itemAnimation = {
@@ -190,6 +224,7 @@ const SelectItem = ({
   order,
   isSelected,
   onChange,
+  direction = "down",
 }: SelectItemProps) => {
   return (
     <motion.div
@@ -234,7 +269,11 @@ const SelectItem = ({
 
       {noDescription ? (
         <motion.div layout className="flex items-center justify-center pl-2">
-          <ChevronDownIcon className="text-neutral-500 group-hover:text-black dark:text-neutral-400 dark:group-hover:text-white transition-colors" size={14} />
+          {direction === "up" ? (
+            <ChevronUp className="text-neutral-500 group-hover:text-black dark:text-neutral-400 dark:group-hover:text-white transition-colors" size={14} />
+          ) : (
+            <ChevronDownIcon className="text-neutral-500 group-hover:text-black dark:text-neutral-400 dark:group-hover:text-white transition-colors" size={14} />
+          )}
         </motion.div>
       ) : item?.custom ? (
         <div className="shrink-0 pl-2">{item.custom}</div>

@@ -1,6 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
+
+const ShootingStarsGrid = dynamic(
+  () => import("@/components/ui/shooting-stars-grid"),
+  {
+    ssr: false,
+    loading: () => null,
+  }
+);
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -104,14 +113,33 @@ export default function Sidebar() {
       {/* Main Sidebar Aside with Glassmorphism (Mobile Drawer + Desktop Fixed/Relative) */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/80 bg-white transition-all duration-300 ease-in-out dark:border-[#262626] dark:bg-[#0D0D0F] shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white md:dark:bg-[#0D0D0F]",
+          "fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-neutral-200/80 bg-white transition-all duration-300 ease-in-out dark:border-white/10 dark:bg-black shadow-[4px_0_24px_-2px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_32px_rgba(0,0,0,0.7)] shrink-0 select-none overflow-hidden md:relative md:z-30 md:bg-white md:dark:bg-black",
           sidebarOpen ? "w-[280px] sm:w-80 translate-x-0" : "w-0 -translate-x-full overflow-hidden border-r-0 md:w-0"
         )}
       >
+        {/* ── Background Grid & Shooting Stars Animation Layer ── */}
+        {mounted && (
+          <div
+            className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-45 dark:opacity-25 transition-opacity"
+            aria-hidden="true"
+          >
+            <ShootingStarsGrid
+              starCount={24}
+              shootingStarCount={3}
+              gridSize={36}
+              speed="slow"
+              glow={false}
+              interactive={false}
+              className="h-full w-full rounded-none border-none shadow-none min-h-0 bg-transparent dark:bg-transparent"
+            >
+              {null}
+            </ShootingStarsGrid>
+          </div>
+        )}
         
 
         {/* Top Header & Brand */}
-        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-[#262626] shrink-0 bg-white dark:bg-[#0D0D0F]">
+        <div className="relative z-10 flex items-center justify-between p-3.5 border-b border-neutral-200/80 dark:border-white/10 shrink-0 bg-white/70 dark:bg-black/70 backdrop-blur-md">
           <Link
             href="/"
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
@@ -151,7 +179,7 @@ export default function Sidebar() {
         {/* Search Filter when sessions exist */}
         {sessions.length > 3 && (
           <div className="relative z-10 px-3 pb-2 shrink-0">
-            <div className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-100/70 px-2.5 py-1.5 text-xs shadow-2xs dark:border-[#262626] dark:bg-[#161619]">
+            <div className="flex items-center gap-2 rounded-xl border border-neutral-200/80 bg-neutral-100/70 px-2.5 py-1.5 text-xs shadow-2xs dark:border-white/10 dark:bg-white/[0.04]">
               <Search className="h-3.5 w-3.5 text-neutral-400" />
               <input
                 type="text"
@@ -166,17 +194,17 @@ export default function Sidebar() {
 
         {/* History / Sessions List */}
         <div className="relative z-10 flex-1 overflow-y-auto px-2.5 py-2 space-y-1 min-h-[140px]">
-          <div className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400/70 dark:text-neutral-500/70 opacity-60">
+          <div className="px-2 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             Recent Architectures
           </div>
 
           {sessions.length === 0 ? (
             <div className="px-3 py-10 text-center">
-              <MessageSquare className="mx-auto h-7 w-7 text-neutral-300/80 dark:text-neutral-700/80 mb-2" />
-              <p className="text-xs font-semibold text-neutral-700/80 dark:text-neutral-300/80">
+              <MessageSquare className="mx-auto h-7 w-7 text-neutral-400 dark:text-neutral-600 mb-2" />
+              <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
                 No architecture sessions yet
               </p>
-              <p className="text-[11px] text-neutral-500/70 dark:text-neutral-400/70 mt-1">
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-1">
                 Enter your requirements prompt to synthesize HLD diagrams
               </p>
             </div>
@@ -190,8 +218,8 @@ export default function Sidebar() {
                   className={cn(
                     "group relative flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-xs transition-all cursor-pointer",
                     isActive
-                      ? "bg-neutral-100 font-bold text-black dark:bg-[#161619] dark:text-white shadow-2xs border border-neutral-200/80 dark:border-[#262626] border-l-2 border-l-black dark:border-l-white"
-                      : "text-neutral-700/80 hover:bg-neutral-100/60 hover:text-black dark:text-neutral-400/80 dark:hover:bg-[#161619]/60 dark:hover:text-white"
+                      ? "bg-neutral-100 font-bold text-black dark:bg-white/[0.08] dark:text-white shadow-2xs border border-neutral-200/80 dark:border-white/15 border-l-2 border-l-black dark:border-l-white"
+                      : "text-neutral-700 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-white/[0.04] dark:hover:text-white"
                   )}
                 >
                   <MessageSquare
@@ -199,7 +227,7 @@ export default function Sidebar() {
                       "h-3.5 w-3.5 shrink-0 transition-colors",
                       isActive
                         ? "text-black dark:text-white"
-                        : "text-neutral-400/60 group-hover:text-neutral-700 dark:group-hover:text-neutral-300"
+                        : "text-neutral-400 group-hover:text-neutral-800 dark:group-hover:text-neutral-200"
                     )}
                   />
                   <span className="truncate flex-1">{s.title}</span>
@@ -226,9 +254,9 @@ export default function Sidebar() {
         </div>
 
         {/* Docked User Profile below the sidebar */}
-        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-[#262626] shrink-0 bg-white dark:bg-[#0D0D0F]">
+        <div className="relative z-10 border-t border-neutral-200/80 p-3 dark:border-white/10 shrink-0 bg-white/70 dark:bg-black/70 backdrop-blur-md">
           {user ? (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-white/10 dark:bg-white/[0.04] opacity-85 hover:opacity-100 transition-all duration-200">
               <div className="flex min-w-0 items-center gap-2.5">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-black/80 text-white text-xs font-bold dark:bg-white/90 dark:text-black shadow-xs">
                   {userInitial}
@@ -254,7 +282,7 @@ export default function Sidebar() {
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-[#262626] dark:bg-[#161619] opacity-85 hover:opacity-100 transition-all duration-200">
+            <div className="flex items-center justify-between rounded-2xl border border-neutral-200/80 bg-neutral-100/70 p-2.5 shadow-2xs dark:border-white/10 dark:bg-white/[0.04] opacity-85 hover:opacity-100 transition-all duration-200">
               <Link
                 href="/signin"
                 className="flex min-w-0 items-center gap-2.5 flex-1 hover:opacity-80 transition-opacity"
