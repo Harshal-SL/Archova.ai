@@ -143,7 +143,7 @@ export default function LldsView({ onBackToHld }: Props = {}) {
       </div>
 
       {/* Bottom Slider Footer with Navigation Controls & Bottom-Right LLD Dropup */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200/70 bg-white/70 px-3 sm:px-6 py-2 sm:py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg shrink-0">
+      <div className="relative z-50 flex flex-wrap items-center justify-between gap-2 border-t border-neutral-200/70 bg-white/70 px-3 sm:px-6 py-2 sm:py-3 backdrop-blur-2xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60 shadow-lg shrink-0">
         {/* Left: Back to Visual HLD */}
         <button
           onClick={() => {

@@ -57,3 +57,4 @@ ai_engine/random_design_test_output.json
 .vscode/
 prompt.txt
 skills-lock.json
+Validator_Engine_v2/real_world/cache/

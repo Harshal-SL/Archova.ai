@@ -254,7 +254,8 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
       const initialNodes = parsedHld.nodes;
       const initialEdges = parsedHld.edges;
 
-      // ── Immediately display HLD in the frontend ──
+      // ── Populate HLD and ARSRS in the store state ──
+      const sid = useAppStore.getState().activeSessionId;
       useAppStore.setState({
         arsrsData: response.arsrs || finalArsrs,
         hldData: response.hld || null,
@@ -262,24 +263,21 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
         hldEdges: initialEdges as any,
         generationStatus: "HLD_READY",
         activePipelineStep: 3,
-        activeView: "hld",
-        hldWorkspaceTab: "hld",
+        ...(response.validation
+          ? {
+              validationData: response.validation as any,
+              validationReport: response.validation as any,
+              validationStatus: (response.validation as any)?.final_status || "ACCEPTED",
+            }
+          : {}),
       });
 
-      // Clear the fullscreen synthesizing loader immediately so HLD displays instantly!
-      setGeneratingArch(false);
-
-      if (onHldReady) {
-        onHldReady();
-      }
-
-      // ── Immediately persist the synthesized HLD architecture to Supabase ──
-      await useAppStore.getState().saveCurrentArchitecture().catch((saveErr) => {
+      // ── Immediately persist the synthesized HLD architecture to Supabase BEFORE unmounting view ──
+      await useAppStore.getState().saveCurrentArchitecture(sid || undefined, true).catch((saveErr) => {
         console.warn("[Archova] Initial HLD saveCurrentArchitecture warning:", saveErr);
       });
 
       // Add completion message with json_response fallback into the chat session
-      const sid = useAppStore.getState().activeSessionId;
       if (sid) {
         await useAppStore.getState().addMessage(sid, {
           id: generateMsgId(),
@@ -303,6 +301,17 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
       useAppStore.getState().pollBackgroundLldsAndValidate(generationId).catch((bgErr) => {
         console.warn("[Archova] Parallel LLD background polling warning:", bgErr);
       });
+
+      // Clear the fullscreen synthesizing loader immediately and transition to HLD workspace
+      setGeneratingArch(false);
+      useAppStore.setState({
+        activeView: "hld",
+        hldWorkspaceTab: "hld",
+      });
+
+      if (onHldReady) {
+        onHldReady();
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to generate architecture.";
       setError(msg);

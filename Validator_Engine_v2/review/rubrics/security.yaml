@@ -6,36 +6,24 @@ applicable_tags: ["stride", "rbac", "rate-limiting", "secrets", "encryption"]
 dimensions:
   - id: authn_authz_resource_level
     label: Authentication & Resource-Level Authorization
-    weight: 0.25
+    weight: 0.30
     description: Strict authentication, token lifecycle, and resource ownership checks preventing IDOR and privilege escalation.
     source: ASVS
 
-  - id: data_protection
-    label: Data Protection At-Rest and In-Transit
-    weight: 0.15
-    description: TLS 1.3 strict transport encryption, AES-256 / envelope KMS storage encryption, and PII masking.
-    source: NIST-SSDF
-
-  - id: stride_threat_to_control_map
-    label: STRIDE Threat-to-Control Mapping
-    weight: 0.20
+  - id: stride_threat_defense
+    label: STRIDE Threat-to-Control Architecture
+    weight: 0.25
     description: Comprehensive STRIDE threat coverage with explicit, concrete architectural defenses.
     source: STRIDE
 
-  - id: secrets_rate_limit_audit
-    label: Secrets Management, Rate Limiting & Audit Logging
-    weight: 0.15
-    description: Zero hardcoded credentials, KMS/Vault integration, tiered rate limiting, and tamper-evident audit streams.
+  - id: data_protection_and_secrets
+    label: Data Protection, Secrets & Audit Logging
+    weight: 0.25
+    description: TLS 1.3 transport encryption, AES-256 storage encryption, KMS/Vault secrets, and tamper-evident audit streams.
     source: NIST-SSDF
-
-  - id: compliance_alignment
-    label: Compliance & Regulatory Alignment
-    weight: 0.10
-    description: Specific controls addressing GDPR, HIPAA, SOC2, or domain-mandated privacy baselines.
-    source: ASVS
 
   - id: specificity
     label: Concrete Specificity & Requirement Binding
-    weight: 0.15
+    weight: 0.20
     description: 5 = named entities, concrete numbers and mechanisms tied to requirement IDs; 0-2 = generic statements without entity or requirement link.
     source: internal

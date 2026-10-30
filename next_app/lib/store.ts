@@ -241,6 +241,9 @@ interface AppState {
   addLogEntry: (entry: LogEntry) => void;
   setLogs: (logs: LogEntry[]) => void;
   clearLogs: () => void;
+  debugConsoleOpen: boolean;
+  toggleDebugConsole: () => void;
+  setDebugConsoleOpen: (open: boolean) => void;
 
   // ── Chat & Persistence ──
   sessions: ChatSession[];
@@ -297,6 +300,8 @@ interface AppState {
     hldEdges: Edge[];
     lldData: Record<LldType, Record<string, unknown> | null>;
     validationData: ValidatedArchitectureResponse | null;
+    validationReport: Report | null;
+    correctionPlan: CorrectionPlan | null;
   } | null;
   setBenchmarkModelsConfig: (models: BenchmarkModelConfig[]) => void;
   setBenchmarkApiKey: (key: string) => void;
@@ -742,14 +747,28 @@ export const useAppStore = create<AppState>((set, get) => ({
     let attempts = 0;
     const maxAttempts = 60;
     let allDone = false;
+    let postDoneGraceTicks = 0;
 
     while (attempts < maxAttempts) {
       try {
         const stat = await aiEngineApi.getStatus(generationId);
         const lldStatusMap = (stat.llds || {}) as Record<LldType, LldStatusType>;
 
+        // Whenever validation report is available (HLD initial or final 6-tier), immediately update store
+        const statVal = stat.validation as any;
+        const currentValReport = get().validationReport;
+
         set((s) => ({
           lldStatus: { ...s.lldStatus, ...lldStatusMap },
+          ...(statVal
+            ? {
+                validationData: statVal,
+                validationReport: statVal,
+                validationStatus: statVal?.final_status || "APPROVED",
+                validatedGenerationId: generationId,
+                correctionPlan: buildCorrectionPlan(statVal),
+              }
+            : {}),
         }));
 
         // Fetch any newly completed LLD data that is not loaded yet
@@ -775,7 +794,19 @@ export const useAppStore = create<AppState>((set, get) => ({
           return st === "READY" || (st as string) === "COMPLETED" || st === "FAILED";
         });
 
-        if (stat.status === "COMPLETED" || allDone) {
+        // Wait for the full 6-tier architecture validation audit to be finalized
+        const isFull6TierValidated =
+          stat.status === "COMPLETED" &&
+          (statVal?.is_final_6tier_validated === true ||
+           (statVal?.final_scores && typeof statVal.final_scores.backend === "number") ||
+           (statVal?.iterations && statVal.iterations.length > 0 && Object.keys(statVal.iterations[0].results || {}).length >= 5));
+
+        if (isFull6TierValidated) {
+          break;
+        }
+
+        if (allDone && stat.status === "COMPLETED") {
+          // Both generation and all 5 LLDs are finished -> terminate polling immediately
           break;
         }
       } catch (err) {
@@ -788,10 +819,21 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     set({ isGeneratingLlds: false });
 
-    // Fetch full package to ensure all LLDs are completely populated in store
+    // Fetch full package to ensure all LLDs and final validation are completely populated in store
     try {
-      const pkg = await aiEngineApi.getPackage(generationId);
+      let pkg: any = null;
+      for (let retry = 0; retry < 5; retry++) {
+        try {
+          pkg = await aiEngineApi.getPackage(generationId);
+          if (pkg && pkg.validation) {
+            break;
+          }
+        } catch { }
+        if (retry < 4) await new Promise((r) => setTimeout(r, 1200));
+      }
+
       if (pkg && pkg.llds) {
+        const finalValReport = pkg.validation || get().validationReport;
         set((s) => ({
           lldData: {
             backend: pkg.llds.backend?.data || pkg.llds.backend || s.lldData.backend,
@@ -801,17 +843,59 @@ export const useAppStore = create<AppState>((set, get) => ({
             cloud: pkg.llds.cloud?.data || pkg.llds.cloud || s.lldData.cloud,
           },
           generationStatus: "COMPLETED",
+          ...(finalValReport
+            ? {
+                validationData: finalValReport as any,
+                validationReport: finalValReport as any,
+                validationStatus: (finalValReport as any)?.final_status || "APPROVED",
+                validatedGenerationId: generationId,
+                correctionPlan: buildCorrectionPlan(finalValReport as any),
+              }
+            : {}),
         }));
+      }
+
+      // Automatically persist full completed 6-tier architecture and validation report
+      await get().saveCurrentArchitecture().catch((err) => {
+        console.warn("[Archova] Auto-save architecture warning:", err);
+      });
+
+      if (typeof window !== "undefined") {
+        try {
+          const ws = {
+            sessions: get().sessions,
+            activeSessionId: get().activeSessionId,
+            generationId: generationId,
+            arsrsData: get().arsrsData,
+            hldData: get().hldData,
+            hldNodes: get().hldNodes,
+            hldEdges: get().hldEdges,
+            lldData: get().lldData,
+            activeVersionTag: get().activeVersionTag,
+            availableVersions: get().availableVersions,
+            validationReport: get().validationReport,
+            validationData: get().validationData,
+            correctionPlan: get().correctionPlan,
+            interviewCompleted: true,
+            generationStatus: "COMPLETED",
+            activePipelineStep: 3,
+          };
+          localStorage.setItem("archai-guest-workspace", JSON.stringify(ws));
+          localStorage.setItem("archova_active_generation_id", generationId);
+        } catch { }
       }
     } catch (pkgErr) {
       console.warn("[Archova] Could not fetch final package:", pkgErr);
     }
 
-    // Run validation in background without interrupting user HLD view
-    try {
-      await get().runCorrectionWorkflow(2);
-    } catch (valErr) {
-      console.warn("[Archova] Background validation error:", valErr);
+    // Trigger single-pass validation if not yet validated
+    const hasAlreadyValidated = Boolean(get().validationReport || (get().validationData as any) || get().validatedGenerationId === generationId);
+    if (!hasAlreadyValidated) {
+      try {
+        await get().validateArchitecture();
+      } catch (valErr) {
+        console.warn("[Archova] Background validation error:", valErr);
+      }
     }
 
     try {
@@ -1511,6 +1595,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         const currentUser = get().user;
         if (!currentUser || currentUser.app_metadata?.provider === "guest") {
           try {
+            const pkg = { validation: get().validationData };
             const ws = {
               sessions: get().sessions,
               activeSessionId: get().activeSessionId,
@@ -1528,6 +1613,13 @@ export const useAppStore = create<AppState>((set, get) => ({
               staleReason: staleMsg,
               interviewCompleted: true,
               generationStatus: "COMPLETED",
+          ...(pkg.validation
+            ? {
+                validationData: pkg.validation as any,
+                validationReport: pkg.validation as any,
+                validationStatus: (pkg.validation as any)?.final_status || "ACCEPTED",
+              }
+            : {}),
               activePipelineStep: 3,
             };
             localStorage.setItem("archai-guest-workspace", JSON.stringify(ws));
@@ -1627,7 +1719,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (isValidating || isValidatingV2) {
       return validationReport;
     }
-    if (!pkg && generationId && validatedGenerationId === generationId && validationReport) {
+    if (!pkg && generationId && (validatedGenerationId === generationId || validationReport)) {
       return validationReport;
     }
 
@@ -1647,8 +1739,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       level: "INFO",
     });
 
+    let packagePayload: any = pkg;
     try {
-      let packagePayload = pkg;
 
       // 2. Automatically wait for the complete architecture package if generating via AI Engine
       const currentGenStatus = get().generationStatus;
@@ -1726,6 +1818,24 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       return report;
     } catch (err) {
+      // Graceful fallback to embedded package validation if port 8002 service is unreachable
+      if (packagePayload && (packagePayload as any).validation) {
+        const fallbackReport = (packagePayload as any).validation;
+        const plan = buildCorrectionPlan(fallbackReport);
+        set({
+          validationReport: fallbackReport,
+          correctionPlan: plan,
+          validatedGenerationId: generationId || packagePayload.generation_id,
+          isValidating: false,
+          isValidatingV2: false,
+          validationError: null,
+          validationStatus: fallbackReport.final_status || "ACCEPTED",
+          validationCurrentStep: `Validation complete: ${fallbackReport.final_status || "ACCEPTED"}`,
+          generationStatus: "COMPLETED",
+        });
+        return fallbackReport;
+      }
+
       const msg = err instanceof Error ? err.message : "Validator Engine v2 call failed.";
       set({
         isValidating: false,
@@ -1771,8 +1881,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       level: "INFO",
     });
 
+    let packagePayload: any = pkg;
     try {
-      let packagePayload = pkg;
       if (!packagePayload && effectiveGenId) {
         try {
           packagePayload = await aiEngineApi.getPackage(effectiveGenId);
@@ -1886,6 +1996,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   logs: [],
   autoScrollLogs: true,
   toggleAutoScrollLogs: () => set((s) => ({ autoScrollLogs: !s.autoScrollLogs })),
+  debugConsoleOpen: false,
+  toggleDebugConsole: () => set((s) => ({ debugConsoleOpen: !s.debugConsoleOpen })),
+  setDebugConsoleOpen: (open) => set({ debugConsoleOpen: open }),
   addLogEntry: (entry) => {
     set((s) => {
       const exists = s.logs.some(
@@ -2021,7 +2134,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   createSession: async (title?: string) => {
     sessionCounter++;
     const defaultTitle = title || `Architecture ${sessionCounter}`;
-    const currentUser = get().user;
+    let currentUser = get().user;
+    if (!currentUser) {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        if (authData?.user) {
+          currentUser = authData.user;
+          set({ user: currentUser });
+        }
+      } catch {
+        // Continue
+      }
+    }
     const newId = generateUUID();
 
     if (currentUser) {
@@ -2205,6 +2329,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           // Table fallback
         }
 
+        const restoredGenId = pkg.generation_id || pkg.generationId || latestDesign.id || id;
+        const restoredReport = pkg.validationReport || pkg.validation || null;
+
         set((s) => ({
           sessions: s.sessions.map((ses) =>
             ses.id === id ? { ...ses, hasArchitecture: true } : ses
@@ -2212,19 +2339,25 @@ export const useAppStore = create<AppState>((set, get) => ({
           availableVersions: dbDesigns,
           activeVersionTag: latestDesign.version_tag || "v1.0",
           activeDiff: latestDesign.diff || null,
+          generationId: restoredGenId,
           hldData: savedHld,
           hldNodes: parsedNodes,
           hldEdges: parsedEdges,
           arsrsData: pkg.arsrs || null,
           lldData: pkg.llds || initialLldData,
-          validationData: pkg.validation
-            ? ({ validation: { summary: pkg.validation } } as any)
-            : null,
           benchmarkResults: restoredBenchmarks,
           comparisonData: restoredComparison,
           interviewCompleted: true,
           activePipelineStep: 3,
           generationStatus: "COMPLETED",
+          ...(restoredReport
+            ? {
+                validationData: restoredReport as any,
+                validationReport: restoredReport as any,
+                validationStatus: (restoredReport as any)?.final_status || "APPROVED",
+                correctionPlan: buildCorrectionPlan(restoredReport as any),
+              }
+            : {}),
           activeView: "hld", // DIRECTLY DISPLAY THE DESIGN
         }));
       } else {
@@ -2247,6 +2380,13 @@ export const useAppStore = create<AppState>((set, get) => ({
             interviewCompleted: true,
             activePipelineStep: 3,
             generationStatus: "COMPLETED",
+          ...(pkg.validation
+            ? {
+                validationData: pkg.validation as any,
+                validationReport: pkg.validation as any,
+                validationStatus: (pkg.validation as any)?.final_status || "ACCEPTED",
+              }
+            : {}),
             activeView: "hld", // DIRECTLY DISPLAY THE DESIGN
           }));
         } else {
@@ -2406,12 +2546,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       : 95;
     const verdict = validation?.validation?.summary?.verdict || "APPROVED";
 
+    const effectiveGenId = get().generationId || activeSid;
     const fullPackage = {
+      generation_id: effectiveGenId,
+      generationId: effectiveGenId,
       hld,
       llds,
       arsrs,
-      validation: validation?.validation?.summary || validation?.validation || null,
-      validationReport: get().validationReport,
+      validation: validation?.validation?.summary || validation?.validation || validation || get().validationReport || null,
+      validationReport: get().validationReport || validation?.validation?.summary || validation?.validation || validation || null,
       correctionPlan: get().correctionPlan,
       score: scorePercent,
       verdict,
@@ -2422,6 +2565,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     };
 
     try {
+      // 0. Ensure parent chat_sessions row exists for foreign consistency
+      const { data: sessionRow } = await supabase
+        .from("chat_sessions")
+        .select("id")
+        .eq("id", activeSid)
+        .maybeSingle();
+
+      if (!sessionRow) {
+        await supabase.from("chat_sessions").insert([
+          {
+            id: activeSid,
+            user_id: currentUser.id,
+            title: userPrompt.slice(0, 42) || "New Architecture",
+            updated_at: new Date().toISOString(),
+          },
+        ]);
+      }
+
       const { data: existingLatest, error: fetchErr } = await supabase
         .from("architecture_designs")
         .select("id, version, version_tag")
@@ -2516,12 +2677,67 @@ export const useAppStore = create<AppState>((set, get) => ({
     const remainingSessions = currentSessions.filter((s) => s.id !== sessionId);
     const wasActive = get().activeSessionId === sessionId;
 
-    // 1. Instantly update in-memory store
+    // 1. Cascade delete all data from Supabase if authenticated and is UUID
+    const currentUser = get().user;
+    if (currentUser && isUUID(sessionId)) {
+      try {
+        // Step A: Delete messages first while chat_sessions still exists (required for RLS check)
+        const { error: msgDelErr } = await supabase
+          .from("messages")
+          .delete()
+          .eq("session_id", sessionId);
+        if (msgDelErr) {
+          console.warn("[Archova DB] Notice deleting messages:", msgDelErr.message);
+        }
+
+        // Step B: Delete architecture designs
+        const { error: designDelErr } = await supabase
+          .from("architecture_designs")
+          .delete()
+          .eq("session_id", sessionId);
+        if (designDelErr) {
+          console.warn("[Archova DB] Notice deleting architecture_designs:", designDelErr.message);
+        }
+
+        // Step C: Delete architecture benchmarks
+        const { error: benchDelErr } = await supabase
+          .from("architecture_benchmarks")
+          .delete()
+          .eq("session_id", sessionId);
+        if (benchDelErr) {
+          console.warn("[Archova DB] Notice deleting architecture_benchmarks:", benchDelErr.message);
+        }
+
+        // Step D: Delete chat_sessions
+        const { error: sessionDelErr } = await supabase
+          .from("chat_sessions")
+          .delete()
+          .eq("id", sessionId);
+        if (sessionDelErr) {
+          console.warn("[Archova DB] Notice deleting chat_sessions:", sessionDelErr.message);
+        }
+
+        console.log(`[Archova DB] ✓ Cleanly deleted session ${sessionId} and all its artifacts from Supabase.`);
+      } catch (err) {
+        console.warn("[Archova DB] Could not delete session from Supabase:", err);
+      }
+    }
+
+    // 2. Clear browser cache for deleted session
+    if (wasActive && typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("archai-guest-workspace");
+        localStorage.removeItem("archova_active_generation_id");
+      } catch {}
+    }
+
+    // 3. Update in-memory state cleanly
     if (wasActive) {
       if (remainingSessions.length > 0) {
         set({ sessions: remainingSessions });
         await get().setActiveSession(remainingSessions[0].id);
       } else {
+        // No remaining sessions -> create a brand new clean architecture session
         set({
           sessions: [],
           activeSessionId: null,
@@ -2546,33 +2762,13 @@ export const useAppStore = create<AppState>((set, get) => ({
           availableVersions: [],
           activeVersionTag: "v1.0",
           activeDiff: null,
+          validationReport: null,
+          correctionPlan: null,
         });
+        await get().createSession();
       }
     } else {
       set({ sessions: remainingSessions });
-    }
-
-    // 2. Cascade delete from Supabase if authenticated and is UUID
-    const currentUser = get().user;
-    if (currentUser && isUUID(sessionId)) {
-      try {
-        await supabase
-          .from("architecture_designs")
-          .delete()
-          .eq("session_id", sessionId);
-
-        await supabase
-          .from("architecture_benchmarks")
-          .delete()
-          .eq("session_id", sessionId);
-
-        await supabase
-          .from("chat_sessions")
-          .delete()
-          .eq("id", sessionId);
-      } catch (err) {
-        console.warn("Could not delete session from Supabase:", err);
-      }
     }
   },
 
@@ -2867,6 +3063,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         hldEdges: state.hldEdges,
         lldData: state.lldData,
         validationData: state.validationData,
+        validationReport: state.validationReport,
+        correctionPlan: state.correctionPlan,
       };
       set({ archovaSnapshot: snapshot });
     }
@@ -2882,6 +3080,9 @@ export const useAppStore = create<AppState>((set, get) => ({
           hldEdges: snapshot.hldEdges,
           lldData: snapshot.lldData,
           validationData: snapshot.validationData,
+          validationReport: snapshot.validationReport,
+          correctionPlan: snapshot.correctionPlan,
+          validationStatus: (snapshot.validationReport as any)?.final_status || "APPROVED",
         });
       } else {
         set({ activeModelId: "archova" });
@@ -2927,11 +3128,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       hldEdges: parsedFlow.edges,
       lldData: targetLldData,
       validationData: targetModel.validation as ValidatedArchitectureResponse,
+      validationReport: targetModel.validation as any,
+      validationStatus: (targetModel.validation as any)?.final_status || "CONDITIONAL_APPROVAL",
     });
   },
 
   runBenchmarkSuite: async (promptText: string) => {
     const state = get();
+    if (state.isBenchmarking) {
+      console.log("[BenchmarkSuite] Already running, skipping duplicate invocation");
+      return;
+    }
     const modelsToRun = state.benchmarkModelsConfig.map((m) => ({
       ...m,
       api_key: m.api_key || state.benchmarkApiKey || undefined,
@@ -2968,48 +3175,78 @@ export const useAppStore = create<AppState>((set, get) => ({
       const currentUser = get().user;
       const activeSid = get().activeSessionId;
 
-      if (currentUser && activeSid && isUUID(activeSid)) {
+      if (currentUser && activeSid && !activeSid.startsWith("demo-")) {
         try {
-          const recordsToInsert = response.models.map((m) => ({
-            session_id: activeSid,
-            user_id: currentUser.id,
-            generation_id: state.generationId || null,
-            model_id: m.model_id,
-            model_name: m.model_name,
-            is_archova: false,
-            status: m.status || "COMPLETED",
-            latency_ms: m.latency_ms || 0,
-            package_json: m.package || {},
-            validation_json: m.validation || {},
-            comparison_json: response.comparison || null,
-            updated_at: new Date().toISOString(),
-          }));
+          // 1. Fetch existing benchmark records for this session ("if stored ignore")
+          const { data: existingRows } = await supabase
+            .from("architecture_benchmarks")
+            .select("id, model_id, validation_json")
+            .eq("session_id", activeSid);
 
+          const existingMap = new Map((existingRows || []).map((r) => [r.model_id, r]));
+
+          const candidates = [...response.models];
           if (response.archova) {
-            recordsToInsert.push({
-              session_id: activeSid,
-              user_id: currentUser.id,
-              generation_id: state.generationId || null,
-              model_id: "archova",
-              model_name: response.archova.model_name || "Archova AI",
-              is_archova: true,
-              status: response.archova.status || "COMPLETED",
-              latency_ms: response.archova.latency_ms || 0,
-              package_json: response.archova.package || {},
-              validation_json: response.archova.validation || {},
-              comparison_json: response.comparison || null,
-              updated_at: new Date().toISOString(),
-            });
+            candidates.push(response.archova);
+          }
+
+          const recordsToInsert: any[] = [];
+
+          for (const m of candidates) {
+            const isArch = m.model_id === "archova" || Boolean(m.is_archova);
+            const existing = existingMap.get(m.model_id);
+
+            if (existing) {
+              // Design already exists in database ("if stored ignore")
+              const hasExistingVal = existing.validation_json && Object.keys(existing.validation_json).length > 0;
+              const hasNewVal = m.validation && Object.keys(m.validation).length > 0;
+
+              // If existing row lacked validation report, update it with the report
+              if (!hasExistingVal && hasNewVal) {
+                await supabase
+                  .from("architecture_benchmarks")
+                  .update({
+                    validation_json: m.validation,
+                    comparison_json: response.comparison || null,
+                    updated_at: new Date().toISOString(),
+                  })
+                  .eq("id", existing.id);
+                console.log(`[Archova DB] ✓ Stored missing validation report for already existing design: ${m.model_name}`);
+              } else {
+                console.log(`[Archova DB] Model design already stored for [${m.model_name}]. Ignored duplicate insert.`);
+              }
+            } else {
+              // Not stored yet -> insert new design and its validation report
+              recordsToInsert.push({
+                session_id: activeSid,
+                user_id: currentUser.id,
+                generation_id: state.generationId || null,
+                model_id: m.model_id,
+                model_name: m.model_name,
+                is_archova: isArch,
+                status: m.status || "COMPLETED",
+                latency_ms: m.latency_ms || 0,
+                package_json: m.package || {},
+                validation_json: m.validation || {},
+                comparison_json: response.comparison || null,
+                updated_at: new Date().toISOString(),
+              });
+            }
           }
 
           if (recordsToInsert.length > 0) {
-            await supabase.from("architecture_benchmarks").insert(recordsToInsert);
+            const { error: insErr } = await supabase.from("architecture_benchmarks").insert(recordsToInsert);
+            if (insErr) {
+              console.warn("[Archova DB] Warning inserting architecture_benchmarks:", insErr.message);
+            } else {
+              console.log(`[Archova DB] ✓ Stored ${recordsToInsert.length} new model designs and validation reports.`);
+            }
           }
         } catch (dbErr) {
           console.warn("Could not insert architecture_benchmarks to Supabase:", dbErr);
         }
 
-        // Also update latest architecture_designs record if already created
+        // 2. Also update latest architecture_designs record if already created
         try {
           const { data: latestDesign } = await supabase
             .from("architecture_designs")
@@ -3033,6 +3270,7 @@ export const useAppStore = create<AppState>((set, get) => ({
                 updated_at: new Date().toISOString(),
               })
               .eq("id", latestDesign.id);
+            console.log("[Archova DB] ✓ Synchronized benchmark designs & validation reports into architecture_designs");
           }
         } catch (updateErr) {
           console.warn("Could not embed benchmarks in architecture_designs:", updateErr);

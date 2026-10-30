@@ -21,7 +21,7 @@ import { useAppStore } from "@/lib/store";
 import type { LldType } from "@/lib/ai-engine-client";
 import clsx from "clsx";
 
-export type JsonViewerTab = "hld" | LldType | "all";
+export type JsonViewerTab = "hld" | LldType;
 
 interface JsonViewerProps {
   defaultTab?: JsonViewerTab;
@@ -42,7 +42,6 @@ const TABS: Array<{
   { id: "security", label: "Security LLD", icon: ShieldCheck, badge: "Auth & RBAC" },
   { id: "frontend", label: "Frontend LLD", icon: Layout, badge: "UI & State" },
   { id: "cloud", label: "Cloud LLD", icon: Cloud, badge: "Infra & Fargate" },
-  { id: "all", label: "Combined Package", icon: Layers, badge: "Complete" },
 ];
 
 export default function JsonViewer({
@@ -51,28 +50,24 @@ export default function JsonViewer({
   customData,
   title,
 }: JsonViewerProps) {
-  const { hldData, lldData, generationId, activeVersionTag } = useAppStore();
+  const { hldData, lldData, generationId } = useAppStore();
   const [activeTab, setActiveTab] = useState<JsonViewerTab>(defaultTab);
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Determine current active payload
+  // Determine current active payload strictly to HLD or LLD json
   const activePayload = useMemo(() => {
     if (customData) return customData;
 
     if (activeTab === "hld") {
       return hldData;
     }
-    if (activeTab === "all") {
-      return {
-        generation_id: generationId,
-        version: activeVersionTag || "v1.0",
-        high_level_design: hldData,
-        low_level_designs: lldData,
-      };
+    const rawLld = lldData[activeTab as LldType];
+    if (rawLld && typeof rawLld === "object" && "data" in (rawLld as any) && (rawLld as any).data) {
+      return (rawLld as any).data;
     }
-    return lldData[activeTab as LldType] || null;
-  }, [customData, activeTab, hldData, lldData, generationId, activeVersionTag]);
+    return rawLld || null;
+  }, [customData, activeTab, hldData, lldData]);
 
   const jsonString = useMemo(() => {
     if (!activePayload) return "";
@@ -155,8 +150,6 @@ export default function JsonViewer({
                 const isActive = activeTab === tab.id;
                 const hasData =
                   tab.id === "hld"
-                    ? Boolean(hldData)
-                    : tab.id === "all"
                     ? Boolean(hldData)
                     : Boolean(lldData[tab.id as LldType]);
 
@@ -298,12 +291,12 @@ export default function JsonViewer({
       <div className="flex items-center justify-between border-t border-neutral-800 bg-neutral-900 px-4 py-1.5 text-[11px] text-neutral-500 font-mono shrink-0">
         <div className="flex items-center gap-2">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          <span>Source: AI Engine API (FastAPI Port 8000)</span>
-          {generationId && <span>• Run: {generationId}</span>}
+          <span>Artifact: {activeTab === "hld" ? "High-Level Design (HLD)" : `${activeTab.toUpperCase()} LLD`}</span>
         </div>
         <div className="flex items-center gap-3">
-          <span>Active Artifact: {activeTab.toUpperCase()}</span>
-          <span>Format: RFC 8259 JSON</span>
+          <span>{stats.lines} lines</span>
+          <span>{formatSize(stats.bytes)}</span>
+          <span>RFC 8259 JSON</span>
         </div>
       </div>
     </div>

@@ -145,7 +145,7 @@ export default function Sidebar() {
             className="flex items-center gap-2.5 rounded-xl px-2 py-1 text-sm font-bold text-neutral-900 transition-colors hover:opacity-80 dark:text-white"
           >
             <Logo size={28} className="rounded-lg" />
-            <span className="tracking-tight font-extrabold text-base">Archova.ai</span>
+            <span className="tracking-tight font-extrabold text-base">Archova<span className="text-[#005dff] dark:text-[#3b82f6]">.ai</span></span>
           </Link>
 
           <button

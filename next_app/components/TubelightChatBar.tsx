@@ -406,8 +406,10 @@ export default function TubelightChatBar() {
       ══════════════════════════════════════════════════════════════════════════════ */}
       <div
         className={cn(
-          "absolute left-1/2 -translate-x-1/2 z-30 w-[95%] max-w-2xl pointer-events-none select-none transition-all duration-300",
-          hldWorkspaceTab === "lld" ? "bottom-16 sm:bottom-18" : "bottom-4 sm:bottom-6"
+          "absolute z-30 pointer-events-none select-none transition-all duration-300",
+          hldWorkspaceTab === "lld"
+            ? "bottom-16 sm:bottom-18 left-4 sm:left-6 max-w-sm sm:max-w-md translate-x-0 w-[90%]"
+            : "bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-[95%] max-w-2xl"
         )}
       >
         <div className="relative flex flex-col items-center pointer-events-auto group">

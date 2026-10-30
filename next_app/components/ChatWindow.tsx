@@ -258,9 +258,11 @@ export default function ChatWindow() {
       useAppStore.setState({ generationId: clientGenId });
       useAppStore.getState().startAgentTelemetryPolling(clientGenId);
 
-      // Concurrently initiate direct 1-shot baseline LLM benchmark in background
-      useAppStore.getState().runBenchmarkSuite(effectivePrompt).catch((e) => {
-        console.warn("Background benchmark suite non-blocking error:", e);
+      // ── Concurrently kick off benchmark models immediately upon prompt submission ──
+      // Runs in parallel while user participates in clarifying interview so benchmark reports
+      // are completely ready and verified BEFORE HLD arrives in the queue!
+      useAppStore.getState().runBenchmarkSuite(effectivePrompt).catch((err) => {
+        console.warn("[ChatWindow] Background benchmark execution warning:", err);
       });
 
       const response = await aiEngineApi.startGeneration(effectivePrompt, clientGenId);

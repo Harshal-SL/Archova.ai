@@ -78,8 +78,8 @@ class _AlembicTableVisitor(ast.NodeVisitor):
                                         if (isinstance(subarg.func, ast.Attribute) and subarg.func.attr == "ForeignKey") or (
                                             isinstance(subarg.func, ast.Name) and subarg.func.id == "ForeignKey"
                                         ):
-                                            if subarg.args and isinstance(subarg.args[0], (ast.Constant, ast.Str)):
-                                                val = getattr(subarg.args[0], "value", getattr(subarg.args[0], "s", ""))
+                                            if subarg.args and isinstance(subarg.args[0], ast.Constant):
+                                                val = subarg.args[0].value
                                                 fks.append(str(val))
 
                         # Check table-level ForeignKeyConstraint

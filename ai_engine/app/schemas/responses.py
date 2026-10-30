@@ -72,6 +72,10 @@ class GenerateArchitectureResponse(BaseModel):
         default_factory=dict,
         description="High Level Design (HLD) specification.",
     )
+    validation: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Immediate Validator Engine v2 audit report and score for the synthesized architecture.",
+    )
 
 
 class AgentTelemetrySchema(BaseModel):
@@ -121,6 +125,10 @@ class GenerationStatusResponse(BaseModel):
         default_factory=list,
         description="List of all agents participating in this generation.",
     )
+    validation: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Validator Engine v2 audit score, verdict, and quality scorecard.",
+    )
 
 
 class ArtifactResponse(BaseModel):
@@ -147,6 +155,10 @@ class LLDDetailResponse(BaseModel):
     data: Optional[Dict[str, Any]] = Field(
         default=None,
         description="The generated LLD payload if READY.",
+    )
+    validation: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Validator Engine v2 audit score, verdict, and rubric criteria for this specific LLD.",
     )
     message: Optional[str] = Field(
         default=None,

@@ -5,37 +5,25 @@ applicable_tags: ["api", "error-model", "authn_authz"]
 
 dimensions:
   - id: view_route_coverage
-    label: View & Route Coverage vs User Stories
+    label: View & Route Coverage vs User Workflows
+    weight: 0.30
+    description: User personas, workflows, and pages mapped to designated client routes and component trees.
+    source: IEEE1016
+
+  - id: api_binding_and_state
+    label: API Binding Validity & State Synchronization
     weight: 0.25
-    description: All user personas, workflows, and pages mapped to designated client routes and components.
+    description: Client HTTP integration matching backend API contracts, and predictable state store / cache invalidation.
     source: IEEE1016
 
-  - id: api_binding_validity
-    label: API Binding Validity & Contract Alignment
-    weight: 0.20
-    description: Client HTTP integration matching backend API methods, paths, and payload schemas accurately.
-    source: IEEE1016
-
-  - id: state_management
-    label: State Management & Data Synchronization
-    weight: 0.15
-    description: Predictable state store (Zustand, Redux, React Query), cache invalidation, and optimistic UI updates.
-    source: IEEE1016
-
-  - id: error_loading_states
-    label: Error, Empty & Loading State Handling
-    weight: 0.15
-    description: User-friendly error boundaries, skeleton loaders, and graceful network failure recoveries.
+  - id: error_loading_and_auth
+    label: Error/Loading States & Route Protection
+    weight: 0.25
+    description: Graceful error boundaries, skeleton loaders, protected route wrappers, and token refresh mechanisms.
     source: ISO25010
-
-  - id: auth_flows
-    label: Authentication & Route Protection Flows
-    weight: 0.10
-    description: Protected route wrappers, automatic token refresh, and permission-based UI rendering.
-    source: ASVS
 
   - id: specificity
     label: Concrete Specificity & Requirement Binding
-    weight: 0.15
+    weight: 0.20
     description: 5 = named entities, concrete numbers and mechanisms tied to requirement IDs; 0-2 = generic statements without entity or requirement link.
     source: internal

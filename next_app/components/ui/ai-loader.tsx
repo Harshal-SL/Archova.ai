@@ -175,7 +175,7 @@ export const Component: React.FC<LoaderProps> = ({
                 <span>STAGE PIPELINE</span>
                 <span>{progressPercent}%</span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-white/5 border border-white/10 overflow-hidden backdrop-blur-xs">
+              <div className="h-1.5 w-full rounded-full bg-transparent border border-white/15 overflow-hidden backdrop-blur-xs">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500 transition-all duration-500 shadow-[0_0_10px_rgba(56,189,248,0.5)]"
                   style={{ width: `${progressPercent}%` }}
@@ -217,7 +217,7 @@ export const Component: React.FC<LoaderProps> = ({
   const fullscreenOverlay = (
     <div
       className={cn(
-        "fixed inset-0 z-[9999] flex items-center justify-center w-screen h-screen bg-gradient-to-b from-[#1a3379]/85 via-[#0f172a]/95 to-black/98 backdrop-blur-2xl transition-all overflow-hidden",
+        "fixed inset-0 z-[9999] flex flex-col items-center justify-center w-screen h-screen bg-gradient-to-b from-[#1a3379]/85 via-[#0f172a]/95 to-black/98 backdrop-blur-2xl transition-all overflow-hidden",
         className
       )}
       style={{

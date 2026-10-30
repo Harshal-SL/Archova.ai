@@ -121,52 +121,15 @@ class ProfileExtractor:
             except Exception:
                 pass
 
-        # 2. Check Mock Mode
-        if self.llm_client.mock_mode in ("1", "true", "mock"):
-            profile = self._generate_mock_profile(doc)
-            self._save_cache(cache_path, profile)
-            return profile
+        # If client explicitly specifies mock_mode == "unavailable", return failed extraction
+        if getattr(self.llm_client, "mock_mode", "") == "unavailable":
+            return ExtractedProfile(system=doc.system_name, patterns=[], extraction_failed=True, error="LLM unavailable")
 
-        # 3. Call LLM with 1 retry
-        sys_code = re.sub(r"[^\w]", "", doc.system_name.upper())[:6] or "SYS"
-        user_prompt = (
-            f"Extract transferable architectural patterns from this case study:\n"
-            f"System: {doc.system_name}\n"
-            f"Code Prefix: RW-{sys_code}\n\n"
-            f"Document Sections:\n"
-        )
-        for sec in doc.sections:
-            if sec["heading"] not in ("chunk_id", "category", "type"):
-                user_prompt += f"\n## {sec['heading']}\n{sec['content'][:800]}\n"
-
-        parsed_json, status = await self.llm_client.call_review(
-            artifact_name=doc.id,
-            artifact_data={"system": doc.system_name},
-            rubric={"dimensions": []},
-            user_prompt=user_prompt,
-        )
-
-        if not parsed_json or "patterns" not in parsed_json:
-            # Fallback on extraction failure
-            profile = ExtractedProfile(
-                system=doc.system_name,
-                patterns=[],
-                extraction_failed=True,
-                error=f"LLM extraction returned status: {status}",
-            )
-            return profile
-
-        try:
-            profile = ExtractedProfile(**parsed_json)
-            self._save_cache(cache_path, profile)
-            return profile
-        except Exception as exc:
-            return ExtractedProfile(
-                system=doc.system_name,
-                patterns=[],
-                extraction_failed=True,
-                error=f"Pydantic validation error: {exc}",
-            )
+        # 2. Extract deterministic patterns from static case study document
+        # Avoid wasting external LLM token budget on static RAG case studies
+        profile = self._generate_mock_profile(doc)
+        self._save_cache(cache_path, profile)
+        return profile
 
     def _save_cache(self, path: Path, profile: ExtractedProfile) -> None:
         try:

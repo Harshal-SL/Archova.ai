@@ -110,8 +110,10 @@
               "weight": 0.2,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Requirement Coverage aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "component_boundaries",
@@ -119,8 +121,10 @@
               "weight": 0.12,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Component Boundaries & Decoupling aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "data_ownership",
@@ -128,8 +132,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Data Ownership & Storage Strategy aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "communication_fit",
@@ -137,8 +143,10 @@
               "weight": 0.08,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Communication Pattern Fit aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "nfr_mechanisms",
@@ -146,8 +154,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Non-Functional Requirement Mechanisms aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "security_boundaries",
@@ -155,8 +165,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Security Boundaries & Network Segmentation aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "resilience",
@@ -164,8 +176,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Resilience & Fault Isolation aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "specificity",
@@ -173,8 +187,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             }
           ],
           "findings": [],
@@ -187,13 +203,13 @@
         },
         "backend": {
           "artifact": "backend",
-          "score": 87,
-          "final_score": 87,
+          "score": 91,
+          "final_score": 91,
           "c_score": 100,
-          "r_score": 72,
+          "r_score": 80,
           "w_score": 100,
           "penalty_d": 0,
-          "rubric_score": 72,
+          "rubric_score": 80,
           "real_world": {
             "artifact": "backend",
             "score": 100,
@@ -324,8 +340,10 @@
               "weight": 0.2,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Endpoint Coverage vs Functional Requirements aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "schemas_and_errors",
@@ -333,8 +351,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Request/Response Schemas & Standard Error Model aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "authz_per_endpoint",
@@ -342,14 +362,16 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Authorization per Endpoint & Resource Verification aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "transactions_concurrency_idempotency",
               "label": "Transactions, Concurrency & Idempotency",
               "weight": 0.2,
-              "score": 2,
+              "score": 4,
               "evidence_path": "/api_endpoints",
               "missing": [
                 "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
@@ -362,8 +384,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Input Validation & Boundary Sanitization aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "testability",
@@ -371,8 +395,10 @@
               "weight": 0.05,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Testability & Mockability aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "specificity",
@@ -380,8 +406,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             }
           ],
           "findings": [
@@ -398,7 +426,7 @@
             }
           ],
           "best_dimension": "specificity",
-          "weakest_dimension": "transactions_concurrency_idempotency",
+          "weakest_dimension": "endpoint_coverage_vs_FR",
           "reviewer_status": "ok",
           "dropped_unverified": 0,
           "truncated": false,
@@ -406,13 +434,13 @@
         },
         "database": {
           "artifact": "database",
-          "score": 87,
-          "final_score": 87,
+          "score": 91,
+          "final_score": 91,
           "c_score": 100,
-          "r_score": 72,
+          "r_score": 80,
           "w_score": 100,
           "penalty_d": 0,
-          "rubric_score": 72,
+          "rubric_score": 80,
           "real_world": {
             "artifact": "database",
             "score": 100,
@@ -535,7 +563,7 @@
               "id": "integrity_isolation",
               "label": "Transaction Isolation & Integrity Guarantees",
               "weight": 0.2,
-              "score": 2,
+              "score": 4,
               "evidence_path": "/tables",
               "missing": [
                 "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
@@ -575,7 +603,7 @@
             }
           ],
           "best_dimension": "specificity",
-          "weakest_dimension": "integrity_isolation",
+          "weakest_dimension": "entity_coverage",
           "reviewer_status": "ok",
           "dropped_unverified": 0,
           "truncated": false,
@@ -1072,8 +1100,8 @@
         }
       },
       "corrections": [],
-      "started_at": "2026-10-29T09:16:16.385018+00:00",
-      "finished_at": "2026-10-29T09:16:16.421725+00:00"
+      "started_at": "2026-10-30T06:36:52.832881+00:00",
+      "finished_at": "2026-10-30T06:36:52.872875+00:00"
     },
     {
       "n": 2,
@@ -1184,8 +1212,10 @@
               "weight": 0.2,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Requirement Coverage aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "component_boundaries",
@@ -1193,8 +1223,10 @@
               "weight": 0.12,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Component Boundaries & Decoupling aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "data_ownership",
@@ -1202,8 +1234,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Data Ownership & Storage Strategy aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "communication_fit",
@@ -1211,8 +1245,10 @@
               "weight": 0.08,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Communication Pattern Fit aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "nfr_mechanisms",
@@ -1220,8 +1256,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Non-Functional Requirement Mechanisms aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "security_boundaries",
@@ -1229,8 +1267,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Security Boundaries & Network Segmentation aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "resilience",
@@ -1238,8 +1278,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Resilience & Fault Isolation aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             },
             {
               "id": "specificity",
@@ -1247,8 +1289,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/major_services",
-              "missing": [],
-              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+              "missing": [
+                "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
+              ],
+              "rationale": "High-level topology is coarse-grained with few nodes and lacks decoupled messaging."
             }
           ],
           "findings": [],
@@ -1261,13 +1305,13 @@
         },
         "backend": {
           "artifact": "backend",
-          "score": 87,
-          "final_score": 87,
+          "score": 91,
+          "final_score": 91,
           "c_score": 100,
-          "r_score": 72,
+          "r_score": 80,
           "w_score": 100,
           "penalty_d": 0,
-          "rubric_score": 72,
+          "rubric_score": 80,
           "real_world": {
             "artifact": "backend",
             "score": 100,
@@ -1398,8 +1442,10 @@
               "weight": 0.2,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Endpoint Coverage vs Functional Requirements aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "schemas_and_errors",
@@ -1407,8 +1453,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Request/Response Schemas & Standard Error Model aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "authz_per_endpoint",
@@ -1416,14 +1464,16 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Authorization per Endpoint & Resource Verification aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "transactions_concurrency_idempotency",
               "label": "Transactions, Concurrency & Idempotency",
               "weight": 0.2,
-              "score": 2,
+              "score": 4,
               "evidence_path": "/api_endpoints",
               "missing": [
                 "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
@@ -1436,8 +1486,10 @@
               "weight": 0.1,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Input Validation & Boundary Sanitization aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "testability",
@@ -1445,8 +1497,10 @@
               "weight": 0.05,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Testability & Mockability aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             },
             {
               "id": "specificity",
@@ -1454,8 +1508,10 @@
               "weight": 0.15,
               "score": 4,
               "evidence_path": "/api_endpoints",
-              "missing": [],
-              "rationale": "Thorough Concrete Specificity & Requirement Binding aligned with architecture standards."
+              "missing": [
+                "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
+              ],
+              "rationale": "Minimal API surface: single-shot output generated 1-2 endpoints without domain operations."
             }
           ],
           "findings": [
@@ -1472,7 +1528,7 @@
             }
           ],
           "best_dimension": "specificity",
-          "weakest_dimension": "transactions_concurrency_idempotency",
+          "weakest_dimension": "endpoint_coverage_vs_FR",
           "reviewer_status": "ok",
           "dropped_unverified": 0,
           "truncated": false,
@@ -1480,13 +1536,13 @@
         },
         "database": {
           "artifact": "database",
-          "score": 87,
-          "final_score": 87,
+          "score": 91,
+          "final_score": 91,
           "c_score": 100,
-          "r_score": 72,
+          "r_score": 80,
           "w_score": 100,
           "penalty_d": 0,
-          "rubric_score": 72,
+          "rubric_score": 80,
           "real_world": {
             "artifact": "database",
             "score": 100,
@@ -1609,7 +1665,7 @@
               "id": "integrity_isolation",
               "label": "Transaction Isolation & Integrity Guarantees",
               "weight": 0.2,
-              "score": 2,
+              "score": 4,
               "evidence_path": "/tables",
               "missing": [
                 "Missing row-level locking (SELECT FOR UPDATE) or distributed hold lock."
@@ -1649,7 +1705,7 @@
             }
           ],
           "best_dimension": "specificity",
-          "weakest_dimension": "integrity_isolation",
+          "weakest_dimension": "entity_coverage",
           "reviewer_status": "ok",
           "dropped_unverified": 0,
           "truncated": false,
@@ -2152,8 +2208,8 @@
             "fnd_2900ee0cd9137ae0"
           ],
           "action_summary": "Regenerated 'backend' (attempt 2): resolved 0 defect(s), 1 remaining, 0 new.",
-          "score_before": 87,
-          "score_after": 87,
+          "score_before": 91,
+          "score_after": 91,
           "resolved": [],
           "unresolved": [
             "fnd_2900ee0cd9137ae0"
@@ -2169,8 +2225,8 @@
             "fnd_c0af650b42b25e7f"
           ],
           "action_summary": "Regenerated 'database' (attempt 2): resolved 0 defect(s), 1 remaining, 0 new.",
-          "score_before": 87,
-          "score_after": 87,
+          "score_before": 91,
+          "score_after": 91,
           "resolved": [],
           "unresolved": [
             "fnd_c0af650b42b25e7f"
@@ -2181,29 +2237,29 @@
           "patterns_still_missing": []
         }
       ],
-      "started_at": "2026-10-29T09:16:16.428664+00:00",
-      "finished_at": "2026-10-29T09:16:16.463189+00:00"
+      "started_at": "2026-10-30T06:36:52.877873+00:00",
+      "finished_at": "2026-10-30T06:36:52.921095+00:00"
     }
   ],
   "final_status": "UNRESOLVED",
   "final_scores": {
     "hld": 91,
-    "backend": 87,
-    "database": 87,
+    "backend": 91,
+    "database": 91,
     "frontend": 91,
     "security": 91,
     "cloud": 91,
-    "overall": 90,
+    "overall": 91,
     "c": 100,
-    "r": 77,
+    "r": 80,
     "w": 100,
     "d": 0
   },
   "overall_c": 100,
-  "overall_r": 77,
+  "overall_r": 80,
   "overall_w": 100,
   "overall_d": 0,
-  "model_used": "cohere/north-mini-code:free",
+  "model_used": "nvidia/nemotron-3.5-lightning:free",
   "models_used_per_artifact": {},
   "reviewer_mode": "live",
   "corpus_status": "ok",
@@ -2256,7 +2312,7 @@
     "rw_weight": 0.35,
     "rw_min": 60
   },
-  "created_at": "2026-10-29T09:16:16.352546+00:00",
+  "created_at": "2026-10-30T06:36:52.767713+00:00",
   "final_package": {
     "generation_id": "gen_test_defect",
     "prompt": "Build a Smart Parking Reservation System with double-booking defect",

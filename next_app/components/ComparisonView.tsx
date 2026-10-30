@@ -74,7 +74,7 @@ export default function ComparisonView() {
     system_name: promptText.split(".")[0].slice(0, 36) || "Enterprise Platform",
     timestamp: new Date().toISOString(),
     archova_verdict: "APPROVED",
-    archova_score: 98,
+    archova_score: 84,
     models_evaluated: 2,
     quality_gates: [
       {
@@ -106,37 +106,37 @@ export default function ComparisonView() {
     metrics_matrix: [
       {
         metric_name: "Overall Composite Score",
-        archova_score: 98.0,
+        archova_score: 84.0,
         model_scores: { "OpenAI GPT-4o": 74.0, "Anthropic Claude 3.5 Sonnet": 78.0 },
       },
       {
         metric_name: "Structural Completeness",
-        archova_score: 99.0,
+        archova_score: 85.0,
         model_scores: { "OpenAI GPT-4o": 88.0, "Anthropic Claude 3.5 Sonnet": 89.0 },
       },
       {
         metric_name: "Cross-Artifact Coherence",
-        archova_score: 98.0,
+        archova_score: 84.0,
         model_scores: { "OpenAI GPT-4o": 62.0, "Anthropic Claude 3.5 Sonnet": 65.0 },
       },
       {
         metric_name: "Requirement Alignment",
-        archova_score: 99.0,
+        archova_score: 85.0,
         model_scores: { "OpenAI GPT-4o": 74.0, "Anthropic Claude 3.5 Sonnet": 77.0 },
       },
       {
         metric_name: "Production Readiness",
-        archova_score: 96.0,
+        archova_score: 82.0,
         model_scores: { "OpenAI GPT-4o": 60.0, "Anthropic Claude 3.5 Sonnet": 64.0 },
       },
       {
         metric_name: "NFR & Scalability Feasibility",
-        archova_score: 97.0,
+        archova_score: 83.0,
         model_scores: { "OpenAI GPT-4o": 58.0, "Anthropic Claude 3.5 Sonnet": 61.0 },
       },
       {
         metric_name: "Red-Team & Security Audit",
-        archova_score: 98.0,
+        archova_score: 84.0,
         model_scores: { "OpenAI GPT-4o": 55.0, "Anthropic Claude 3.5 Sonnet": 58.0 },
       },
     ],
@@ -241,7 +241,7 @@ export default function ComparisonView() {
                     Archova Multi-Agent Advantage
                   </span>
                   <span className="rounded-full bg-[#005dff]/10 px-2.5 py-0.5 text-[11px] font-extrabold text-[#005dff] border border-[#005dff]/30">
-                    VERDICT: APPROVED (98%)
+                    VERDICT: {effectiveComparison.archova_verdict || "APPROVED"} ({Math.round(effectiveComparison.archova_score || 84)}%)
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
@@ -311,7 +311,9 @@ export default function ComparisonView() {
                 </div>
 
                 <div className="my-5 flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold text-[#005dff]">98%</span>
+                  <span className="text-4xl font-extrabold text-[#005dff]">
+                    {effectiveComparison.archova_score ? `${Math.round(effectiveComparison.archova_score)}%` : "84%"}
+                  </span>
                   <span className="text-xs font-semibold text-neutral-500">
                     Composite Score
                   </span>
@@ -325,10 +327,6 @@ export default function ComparisonView() {
                   <div className="flex justify-between py-1.5">
                     <span className="text-neutral-500">Quality Gates Passed</span>
                     <span className="font-bold text-black dark:text-white">5 of 5 Gates</span>
-                  </div>
-                  <div className="flex justify-between py-1.5">
-                    <span className="text-neutral-500">Defects Detected</span>
-                    <span className="font-bold text-black dark:text-white">0 Findings</span>
                   </div>
                   <div className="flex justify-between py-1.5">
                     <span className="text-neutral-500">Pipeline Type</span>
@@ -409,12 +407,6 @@ export default function ComparisonView() {
                             <span className="font-bold text-black dark:text-white">2 of 5 Gates</span>
                           </div>
                           <div className="flex justify-between py-1.5">
-                            <span className="text-neutral-500">Defects Detected</span>
-                            <span className="font-bold text-neutral-700 dark:text-neutral-300">
-                              {totalFindings} Findings ({highFindings} High)
-                            </span>
-                          </div>
-                          <div className="flex justify-between py-1.5">
                             <span className="text-neutral-500">Response Latency</span>
                             <span className="font-mono text-[11px] text-neutral-500">
                               {m.latency_ms ? `${(m.latency_ms / 1000).toFixed(2)}s` : "2.10s"}
@@ -482,12 +474,6 @@ export default function ComparisonView() {
                         <span className="font-bold text-black dark:text-white">2 of 5 Gates</span>
                       </div>
                       <div className="flex justify-between py-1.5">
-                        <span className="text-neutral-500">Defects Detected</span>
-                        <span className="font-bold text-neutral-700 dark:text-neutral-300">
-                          6 Findings (2 High)
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-1.5">
                         <span className="text-neutral-500">Response Latency</span>
                         <span className="font-mono text-[11px] text-neutral-500">2.14s</span>
                       </div>
@@ -547,12 +533,6 @@ export default function ComparisonView() {
                       <div className="flex justify-between py-1.5">
                         <span className="text-neutral-500">Quality Gates Passed</span>
                         <span className="font-bold text-black dark:text-white">2 of 5 Gates</span>
-                      </div>
-                      <div className="flex justify-between py-1.5">
-                        <span className="text-neutral-500">Defects Detected</span>
-                        <span className="font-bold text-neutral-700 dark:text-neutral-300">
-                          5 Findings (2 High)
-                        </span>
                       </div>
                       <div className="flex justify-between py-1.5">
                         <span className="text-neutral-500">Response Latency</span>

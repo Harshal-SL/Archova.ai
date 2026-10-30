@@ -168,7 +168,8 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       const initialNodes = parsedHld.nodes;
       const initialEdges = parsedHld.edges;
 
-      // ── Immediately display HLD in the frontend ──
+      // ── Populate HLD & Validation in the store state ──
+      const sid = useAppStore.getState().activeSessionId;
       useAppStore.setState({
         arsrsData: response.arsrs || null,
         hldData: response.hld || null,
@@ -176,23 +177,21 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
         hldEdges: initialEdges as any,
         generationStatus: "HLD_READY",
         activePipelineStep: 3,
-        activeView: "hld",
-        hldWorkspaceTab: "hld",
+        ...(response.validation
+          ? {
+              validationData: response.validation as any,
+              validationReport: response.validation as any,
+              validationStatus: (response.validation as any)?.final_status || "ACCEPTED",
+            }
+          : {}),
       });
 
-      setGeneratingArch(false);
-
-      if (onArchitectureGenerated) {
-        onArchitectureGenerated();
-      }
-
-      // ── Immediately persist the synthesized HLD architecture to Supabase ──
-      await useAppStore.getState().saveCurrentArchitecture().catch((saveErr) => {
+      // ── Immediately persist the synthesized HLD architecture to Supabase BEFORE unmounting view ──
+      await useAppStore.getState().saveCurrentArchitecture(sid || undefined, true).catch((saveErr) => {
         console.warn("[Archova] Initial HLD saveCurrentArchitecture warning:", saveErr);
       });
 
       // Add completion message with json_response fallback into the chat session
-      const sid = useAppStore.getState().activeSessionId;
       if (sid) {
         await useAppStore.getState().addMessage(sid, {
           id: generateMsgId(),
@@ -216,6 +215,16 @@ export default function InterviewCard({ onArchitectureGenerated }: Props) {
       useAppStore.getState().pollBackgroundLldsAndValidate(generationId).catch((bgErr) => {
         console.warn("[Archova] Parallel LLD background polling warning:", bgErr);
       });
+
+      setGeneratingArch(false);
+      useAppStore.setState({
+        activeView: "hld",
+        hldWorkspaceTab: "hld",
+      });
+
+      if (onArchitectureGenerated) {
+        onArchitectureGenerated();
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Architecture generation failed.";
       setError(msg);

@@ -622,19 +622,21 @@ export function generateCorrectionInstruction(
  * Builds a structured, evidence-based CorrectionPlan from a Validator Engine v2 Report.
  */
 export function buildCorrectionPlan(report: Report | null | undefined): CorrectionPlan | null {
-  if (!report || !report.generation_id) {
+  if (!report) {
     return null;
   }
 
+  const genId = report.generation_id || "gen-live";
   const verdict = report.final_status || "PROVISIONAL";
   const now = new Date().toISOString();
-  const planId = `cplan_${report.generation_id}_${Date.now()}`;
+  const planId = `cplan_${genId}_${Date.now()}`;
 
   // 1. Collect all findings from latest iteration results
   const rawFindings: Finding[] = [];
 
-  const latestIter = report.iterations && report.iterations.length > 0
-    ? report.iterations[report.iterations.length - 1]
+  const rawIterations = Array.isArray(report.iterations) ? report.iterations : [];
+  const latestIter = rawIterations.length > 0
+    ? rawIterations[rawIterations.length - 1]
     : null;
 
   if (latestIter && latestIter.results) {
@@ -646,6 +648,14 @@ export function buildCorrectionPlan(report: Report | null | undefined): Correcti
           }
         });
       }
+    });
+  } else if ((report as any).validation?.findings && Array.isArray((report as any).validation.findings)) {
+    (report as any).validation.findings.forEach((f: Finding) => {
+      if (f) rawFindings.push(f);
+    });
+  } else if (Array.isArray((report as any).findings)) {
+    (report as any).findings.forEach((f: Finding) => {
+      if (f) rawFindings.push(f);
     });
   }
 

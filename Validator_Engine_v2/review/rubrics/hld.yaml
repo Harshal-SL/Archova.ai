@@ -5,49 +5,25 @@ applicable_tags: ["multi-az", "availability", "topology", "resilience", "concurr
 
 dimensions:
   - id: requirement_coverage
-    label: Requirement Coverage
-    weight: 0.20
-    description: All functional requirements mapped to designated components with explicit ownership.
+    label: Requirement Coverage & Component Boundaries
+    weight: 0.30
+    description: Functional requirements mapped to decoupled components with explicit single-responsibility boundaries.
     source: ISO42010
 
-  - id: component_boundaries
-    label: Component Boundaries & Decoupling
-    weight: 0.12
-    description: High cohesion, loose coupling, clear single-responsibility service boundaries.
-    source: ISO42010
-
-  - id: data_ownership
-    label: Data Ownership & Storage Strategy
-    weight: 0.10
-    description: Explicit data store per service or clean polyglot persistence without shared-database anti-patterns.
-    source: ISO42010
-
-  - id: communication_fit
-    label: Communication Pattern Fit
-    weight: 0.08
-    description: Appropriate synchronous (gRPC/REST) vs asynchronous (Kafka/RabbitMQ event streams) protocols.
+  - id: data_and_resilience
+    label: Data Ownership, Protocols & Resilience
+    weight: 0.25
+    description: Explicit polyglot persistence, appropriate sync/async communication protocols, and fault isolation mechanisms.
     source: ATAM
 
-  - id: nfr_mechanisms
-    label: Non-Functional Requirement Mechanisms
-    weight: 0.15
-    description: Specific architectural mechanisms addressing latency, throughput, and scalability targets.
-    source: ISO25010
-
-  - id: security_boundaries
-    label: Security Boundaries & Network Segmentation
-    weight: 0.10
-    description: Trust boundaries, ingress filtering, and inter-service authentication defined.
-    source: ISO25010
-
-  - id: resilience
-    label: Resilience & Fault Isolation
-    weight: 0.10
-    description: Circuit breakers, rate limits, graceful degradation, and elimination of single points of failure.
+  - id: nfr_and_security
+    label: NFR Mechanisms & Security Boundaries
+    weight: 0.25
+    description: Specific architectural mechanisms addressing latency, throughput, scalability targets, and network trust boundaries.
     source: ISO25010
 
   - id: specificity
     label: Concrete Specificity & Requirement Binding
-    weight: 0.15
+    weight: 0.20
     description: 5 = named entities, concrete numbers and mechanisms tied to requirement IDs; 0-2 = generic statements without entity or requirement link.
     source: internal

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/lib/store";
 import dynamic from "next/dynamic";
 import TubelightChatBar from "./TubelightChatBar";
@@ -76,6 +76,17 @@ export default function HldWorkspace() {
 
   const [showDiffDrawer, setShowDiffDrawer] = useState(false);
 
+  // Auto-sync HLD architecture into Supabase if not yet recorded for this session
+  useEffect(() => {
+    const state = useAppStore.getState();
+    if (state.hldData && state.activeSessionId && state.user) {
+      const curSession = state.sessions.find((s) => s.id === state.activeSessionId);
+      if (!curSession?.hasArchitecture) {
+        state.saveCurrentArchitecture().catch(() => {});
+      }
+    }
+  }, []);
+
   const versionsList =
     availableVersions.length > 0
       ? availableVersions
@@ -107,12 +118,15 @@ export default function HldWorkspace() {
         <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
           {/* Back to Chat button */}
           <button
-            onClick={() => setActiveView("chat")}
+            onClick={() => {
+              setActiveView("hld");
+              setHldWorkspaceTab("hld");
+            }}
             className="flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-2.5 py-1 text-xs font-semibold text-neutral-600 hover:bg-neutral-100 hover:text-black dark:text-neutral-400 dark:hover:bg-[#161619] dark:hover:text-white transition-all cursor-pointer mr-0.5 sm:mr-1 border border-neutral-200/80 dark:border-[#262626]"
-            title="Return to Chat Conversation"
+            title="Return to Visual HLD Architecture"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Chat</span>
+            <span>HLD</span>
           </button>
 
           {/* Tab 1: Validation Audit (Validator Engine v2) */}
@@ -143,7 +157,7 @@ export default function HldWorkspace() {
                     : "bg-rose-500/10 text-rose-600 border-rose-500/30 dark:text-rose-400"
                 )}
               >
-                {validationReport.final_scores?.overall ?? 0}% ({validationReport.final_status})
+                Score: {validationReport.final_scores?.overall ?? 0}%
               </span>
             )}
           </button>

@@ -43,14 +43,20 @@ class ValidatorConfig(BaseSettings):
     # External AI Engine
     AI_ENGINE_URL: str = "http://localhost:8000"
 
+    # Upstash Redis (Shared Queue & Artifact Staging)
+    REDIS_URL: str = os.getenv(
+        "REDIS_URL",
+        "rediss://default:gQAAAAAAAX-tAAIgcDJlZjFmNmMxOGE3ZDU0OGY4YjU0YTY4M2VmNTU0ZWUwYg@healthy-foal-98221.upstash.io:6379",
+    )
+
     # Reviewer LLM settings (OpenAI-compatible)
     # Strict Free-only policy: Free OpenRouter models only; no paid inference; no paid fallback.
     VALIDATOR_API_BASE: str = os.getenv("VALIDATOR_API_BASE", "https://openrouter.ai/api/v1")
     VALIDATOR_API_KEY: str = os.getenv("VALIDATOR_API_KEY") or os.getenv("OPENROUTER_API_KEY", "")
-    VALIDATOR_MODEL: str = os.getenv("VALIDATOR_MODEL", "cohere/north-mini-code:free")
+    VALIDATOR_MODEL: str = os.getenv("VALIDATOR_MODEL", "nvidia/nemotron-3.5-lightning:free")
     VALIDATOR_FALLBACK_MODELS: str = os.getenv(
         "VALIDATOR_FALLBACK_MODELS",
-        "openrouter/free,liquid/lfm-2.5-2.6b:free,nvidia/nemotron-3.5-lightning:free",
+        "cohere/north-mini-code:free,openrouter/free",
     )
 
     # Testing & Mock mode
@@ -59,8 +65,8 @@ class ValidatorConfig(BaseSettings):
     VALIDATOR_CONCURRENCY: int = int(os.getenv("VALIDATOR_CONCURRENCY", "1"))
 
     # Decision thresholds
-    ACCEPT_THRESHOLD: int = 80
-    MAX_ROUNDS: int = 2
+    ACCEPT_THRESHOLD: int = int(os.getenv("ACCEPT_THRESHOLD", "80"))
+    MAX_ROUNDS: int = int(os.getenv("MAX_ROUNDS", "1"))
 
     # Real-World Benchmark settings
     RW_WEIGHT: float = float(os.getenv("RW_WEIGHT", "0.35"))
@@ -74,7 +80,7 @@ class ValidatorConfig(BaseSettings):
     )
 
     # Timeout limits
-    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "120.0"))
+    LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "90.0"))
     ITERATION_TIMEOUT_SECONDS: float = float(os.getenv("ITERATION_TIMEOUT_SECONDS", "180.0"))
     RUN_TIMEOUT_SECONDS: float = float(os.getenv("RUN_TIMEOUT_SECONDS", "600.0"))
 

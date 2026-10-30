@@ -12,12 +12,12 @@ from pathlib import Path
 from typing import Dict, Optional
 from dotenv import load_dotenv
 
-# Load .env file (Primary: ai_engine/app/.env, Fallback: ai_engine/.env)
+# Load ai_engine/.env file
 APP_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = APP_DIR.parent
-env_path = APP_DIR / ".env"
+ENGINE_ROOT = APP_DIR.parent
+env_path = ENGINE_ROOT / ".env"
 if not env_path.exists():
-    env_path = PROJECT_ROOT / ".env"
+    env_path = Path.cwd() / ".env"
 load_dotenv(dotenv_path=env_path, override=True)
 
 

@@ -57,9 +57,13 @@ class PackageNormalizer:
         raw_pkg = package or {}
         generation_id = str(raw_pkg.get("generation_id", raw_pkg.get("id", "gen_unknown")))
 
-        arsrs = raw_pkg.get("arsrs", {})
-        hld = raw_pkg.get("hld", {})
-        llds = raw_pkg.get("llds", {})
+        arsrs = raw_pkg.get("arsrs") or {}
+        if not isinstance(arsrs, dict):
+            arsrs = {}
+        hld = raw_pkg.get("hld") or {}
+        if not isinstance(hld, dict):
+            hld = {}
+        llds = raw_pkg.get("llds") or {}
         if not isinstance(llds, dict):
             llds = {}
 

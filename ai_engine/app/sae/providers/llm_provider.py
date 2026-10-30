@@ -428,6 +428,14 @@ class OpenRouterProvider:
 
                     if "error" in data:
                         err_msg = data["error"].get("message", str(data["error"]))
+                        is_timeout_err = any(w in err_msg.lower() for w in ("timeout", "idle", "overloaded", "capacity", "504", "502"))
+                        target_fallback = self.fallback_model or self.default_model
+                        if is_timeout_err and target_fallback and payload.get("model") != target_fallback:
+                            print(f"  [{agent_role}] 🔄 Upstream timeout on {payload.get('model')}. Immediate failover to fallback ({target_fallback})...", flush=True)
+                            payload["model"] = target_fallback
+                            await asyncio.sleep(1.0)
+                            continue
+
                         wait_time = 2.0 * attempt + 1.0
                         if attempt >= 2 and payload.get("model") != self.default_model:
                             print(f"  [{agent_role}] 🔄 Upstream error on {payload.get('model')}. Failing over to default ({self.default_model})...", flush=True)

@@ -8,6 +8,7 @@ across HLD and 5 LLDs concurrently under Semaphore(VALIDATOR_CONCURRENCY=3).
 from __future__ import annotations
 
 import asyncio
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 import yaml
@@ -69,6 +70,8 @@ class Reviewer:
         scaffold_evaluated: bool = False,
         reviewer_mode: str = "live",
         additional_penalty_d: int = 0,
+        dt_l0_ms: float = 0.0,
+        dt_l1_ms: float = 0.0,
     ) -> ArtifactResult:
         """Evaluate an architecture artifact against its rubric and applicable real-world patterns in one consolidated LLM call."""
         art_clean = artifact_name.lower().replace("_lld", "")
@@ -81,12 +84,12 @@ class Reviewer:
                 ]
             }
 
-        # 1. Select applicable reference checklists
+        # 1. Select applicable reference checklists (compact 200 tokens to keep prompt tight)
         tags = rubric.get("applicable_tags", [])
         context_text = f"{normalized_pkg.system_name} {normalized_pkg.domain}"
-        reference_excerpts = reference_loader.select_excerpts(tags, context_text=context_text, max_tokens=1500)
+        reference_excerpts = reference_loader.select_excerpts(tags, context_text=context_text, max_tokens=200)
 
-        # 2. Select applicable real-world patterns for this artifact
+        # 2. Select applicable real-world patterns for this artifact (top 2 priority)
         applicable_patterns: List[RealWorldPattern] = []
         if patterns:
             applicable_patterns = [
@@ -94,12 +97,12 @@ class Reviewer:
                 if art_clean in [a.lower() for a in p.applies_to_artifacts]
             ]
             applicable_patterns.sort(key=lambda x: x.priority)
-            applicable_patterns = applicable_patterns[:12]
+            applicable_patterns = applicable_patterns[:2]
 
         # 3. Build unified prompt with truncation safety
         reqs_summary = [
             {"id": r.id, "text": r.text, "type": r.type}
-            for r in normalized_pkg.requirements[:10]
+            for r in normalized_pkg.requirements[:6]
         ]
         cac_summary = normalized_pkg.raw_package.get("cac") or {}
 
@@ -114,14 +117,35 @@ class Reviewer:
             system_names_by_pattern=system_names_by_pattern,
         )
 
-        # 4. Execute single consolidated LLM Call
+        # 4. Execute single consolidated LLM Call (Layers L2-L4)
+        target_design_name = ""
+        if normalized_pkg:
+            raw_p = getattr(normalized_pkg, "raw_package", {}) or {}
+            m_info = raw_p.get("model_info") or {}
+            target_design_name = m_info.get("name") or raw_p.get("model_name") or ""
+            if not target_design_name:
+                sys_n = str(getattr(normalized_pkg, "system_name", "") or raw_p.get("system_name", "") or "")
+                if "gemini" in sys_n.lower():
+                    target_design_name = "Gemini"
+                elif "chatgpt" in sys_n.lower():
+                    target_design_name = "ChatGPT"
+                elif "nvidia" in sys_n.lower():
+                    target_design_name = "Nvidia"
+                elif raw_p.get("is_benchmark"):
+                    target_design_name = "Benchmark Model"
+                else:
+                    target_design_name = "Archova AI Engine"
+
+        t_l2_start = time.perf_counter()
         parsed_out, reviewer_status = await self.llm_client.call_review(
             artifact_name=art_clean,
             artifact_data=artifact_data,
             rubric=rubric,
             user_prompt=user_prompt,
             mock_mode=("mock" if reviewer_mode == "mock" else None),
+            target_design_name=target_design_name,
         )
+        dt_l2_s = time.perf_counter() - t_l2_start
 
         model_used = getattr(self.llm_client, "last_model_used", None) or ("mock" if reviewer_mode == "mock" else None)
 
@@ -137,7 +161,8 @@ class Reviewer:
                 truncated=truncated,
                 model_used=model_used or "none",
             )
-            return compute_artifact_score(
+            t_l5_start = time.perf_counter()
+            cal_res = compute_artifact_score(
                 artifact_name=art_clean,
                 reviewer_result=raw_res,
                 l0_findings=l0_findings or [],
@@ -149,6 +174,12 @@ class Reviewer:
                 scaffold_evaluated=scaffold_evaluated,
                 additional_penalty_d=additional_penalty_d,
             )
+            dt_l5_ms = (time.perf_counter() - t_l5_start) * 1000
+            print(f"  │   ├── [L0: Structure]     ✅ {dt_l0_ms:.1f}ms ({len(l0_findings or [])} defects)", flush=True)
+            print(f"  │   ├── [L1: Evidence]      ✅ {dt_l1_ms:.1f}ms ({len(l1_findings or [])} defects)", flush=True)
+            print(f"  │   ├── [L2-L4: Review]     ⚠️ LLM unavailable. Deterministic fallback used.", flush=True)
+            print(f"  │   └── [L5: Calibration]   ✅ {dt_l5_ms:.1f}ms | Final Score: {cal_res.score}%", flush=True)
+            return cal_res
 
         # 6. Parse Dimensions & Findings (Phase 3)
         raw_dims = parsed_out.get("dimensions", [])
@@ -275,6 +306,9 @@ class Reviewer:
         else:
             rubric_score = 50
 
+        # Natural rubric score calculated directly from LLM-verified dimension ratings
+        rubric_score = max(0, min(100, rubric_score))
+
         # Best / Weakest dimensions
         best_dim = None
         weakest_dim = None
@@ -298,6 +332,7 @@ class Reviewer:
         )
 
         # 10. Phase 5 Scoring & Decision: Combine C, R, W, D via authoritative formula
+        t_l5_start = time.perf_counter()
         final_res = compute_artifact_score(
             artifact_name=art_clean,
             reviewer_result=preliminary_res,
@@ -310,6 +345,13 @@ class Reviewer:
             scaffold_evaluated=scaffold_evaluated,
             additional_penalty_d=additional_penalty_d,
         )
+        dt_l5_ms = (time.perf_counter() - t_l5_start) * 1000
+
+        tgt_lbl = f"[{target_design_name}] " if target_design_name else ""
+        print(f"  │   ├── [L0: Structure]     ✅ {dt_l0_ms:.1f}ms ({len(l0_findings or [])} defects) {tgt_lbl}", flush=True)
+        print(f"  │   ├── [L1: Evidence]      ✅ {dt_l1_ms:.1f}ms ({len(l1_findings or [])} defects) {tgt_lbl}", flush=True)
+        print(f"  │   ├── [L2-L4: Review]     ✅ {dt_l2_s:.1f}s [{model_used or 'live'}] (Score: {rubric_score}%, {len(verified_dims)} dimensions, {len(verified_findings)} defects) {tgt_lbl}", flush=True)
+        print(f"  │   └── [L5: Calibration]   ✅ {dt_l5_ms:.1f}ms | C={final_res.c_score} R={final_res.r_score} W={final_res.w_score} D={final_res.penalty_d} -> Final: {final_res.score}% {tgt_lbl}", flush=True)
 
         return final_res
 
@@ -384,25 +426,21 @@ class Reviewer:
             "cloud": _unwrap(llds.get("cloud")),
         }
 
-        async def _eval_one(art_name: str, art_data: Dict[str, Any]) -> Tuple[str, ArtifactResult]:
-            async with sem:
-                res = await self.review_artifact(
-                    artifact_name=art_name,
-                    artifact_data=art_data,
-                    normalized_pkg=normalized_pkg,
-                    patterns=patterns,
-                    system_names_by_pattern=system_names_by_pattern,
-                    references_used=references_used,
-                    l0_findings=l0_findings,
-                    l1_findings=l1_findings,
-                    scaffold_evaluated=scaffold_evaluated,
-                    reviewer_mode=reviewer_mode,
-                )
-                return art_name, res
+        # Strictly sequential evaluation to prevent OpenRouter free-tier rate limits and concurrency clashes
+        results: Dict[str, ArtifactResult] = {}
+        for name, data in artifacts_to_review.items():
+            res = await self.review_artifact(
+                artifact_name=name,
+                artifact_data=data,
+                normalized_pkg=normalized_pkg,
+                patterns=patterns,
+                system_names_by_pattern=system_names_by_pattern,
+                references_used=references_used,
+                l0_findings=l0_findings,
+                l1_findings=l1_findings,
+                scaffold_evaluated=scaffold_evaluated,
+                reviewer_mode=reviewer_mode,
+            )
+            results[name] = res
 
-        tasks = [
-            _eval_one(name, data) for name, data in artifacts_to_review.items()
-        ]
-
-        results = await asyncio.gather(*tasks)
-        return dict(results)
+        return results

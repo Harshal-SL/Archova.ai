@@ -3,13 +3,12 @@
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Ensure .env is loaded into os.environ before any submodules are imported
-_app_dir = Path(__file__).resolve().parent
+# Ensure ai_engine/.env is loaded into os.environ before any submodules are imported
+_engine_dir = Path(__file__).resolve().parent.parent  # ai_engine/
 _candidates = [
-    _app_dir / ".env",                 # Primary: ai_engine/app/.env
-    _app_dir.parent / ".env",          # Fallback: ai_engine/.env
-    Path.cwd() / "app" / ".env",
+    _engine_dir / ".env",              # Primary: ai_engine/.env
     Path.cwd() / ".env",
+    Path.cwd() / "ai_engine" / ".env",
 ]
 for _env_candidate in _candidates:
     if _env_candidate.exists():

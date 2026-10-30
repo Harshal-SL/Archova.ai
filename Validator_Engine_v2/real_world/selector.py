@@ -39,6 +39,11 @@ class SystemSelector:
         if not docs:
             return []
 
+        if not isinstance(arsrs, dict):
+            arsrs = {}
+        if not isinstance(hld, dict):
+            hld = {}
+
         # 1. Extract target domain, requirements, and scale signals from ARSRS
         target_name = (arsrs.get("system_name") or arsrs.get("title") or "").lower()
         target_domain = (arsrs.get("domain") or "").lower()

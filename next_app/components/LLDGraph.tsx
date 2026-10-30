@@ -460,7 +460,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           proOptions={{ hideAttribution: true }}
         >
           <Background gap={24} size={1.2} color={isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(100, 116, 139, 0.22)"} />
-          <Controls className="!border-neutral-200/80 !bg-white/70 !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-[#262626] dark:!bg-[#0D0D0F] dark:!text-white dark:[&>button]:!border-[#262626] dark:[&>button]:!bg-[#0D0D0F] dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-[#161619] dark:[&>button:hover]:!text-white" />
+          <Controls position="bottom-right" className="!border-neutral-200/80 !bg-white/70 !text-black [&>button]:!border-neutral-200 [&>button]:!bg-white [&>button]:!text-neutral-800 [&>button:hover]:!bg-neutral-100 [&>button:hover]:!text-black dark:!border-[#262626] dark:!bg-[#0D0D0F] dark:!text-white dark:[&>button]:!border-[#262626] dark:[&>button]:!bg-[#0D0D0F] dark:[&>button]:!text-neutral-200 dark:[&>button:hover]:!bg-[#161619] dark:[&>button:hover]:!text-white" />
         </ReactFlow>
       )}
 

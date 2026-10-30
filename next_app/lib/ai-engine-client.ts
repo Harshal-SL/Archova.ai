@@ -67,12 +67,14 @@ export interface GenerateArchitectureResponse {
   status: string;
   arsrs: Record<string, unknown>;
   hld: Record<string, unknown>;
+  validation?: Record<string, unknown>;
   detail?: string;
 }
 
 export interface LldResponse {
   status: LldStatusType;
   data?: Record<string, unknown>;
+  validation?: Record<string, unknown>;
   message?: string;
   error?: string;
   detail?: string;
@@ -100,6 +102,7 @@ export interface StatusResponse {
   llds?: Record<LldType, LldStatusType>;
   active_agents?: AgentTelemetry[];
   all_agents?: AgentTelemetry[];
+  validation?: Record<string, unknown>;
 }
 
 // In-memory question tracker for frontend simulation
@@ -225,6 +228,7 @@ export const aiEngineApi = {
     return {
       status: "READY",
       data: data.data || data,
+      validation: data.validation,
       message: `${lldType.toUpperCase()} Low-Level Design blueprint loaded successfully.`,
     };
   },
@@ -256,7 +260,7 @@ export const aiEngineApi = {
 
   // 8. Get status
   async getStatus(generationId: string): Promise<StatusResponse> {
-    const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/status`);
+    const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/status`, { cache: "no-store" });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.detail || `Failed to fetch status (HTTP ${res.status})`);
@@ -272,7 +276,20 @@ export const aiEngineApi = {
         security: "NOT_STARTED",
         cloud: "NOT_STARTED",
       },
+      validation: data.validation,
+      active_agents: data.active_agents,
+      all_agents: data.all_agents,
     };
+  },
+
+  // 8b. Get live validation audit report directly from Redis
+  async getValidationReport(generationId: string): Promise<Record<string, any>> {
+    const res = await fetch(`${AI_HOST}/api/v1/generations/${generationId}/validation`, { cache: "no-store" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Failed to fetch validation report (HTTP ${res.status})`);
+    }
+    return await res.json();
   },
 
   // 9. Get architecture package for validation

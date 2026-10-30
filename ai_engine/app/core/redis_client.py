@@ -21,6 +21,7 @@ _async_redis_client = None
 _sync_redis_client = None
 _in_memory_cache: Dict[str, Any] = {}
 _in_memory_state: Dict[str, Any] = {}
+_in_memory_queue: list = []
 
 
 def _get_redis_url() -> Optional[str]:
@@ -221,6 +222,165 @@ async def get_generation_progress(generation_id: str) -> Optional[Dict[str, Any]
             pass
 
     return _in_memory_state.get(key)
+
+
+# ── Pipelined Redis Queue & Artifact Store ────────────────────────────────────
+
+VALIDATION_QUEUE_KEY = "archova:validation:queue"
+
+
+import time
+
+VALIDATION_QUEUE_KEY = "archova:validation:queue"
+
+
+async def clear_validation_queue() -> int:
+    """Clear all pending tasks from the validation queue on reset or new generation."""
+    global _in_memory_queue
+    _in_memory_queue.clear()
+    client = await get_redis_client()
+    if client:
+        try:
+            count = await client.llen(VALIDATION_QUEUE_KEY)
+            if count > 0:
+                await client.delete(VALIDATION_QUEUE_KEY)
+                logger.info(f"[Redis:Queue] Cleared {count} tasks from {VALIDATION_QUEUE_KEY}")
+                return count
+        except Exception as exc:
+            logger.warning(f"[Redis:Queue] Failed to clear queue: {exc}")
+    return 0
+
+
+async def push_validation_task(task_payload: Dict[str, Any]) -> bool:
+    """Enqueue an artifact validation task to Redis queue or in-memory queue."""
+    if isinstance(task_payload, dict):
+        task_payload.setdefault("timestamp", time.time())
+    try:
+        payload_str = json.dumps(task_payload, default=str)
+    except Exception:
+        payload_str = json.dumps(str(task_payload))
+    client = await get_redis_client()
+    if client:
+        try:
+            await client.rpush(VALIDATION_QUEUE_KEY, payload_str)
+            return True
+        except Exception as exc:
+            logger.warning(f"[Redis:Queue] rpush failed ({exc}), falling back to in-memory.")
+    _in_memory_queue.append(task_payload)
+    return True
+
+
+async def pop_validation_task(timeout: int = 1) -> Optional[Dict[str, Any]]:
+    """Dequeue a validation task from Redis queue via BLPOP or in-memory queue."""
+    client = await get_redis_client()
+    if client:
+        try:
+            res = await client.blpop(VALIDATION_QUEUE_KEY, timeout=timeout)
+            if res:
+                _, payload_str = res
+                return json.loads(payload_str)
+        except Exception:
+            pass
+
+    if _in_memory_queue:
+        return _in_memory_queue.pop(0)
+    return None
+
+
+async def set_artifact(generation_id: str, artifact_name: str, data: Any, ttl_seconds: int = 7200) -> bool:
+    """Store an architectural artifact (HLD, CAC, LLD) in Redis RAM."""
+    key = f"archova:{generation_id}:artifact:{artifact_name}"
+    try:
+        if hasattr(data, "model_dump"):
+            payload_str = json.dumps(data.model_dump(mode="json"), default=str)
+        elif hasattr(data, "dict"):
+            payload_str = json.dumps(data.dict(), default=str)
+        elif isinstance(data, (dict, list)):
+            payload_str = json.dumps(data, default=str)
+        else:
+            payload_str = json.dumps(data, default=str)
+    except Exception as exc:
+        logger.warning(f"[Redis] Artifact serialization fallback for {artifact_name}: {exc}")
+        payload_str = json.dumps(str(data))
+    client = await get_redis_client()
+    if client:
+        try:
+            await client.set(key, payload_str, ex=ttl_seconds)
+            return True
+        except Exception:
+            pass
+    _in_memory_state[key] = data
+    return True
+
+
+async def get_artifact(generation_id: str, artifact_name: str) -> Optional[Any]:
+    """Retrieve an architectural artifact from Redis RAM."""
+    key = f"archova:{generation_id}:artifact:{artifact_name}"
+    client = await get_redis_client()
+    if client:
+        try:
+            val = await client.get(key)
+            if val:
+                return json.loads(val)
+        except Exception:
+            pass
+    return _in_memory_state.get(key)
+
+
+async def set_tier_validation(generation_id: str, tier: str, result: Dict[str, Any], ttl_seconds: int = 7200) -> bool:
+    """Store a progressive validation score and broadcast live event."""
+    key = f"archova:{generation_id}:val:{tier}"
+    payload_str = json.dumps(result)
+    client = await get_redis_client()
+    if client:
+        try:
+            await client.set(key, payload_str, ex=ttl_seconds)
+            await client.publish(f"channel:{generation_id}", json.dumps({
+                "event": "TIER_VALIDATED",
+                "tier": tier,
+                "data": result,
+            }))
+            return True
+        except Exception:
+            pass
+    _in_memory_state[key] = result
+    return True
+
+
+async def get_tier_validation(generation_id: str, tier: str) -> Optional[Dict[str, Any]]:
+    """Retrieve validation result for a specific tier from Redis RAM or memory."""
+    key = f"archova:{generation_id}:val:{tier}"
+    client = await get_redis_client()
+    if client:
+        try:
+            raw = await client.get(key)
+            if raw:
+                return json.loads(raw)
+        except Exception:
+            pass
+    return _in_memory_state.get(key)
+
+
+async def get_all_tier_validations(generation_id: str) -> Dict[str, Any]:
+    """Gather all progressive tier validation results available in Redis."""
+    tiers = ["hld", "backend", "database", "frontend", "security", "cloud"]
+    results = {}
+    client = await get_redis_client()
+    for t in tiers:
+        key = f"archova:{generation_id}:val:{t}"
+        val = None
+        if client:
+            try:
+                raw = await client.get(key)
+                if raw:
+                    val = json.loads(raw)
+            except Exception:
+                pass
+        if val is None:
+            val = _in_memory_state.get(key)
+        if val:
+            results[t] = val
+    return results
 
 
 async def close_redis():

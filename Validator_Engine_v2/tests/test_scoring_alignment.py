@@ -317,16 +317,66 @@ async def test_free_model_fallback_on_retryable_error():
         mock_resp.status_code = 500
         return mock_resp
 
-    with patch("httpx.AsyncClient.post", new=fake_post):
-        data, status = await client.call_review(
-            artifact_name="backend",
-            artifact_data={"services": []},
-            rubric={"dimensions": []},
-            user_prompt="Evaluate backend",
-        )
-        assert status == "ok"
-        assert data is not None
-        assert client.last_model_used == "meta-llama/llama-3.3-70b-instruct:free"
-        assert len(call_records) == 2
-        assert call_records[0] == "google/gemini-2.0-flash-exp:free"
-        assert call_records[1] == "meta-llama/llama-3.3-70b-instruct:free"
+    with patch.object(client, "get_api_keys", return_value=["test-key"]):
+        with patch("httpx.AsyncClient.post", new=fake_post):
+            data, status = await client.call_review(
+                artifact_name="backend",
+                artifact_data={"services": []},
+                rubric={"dimensions": []},
+                user_prompt="Evaluate backend",
+            )
+            assert status == "ok"
+            assert data is not None
+            assert client.last_model_used == "meta-llama/llama-3.3-70b-instruct:free"
+            assert len(call_records) == 2
+            assert call_records[0] == "google/gemini-2.0-flash-exp:free"
+            assert call_records[1] == "meta-llama/llama-3.3-70b-instruct:free"
+
+
+@pytest.mark.asyncio
+async def test_429_rotates_api_key_on_same_model():
+    """Verify 429 on Key #1 rotates to Key #2 for the SAME model without model fallback."""
+    client = ReviewerLLMClient(
+        model="nvidia/nemotron-3.5-lightning:free",
+        fallback_models=["cohere/north-mini-code:free"],
+        api_key="test-key-1",
+        mock_mode="0",
+    )
+    keys_used = []
+    models_used = []
+
+    async def fake_post(self, url, headers=None, json=None, **kwargs):
+        auth = headers.get("Authorization", "")
+        model = json.get("model")
+        keys_used.append(auth)
+        models_used.append(model)
+        from unittest.mock import MagicMock
+        mock_resp = MagicMock()
+        if "test-key-1" in auth:
+            mock_resp.status_code = 429
+            return mock_resp
+        else:
+            mock_resp.status_code = 200
+            mock_resp.json = lambda: {
+                "choices": [{
+                    "message": {
+                        "content": '{"dimensions": [{"id": "modularity", "score": 5, "rationale": "Perfect"}], "findings": [], "assessments": []}'
+                    }
+                }]
+            }
+            return mock_resp
+
+    with patch.object(client, "get_api_keys", return_value=["test-key-1", "test-key-2"]):
+        with patch("httpx.AsyncClient.post", new=fake_post):
+            data, status = await client.call_review(
+                artifact_name="backend",
+                artifact_data={},
+                rubric={},
+                user_prompt="Evaluate backend",
+            )
+            assert status == "ok"
+            assert data is not None
+            assert models_used == ["nvidia/nemotron-3.5-lightning:free", "nvidia/nemotron-3.5-lightning:free"]
+            assert "Bearer test-key-1" in keys_used[0]
+            assert "Bearer test-key-2" in keys_used[1]
+            assert client.last_model_used == "nvidia/nemotron-3.5-lightning:free"

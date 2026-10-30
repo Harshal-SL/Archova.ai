@@ -22,16 +22,53 @@ AUDIT PRINCIPLES:
    - Every finding MUST include an `evidence_path` locating the defect in the artifact.
    - For real-world benchmark patterns with status 'ALIGNED', 'PARTIAL', or 'JUSTIFIED_DIVERGENCE', `evidence_path` is REQUIRED.
    - For status 'NOT_APPLICABLE', `requirement_refs` (e.g. ['FR-001', 'NFR-001']) is REQUIRED justifying why the capability is not needed at this scale.
-4. JSON ONLY OUTPUT: Return ONLY valid JSON matching the requested schema. No conversational preamble or Markdown fences outside JSON.
+4. STRICT PURE JSON OUTPUT: Return ONLY valid JSON. Your response must begin immediately with the '{' character and end with '}'. Do not write any conversational text, introductory thoughts, markdown blocks, or commentary. Keep all rationales and fixes strictly under 150 characters.
+
+EXACT OUTPUT FORMAT:
+{
+  "dimensions": [
+    {"id": "dim_id", "score": 4, "evidence_path": "/path", "missing": [], "rationale": "Direct concise explanation"}
+  ],
+  "findings": []
+}
 """
+
+
+def compact_cac(cac: Any) -> Dict[str, Any]:
+    """Extract a lightweight high-level summary of the CAC to keep prompt concise."""
+    if not isinstance(cac, dict):
+        return {}
+    compacted: Dict[str, Any] = {}
+    if "services" in cac and isinstance(cac["services"], list):
+        compacted["services"] = [s.get("name") or s.get("id") for s in cac["services"] if isinstance(s, dict)][:5]
+    elif "major_services" in cac and isinstance(cac["major_services"], list):
+        compacted["services"] = [s.get("name") or s.get("id") for s in cac["major_services"] if isinstance(s, dict)][:5]
+    if "endpoints" in cac and isinstance(cac["endpoints"], list):
+        compacted["endpoints"] = [f"{e.get('method', '')} {e.get('path', '')}".strip() for e in cac["endpoints"] if isinstance(e, dict)][:5]
+    if "entities" in cac and isinstance(cac["entities"], list):
+        compacted["entities"] = [ent.get("name") for ent in cac["entities"] if isinstance(ent, dict)][:5]
+    elif "database_entities" in cac and isinstance(cac["database_entities"], list):
+        compacted["entities"] = [ent.get("name") for ent in cac["database_entities"] if isinstance(ent, dict)][:5]
+    if not compacted:
+        for k in list(cac.keys())[:3]:
+            val = cac[k]
+            if isinstance(val, list):
+                compacted[k] = val[:3]
+            elif isinstance(val, str):
+                compacted[k] = val[:100] + ("..." if len(val) > 100 else "")
+            elif isinstance(val, dict):
+                compacted[k] = list(val.keys())[:3]
+            else:
+                compacted[k] = val
+    return compacted
 
 
 def truncate_artifact_if_needed(
     artifact_name: str,
     artifact_data: Dict[str, Any],
-    max_chars: int = 48000,
+    max_chars: int = 4500,
 ) -> Tuple[Dict[str, Any], bool]:
-    """If artifact exceeds ~12k tokens (approx 48k chars), select relevant sections without breaking JSON structure."""
+    """If artifact exceeds budget (~1.2k tokens), select priority sections without breaking JSON structure."""
     serialized = json.dumps(artifact_data, ensure_ascii=False)
     if len(serialized) <= max_chars:
         return artifact_data, False
@@ -50,11 +87,28 @@ def truncate_artifact_if_needed(
     for k in priority_keys:
         if k in artifact_data:
             val = artifact_data[k]
-            # If a list is very long, cap to top 15 items
-            if isinstance(val, list) and len(val) > 15:
-                truncated_dict[k] = val[:15]
+            # Cap list items to top 6 to fit LLM reasoning budget
+            if isinstance(val, list):
+                truncated_dict[k] = val[:6]
+            elif isinstance(val, str) and len(val) > 350:
+                truncated_dict[k] = val[:350] + "... [truncated]"
             else:
                 truncated_dict[k] = val
+
+    # Double check if still above max_chars
+    trunc_serialized = json.dumps(truncated_dict, ensure_ascii=False)
+    if len(trunc_serialized) > max_chars:
+        final_dict: Dict[str, Any] = {}
+        for k, v in truncated_dict.items():
+            if isinstance(v, list):
+                final_dict[k] = v[:4]
+            elif isinstance(v, str) and len(v) > 200:
+                final_dict[k] = v[:200] + "..."
+            elif isinstance(v, dict):
+                final_dict[k] = {sub_k: v[sub_k] for sub_k in list(v.keys())[:3]}
+            else:
+                final_dict[k] = v
+        return final_dict, True
 
     return truncated_dict, True
 
@@ -82,20 +136,32 @@ def build_review_user_prompt(
             f"  Description: {d.get('description', '')}"
         )
 
-    # Optional Real-World Reference Patterns section
+    # Compact requirements summary: keep ID, type, and trimmed text
+    compact_reqs = []
+    for r in (requirements_summary or [])[:5]:
+        if isinstance(r, dict):
+            text_val = r.get("text") or r.get("description") or ""
+            compact_reqs.append({
+                "id": r.get("id"),
+                "type": r.get("type", "functional"),
+                "text": text_val[:100] + ("..." if len(text_val) > 100 else "")
+            })
+
+    # Compact CAC summary
+    compact_cac_data = compact_cac(cac_summary) if cac_summary else {}
+
+    # Optional Real-World Reference Patterns section (cap to top 1 pattern to minimize prompt/output latency)
     patterns_section = ""
     patterns_schema = ""
     if patterns:
         p_list = []
-        for p in patterns[:12]:
+        for p in patterns[:1]:
             p_dict = p.model_dump() if hasattr(p, "model_dump") else (p if isinstance(p, dict) else {})
             p_list.append({
                 "id": p_dict.get("id"),
                 "name": p_dict.get("name"),
-                "description": p_dict.get("description"),
+                "description": (p_dict.get("description") or "")[:120],
                 "category": p_dict.get("category"),
-                "priority": p_dict.get("priority", 1),
-                "applicability": p_dict.get("applicability", {}),
             })
         patterns_section = f"\n=== 6. APPLICABLE REAL-WORLD REFERENCE PATTERNS (Evaluate Alignment) ===\n{json.dumps(p_list, indent=2)}\n"
         patterns_schema = """,
@@ -112,10 +178,10 @@ def build_review_user_prompt(
     prompt = f"""EVALUATION TARGET: {artifact_name.upper()} ARTIFACT
 
 === 1. REQUIREMENTS CONTEXT (ARSRS) ===
-{json.dumps(requirements_summary, indent=2)}
+{json.dumps(compact_reqs, indent=2)}
 
 === 2. CANONICAL ARCHITECTURE CONTRACT (CAC) SUMMARY ===
-{json.dumps(cac_summary, indent=2) if cac_summary else "N/A (Independent artifact evaluation)"}
+{json.dumps(compact_cac_data, indent=2) if compact_cac_data else "N/A (Independent artifact evaluation)"}
 
 === 3. APPLICABLE REFERENCE CHECKLIST EXCERPTS ===
 {reference_excerpts or "No specialized reference checklists matched."}
@@ -126,7 +192,7 @@ def build_review_user_prompt(
 === 5. RUBRIC DIMENSIONS TO EVALUATE (Score 0-5 per dimension) ===
 {chr(10).join(dimensions_spec)}
 {patterns_section}
-REQUIRED OUTPUT FORMAT (JSON ONLY):
+OUTPUT INSTRUCTION: Output RAW JSON ONLY matching this schema (no preamble, no commentary, start directly with opening brace):
 {{
   "dimensions": [
     {{
