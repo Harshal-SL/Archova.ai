@@ -177,7 +177,7 @@ export default function ComparisonView() {
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto scroll-smooth bg-white text-black dark:bg-black dark:text-white transition-colors">
-      {/* ── Top Header Bar ── */}
+      {/* â”€â”€ Top Header Bar â”€â”€ */}
       <header className="sticky top-0 z-30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-neutral-200 bg-white/95 px-6 py-4 backdrop-blur-md dark:border-neutral-800 dark:bg-black/95">
         <div className="flex items-center gap-3.5">
           <button
@@ -193,7 +193,7 @@ export default function ComparisonView() {
                 <Scale className="h-3 w-3" />
                 BENCHMARK AUDIT
               </span>
-              <span className="text-neutral-300 dark:text-neutral-700">•</span>
+              <span className="text-neutral-300 dark:text-neutral-700">â€¢</span>
               <span className="text-xs text-neutral-500 font-medium">
                 Archova Autonomous Pipeline vs. Direct LLMs
               </span>
@@ -221,9 +221,9 @@ export default function ComparisonView() {
         </div>
       </header>
 
-      {/* ── Page Content Container ── */}
+      {/* â”€â”€ Page Content Container â”€â”€ */}
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 space-y-8 max-w-7xl w-full mx-auto">
-        {/* ── Executive Winner Hero Banner ── */}
+        {/* â”€â”€ Executive Winner Hero Banner â”€â”€ */}
         <motion.section
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -274,7 +274,7 @@ export default function ComparisonView() {
           </div>
         </motion.section>
 
-        {/* ── Head-to-Head Model Scorecards ── */}
+        {/* â”€â”€ Head-to-Head Model Scorecards â”€â”€ */}
         <section className="space-y-3.5">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -352,9 +352,14 @@ export default function ComparisonView() {
                 .filter((m) => m.model_id !== "archova")
                 .map((m, idx) => {
                   const valSummary = m.validation?.validation?.summary || {};
-                  const score = Math.round(
-                    (valSummary.overall_score || valSummary.composite_score || 0.74) * 100
-                  );
+                  const rawOverall =
+                    m.validation?.final_scores?.overall ??
+                    (typeof valSummary.overall_score === "number"
+                      ? (valSummary.overall_score > 1 ? valSummary.overall_score : valSummary.overall_score * 100)
+                      : typeof valSummary.composite_score === "number"
+                      ? (valSummary.composite_score > 1 ? valSummary.composite_score : valSummary.composite_score * 100)
+                      : 68);
+                  const score = Math.round(Number(rawOverall));
                   const verdict = valSummary.verdict || "CONDITIONAL_APPROVAL";
                   const totalFindings = valSummary.total_findings_count ?? 5;
                   const highFindings = valSummary.high_findings_count ?? 2;
@@ -554,7 +559,7 @@ export default function ComparisonView() {
           </div>
         </section>
 
-        {/* ── Sub-Navigation Navigation Tabs (Minimal & Clean) ── */}
+        {/* â”€â”€ Sub-Navigation Navigation Tabs (Minimal & Clean) â”€â”€ */}
         <section className="space-y-4">
           <div className="flex items-center gap-1.5 border-b border-neutral-200 dark:border-neutral-800 overflow-x-auto pb-1 scrollbar-none">
             {[
@@ -583,7 +588,7 @@ export default function ComparisonView() {
             })}
           </div>
 
-          {/* ── Tab Content: Minimal Smooth Transition ── */}
+          {/* â”€â”€ Tab Content: Minimal Smooth Transition â”€â”€ */}
           <AnimatePresence mode="wait">
             {/* Tab 1: Multi-Dimensional Metrics Matrix */}
             {activeTab === "overview" && (
@@ -597,7 +602,7 @@ export default function ComparisonView() {
               >
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                    Multi-Dimensional Architecture Metrics (0 – 100%)
+                    Multi-Dimensional Architecture Metrics (0 â€“ 100%)
                   </h3>
                   <div className="flex items-center gap-4 text-xs">
                     <span className="flex items-center gap-1.5 font-bold text-[#005dff]">
