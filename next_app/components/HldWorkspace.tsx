@@ -51,6 +51,7 @@ import {
 import clsx from "clsx";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import Select, { type TSelectData } from "@/components/ui/select";
+import DownloadDesignDropdown from "./DownloadDesignDropdown";
 
 export default function HldWorkspace() {
   const {
@@ -113,7 +114,7 @@ export default function HldWorkspace() {
 
   return (
     <div className="relative flex h-full w-full flex-col overflow-hidden bg-transparent text-black dark:text-white transition-colors">
-      {/* ── Top Workspace Navigation Header ── */}
+      {/* â”€â”€ Top Workspace Navigation Header â”€â”€ */}
       <div className="relative z-40 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-200/80 bg-white/80 px-2 sm:px-4 py-1.5 sm:py-2 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-950/80 shrink-0">
         <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
           {/* Back to Chat button */}
@@ -186,7 +187,7 @@ export default function HldWorkspace() {
           )}
         </div>
 
-        {/* ── Right Section: Version Dropdown, Changelog, and HLD/LLD Toggle Switch ── */}
+        {/* â”€â”€ Right Section: Version Dropdown, Changelog, and HLD/LLD Toggle Switch â”€â”€ */}
         <div className="relative z-50 flex items-center gap-1.5 sm:gap-2.5 text-xs shrink-0 flex-wrap">
           {/* Version Switcher Dropdown */}
           <div className="relative z-50">
@@ -200,7 +201,7 @@ export default function HldWorkspace() {
                 label: `${ver.version_tag}${idx === 0 || ver.is_latest ? " (Latest)" : ""}`,
                 value: ver.version_tag,
                 description: ver.is_latest ? "Active production architecture" : "Historical iteration snapshot",
-                icon: "🏷️",
+                icon: "ðŸ·ï¸",
               }))}
             />
           </div>
@@ -223,7 +224,13 @@ export default function HldWorkspace() {
             </ShimmerButton>
           )}
 
-          {/* ── HLD / LLD Toggle Switch (In place of Approved button on right corner) ── */}
+          {/* Export Design (PNG / JPEG) */}
+          <DownloadDesignDropdown
+            containerSelector=".react-flow"
+            designTitle={hldWorkspaceTab === "lld" ? "lld-architecture" : "hld-architecture"}
+          />
+
+          {/* HLD / LLD Toggle Switch */}
           <div
             className="relative inline-flex items-center rounded-full border border-neutral-200/80 bg-white/70 p-0.5 dark:border-[#262626] dark:bg-[#0D0D0F] shadow-2xs backdrop-blur-md select-none"
             role="group"
@@ -286,7 +293,7 @@ export default function HldWorkspace() {
         </div>
       </div>
 
-      {/* ── Active External Model Alert Banner ── */}
+      {/* â”€â”€ Active External Model Alert Banner â”€â”€ */}
       {activeModelId !== "archova" && (
         <div className="flex items-center justify-between bg-amber-500/10 px-4 py-1.5 text-xs text-amber-800 dark:text-amber-300 border-b border-amber-500/25 shrink-0 z-10">
           <div className="flex items-center gap-2">
@@ -326,7 +333,7 @@ export default function HldWorkspace() {
         </div>
       </div>
 
-      {/* ── Version Diff Changelog Drawer ── */}
+      {/* â”€â”€ Version Diff Changelog Drawer â”€â”€ */}
       <VersionDiffDrawer
         open={showDiffDrawer}
         onClose={() => setShowDiffDrawer(false)}
@@ -334,7 +341,7 @@ export default function HldWorkspace() {
         diff={activeDiff}
       />
 
-      {/* ── Tubelight Chat Bar & Floating Moveable/Resizable Chat Window ── */}
+      {/* â”€â”€ Tubelight Chat Bar & Floating Moveable/Resizable Chat Window â”€â”€ */}
       <TubelightChatBar />
     </div>
   );

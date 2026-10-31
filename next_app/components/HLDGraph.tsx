@@ -39,6 +39,7 @@ import { architectureEdgeTypes } from "./flow/AnimatedFlowEdge";
 import { getEdgeTheme, getComponentTheme } from "@/lib/flow-colors";
 import { parseHldToReactFlow, layoutHldLeftToRight, layoutHldTopDown } from "@/lib/graph-parser";
 import ModelDesignControls from "./ModelDesignControls";
+import DownloadDesignDropdown from "./DownloadDesignDropdown";
 
 export function getComponentLldType(
   node: Node | null | undefined
@@ -147,6 +148,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
   const isArchova = !activeModelId || activeModelId === "archova";
   const isDark = theme === "dark";
   const rfInstanceRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Defensive sanitizer: guarantees React Flow nodes always have valid position: { x, y }
   const sanitizeNodes = useCallback((nodeList: Node[]): Node[] => {
@@ -187,11 +189,11 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
 
   const divisionSelectData: TSelectData[] = useMemo(
     () => [
-      { id: "all", label: "All Divisions (16)", value: "all", description: "Show complete multi-tier system topology", icon: "🌐" },
-      { id: "frontend", label: "Frontend (4)", value: "frontend", description: "Client interfaces, mobile, and API gateway", icon: "💻" },
-      { id: "backend", label: "Backend (7)", value: "backend", description: "Microservices, async workers, and message buses", icon: "⚙️" },
-      { id: "database", label: "Database (2)", value: "database", description: "Primary datastores, replicas, and caching layers", icon: "🗄️" },
-      { id: "deployment", label: "Deployment (3)", value: "deployment", description: "Cloud infrastructure, CDN, and telemetry", icon: "🚀" },
+      { id: "all", label: "All Divisions (16)", value: "all", description: "Show complete multi-tier system topology", icon: "ðŸŒ" },
+      { id: "frontend", label: "Frontend (4)", value: "frontend", description: "Client interfaces, mobile, and API gateway", icon: "ðŸ’»" },
+      { id: "backend", label: "Backend (7)", value: "backend", description: "Microservices, async workers, and message buses", icon: "âš™ï¸" },
+      { id: "database", label: "Database (2)", value: "database", description: "Primary datastores, replicas, and caching layers", icon: "ðŸ—„ï¸" },
+      { id: "deployment", label: "Deployment (3)", value: "deployment", description: "Cloud infrastructure, CDN, and telemetry", icon: "ðŸš€" },
     ],
     []
   );
@@ -410,9 +412,12 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
   }, [edges, nodes, connectedEdgesSet, hoveredNodeId, selectedLayer, animationsEnabled, isDark]);
 
   return (
-    <div className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}>
-      {/* ── Top Floating Control Panel Monochrome ── */}
-      {/* ── Top-Right Floating Controls (Positioned Below Home Button) ── */}
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}
+    >
+      {/* â”€â”€ Top Floating Control Panel Monochrome â”€â”€ */}
+      {/* â”€â”€ Top-Right Floating Controls (Positioned Below Home Button) â”€â”€ */}
       <div className="absolute top-3.5 right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
         <div className="flex items-center gap-2">
           {/* Architecture Division Dropdown */}
@@ -459,6 +464,13 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
             <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
           </button>
 
+          {/* Download Design Button */}
+          <DownloadDesignDropdown
+            getContainerElement={() => containerRef.current}
+            nodes={nodes}
+            designTitle="high-level-design-hld"
+          />
+
           {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
@@ -469,13 +481,13 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
           </button>
         </div>
 
-        {/* ── Right-Top Controls Directly Below Flow: Active Button (Requirement 2 & 3) ── */}
+        {/* â”€â”€ Right-Top Controls Directly Below Flow: Active Button (Requirement 2 & 3) â”€â”€ */}
         <div className="flex items-center gap-2 pointer-events-auto">
           <ModelDesignControls />
         </div>
       </div>
 
-      {/* ── React Flow Interactive Canvas or Empty State ── */}
+      {/* â”€â”€ React Flow Interactive Canvas or Empty State â”€â”€ */}
       {nodes.length === 0 ? (
         <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-white text-black dark:bg-black dark:text-white">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100 text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
@@ -517,7 +529,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
         </ReactFlow>
       )}
 
-      {/* ── Interactive Component Inspector Drawer (Slide-over) ── */}
+      {/* â”€â”€ Interactive Component Inspector Drawer (Slide-over) â”€â”€ */}
       {inspectorOpen && selectedNodeData && (
         <div className="absolute top-0 right-0 z-30 flex h-full w-96 flex-col border-l border-neutral-300 bg-white/98 p-6 backdrop-blur-xl shadow-2xl animate-in slide-in-from-right duration-200 dark:border-neutral-800 dark:bg-black/98">
           {/* Drawer Header */}
@@ -613,7 +625,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
                         style={{ borderLeftColor: connColor, borderLeftWidth: 3 }}
                       >
                         <span className="font-bold shrink-0 text-[10px]" style={{ color: connColor }}>
-                          {isSource ? "Outflow ➔" : "Inflow ⬅"}
+                          {isSource ? "Outflow âž”" : "Inflow â¬…"}
                         </span>
                         <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate mx-2">
                           {String(otherNode?.data?.label || otherNodeId)}
@@ -639,7 +651,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
 
           {/* Drawer Footer Actions */}
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
-            {/* Action 1: Why This Tech? (In-detail Rationale & Alternatives) — ONLY visible for AI_engine */}
+            {/* Action 1: Why This Tech? (In-detail Rationale & Alternatives) â€” ONLY visible for AI_engine */}
             {isArchova ? (
               <button
                 onClick={() => {
@@ -678,7 +690,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
               onClick={() => {
                 const label = String(selectedNodeData.data?.label || selectedNodeData.id);
                 const desc = String(selectedNodeData.data?.description || `High-Level Design component: ${label}`);
-                openExplain(selectedNodeData.id, `${label} — Architecture Specification`, desc);
+                openExplain(selectedNodeData.id, `${label} â€” Architecture Specification`, desc);
               }}
               className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white/70 backdrop-blur-md py-2 text-xs font-semibold text-neutral-800 transition-all hover:border-black hover:text-black dark:border-[#262626] dark:bg-[#0D0D0F] dark:text-neutral-300 dark:hover:bg-[#161619] dark:hover:border-white/20 dark:hover:text-white cursor-pointer shadow-2xs"
             >

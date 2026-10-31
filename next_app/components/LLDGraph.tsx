@@ -38,6 +38,7 @@ import { architectureNodeTypes } from "./flow/ArchitectureNodes";
 import { architectureEdgeTypes } from "./flow/AnimatedFlowEdge";
 import { getEdgeTheme, getComponentTheme } from "@/lib/flow-colors";
 import ModelDesignControls from "./ModelDesignControls";
+import DownloadDesignDropdown from "./DownloadDesignDropdown";
 
 interface Props {
   customLldType?: string;
@@ -60,6 +61,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
   const isArchova = !activeModelId || activeModelId === "archova";
   const isDark = theme === "dark";
   const rfInstanceRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const type = customLldType || activeLldType || "backend";
   const rawData = customLldData || lldData[activeLldType as keyof typeof lldData] || null;
@@ -384,8 +386,11 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
   const selectedNodeGroup = selectedNodeData ? getNodeGroup(selectedNodeData) : undefined;
 
   return (
-    <div className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}>
-      {/* ── Top-Right Floating Toolbar ── */}
+    <div
+      ref={containerRef}
+      className={`relative h-full w-full text-slate-900 dark:text-white ${isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-black" : "bg-transparent"}`}
+    >
+      {/* â”€â”€ Top-Right Floating Toolbar â”€â”€ */}
       <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2 pointer-events-none">
         <div className="flex items-center gap-2">
 
@@ -403,6 +408,13 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
             <span>{animationsEnabled ? "Flow: Active" : "Flow: Paused"}</span>
           </button>
 
+          {/* Download Design Button */}
+          <DownloadDesignDropdown
+            getContainerElement={() => containerRef.current}
+            nodes={nodes}
+            designTitle={`${type}-lld-architecture`}
+          />
+
           {/* Fullscreen Toggle */}
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
@@ -413,13 +425,13 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           </button>
         </div>
 
-        {/* ── Right-Top Controls Directly Below Flow: Active Button (Requirement 2 & 3) ── */}
+        {/* â”€â”€ Right-Top Controls Directly Below Flow: Active Button (Requirement 2 & 3) â”€â”€ */}
         <div className="flex items-center gap-2 pointer-events-auto">
           <ModelDesignControls />
         </div>
       </div>
 
-      {/* ── React Flow Canvas or Empty State ── */}
+      {/* â”€â”€ React Flow Canvas or Empty State â”€â”€ */}
       {nodes.length === 0 ? (
         <div className="flex h-full w-full flex-col items-center justify-center p-8 text-center bg-transparent text-black dark:text-white">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl border border-neutral-300 bg-neutral-100 text-black dark:border-neutral-700 dark:bg-neutral-900 dark:text-white">
@@ -464,7 +476,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
         </ReactFlow>
       )}
 
-      {/* ── Interactive Component Inspector Drawer (Slide-over) ── */}
+      {/* â”€â”€ Interactive Component Inspector Drawer (Slide-over) â”€â”€ */}
       {inspectorOpen && selectedNodeData && (
         <div className="absolute top-0 right-0 z-30 flex h-full w-96 flex-col border-l border-neutral-300 bg-white/98 p-6 backdrop-blur-xl shadow-2xl animate-in slide-in-from-right duration-200 dark:border-neutral-800 dark:bg-black/98">
           {/* Drawer Header */}
@@ -576,7 +588,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
                         style={{ borderLeftColor: connColor, borderLeftWidth: 3 }}
                       >
                         <span className="font-bold shrink-0 text-[10px]" style={{ color: connColor }}>
-                          {isSource ? "Outflow ➔" : "Inflow ⬅"}
+                          {isSource ? "Outflow âž”" : "Inflow â¬…"}
                         </span>
                         <span className="font-medium text-neutral-800 dark:text-neutral-200 truncate mx-2">
                           {String(otherNode?.data?.label || otherNodeId)}
@@ -612,7 +624,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
 
           {/* Drawer Footer Actions */}
           <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
-            {/* Action 1: Why This Tech? (In-detail Rationale & Alternatives) — ONLY visible for AI_engine */}
+            {/* Action 1: Why This Tech? (In-detail Rationale & Alternatives) â€” ONLY visible for AI_engine */}
             {isArchova ? (
               <button
                 onClick={() => {
@@ -646,7 +658,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
                 );
                 openExplain(
                   selectedNodeData.id,
-                  `${label} — ${type.toUpperCase()} Component Specification`,
+                  `${label} â€” ${type.toUpperCase()} Component Specification`,
                   desc
                 );
               }}
