@@ -118,8 +118,9 @@ export default function TerminalConsole({
   }, [logs]);
 
   const displayedLogs = useMemo(() => {
+    let result: LogEntry[] = logs;
     if (activeFilter === "validator") {
-      return logs.filter((l) => {
+      result = logs.filter((l) => {
         const s = (l?.stage || "").toUpperCase();
         const m = (l?.message || "").toLowerCase();
         const p = (l?.process || "").toLowerCase();
@@ -133,11 +134,11 @@ export default function TerminalConsole({
           p.includes("validat")
         );
       });
+    } else if (activeFilter === "errors") {
+      result = logs.filter((l) => l?.level === "ERROR" || l?.level === "WARNING");
     }
-    if (activeFilter === "errors") {
-      return logs.filter((l) => l?.level === "ERROR" || l?.level === "WARNING");
-    }
-    return logs;
+    // Keep at most 300 visible logs in DOM to preserve 60fps scrolling
+    return result.length > 300 ? result.slice(result.length - 300) : result;
   }, [logs, activeFilter]);
 
   const getStageBadgeClass = (stage: string) => {
@@ -281,7 +282,7 @@ export default function TerminalConsole({
           ) : (
             displayedLogs.map((entry, idx) => (
               <div
-                key={idx}
+                key={`${entry.timestamp}-${idx}`}
                 className="flex items-start gap-2 font-mono text-[10.5px] leading-relaxed break-words hover:bg-white/5 rounded px-1 -mx-1"
               >
                 <span className="shrink-0 text-neutral-500 select-none">[{entry.timestamp}]</span>

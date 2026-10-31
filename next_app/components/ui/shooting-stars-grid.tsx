@@ -274,8 +274,6 @@ export function ShootingStarsGrid({
                 animation: shouldAnimate
                   ? `star-twinkle ${star.duration}s ease-in-out ${star.delay}s infinite alternate`
                   : "none",
-                willChange: "opacity, transform",
-                transform: "translateZ(0)",
               }}
             />
           ))}

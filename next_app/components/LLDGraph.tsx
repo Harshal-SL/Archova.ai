@@ -247,15 +247,23 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
     [setSelectedNode]
   );
 
-  // Hover highlighting
+  // Hover highlighting with debounce to prevent frame stutter
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const onNodeMouseEnter: NodeMouseHandler = useCallback((_event, node) => {
     if (node.type !== "layerGroup") {
-      setHoveredNodeId(node.id);
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredNodeId(node.id);
+      }, 35);
     }
   }, []);
 
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => {
-    setHoveredNodeId(null);
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredNodeId(null);
+    }, 35);
   }, []);
 
   const connectedEdgesSet = useMemo(() => {
@@ -463,7 +471,7 @@ export default function LLDGraph({ customLldType, customLldData }: Props) {
           fitViewOptions={{ padding: 0.15 }}
           minZoom={0.2}
           maxZoom={2.5}
-          onlyRenderVisibleElements={true}
+          onlyRenderVisibleElements={false}
           elevateNodesOnSelect={false}
           snapToGrid={false}
           panOnDrag={true}

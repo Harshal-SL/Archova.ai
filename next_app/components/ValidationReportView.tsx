@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -468,114 +468,136 @@ export default function ValidationReportView() {
     }
   }, [selectedModelId]);
 
-  // Periodic polling for live Redis validation status
+  const lastReportSigRef = useRef<string>("");
+
+  // Periodic polling for live Redis validation status (auto-stops when validation finishes)
   useEffect(() => {
     if (!generationId) return;
 
     let isMounted = true;
+    let interval: NodeJS.Timeout | null = null;
+
     const fetchLiveValidation = async () => {
       try {
         const valData = await aiEngineApi.getValidationReport(generationId);
         if (!isMounted || !valData) return;
 
-        if (valData) {
-          const currentRep = useAppStore.getState().validationReport;
-          const mergedResults = { ...(currentRep?.iterations?.[0]?.results || {}) };
+        // Fast signature check to avoid redundant setValidationReport calls and re-render thrashing
+        const sig = `${valData.status || ""}_${valData.score || ""}_${JSON.stringify(valData.final_scores || {})}_${Object.keys(valData.tier_validations || valData.results || {}).length}`;
+        if (sig === lastReportSigRef.current && lastReportSigRef.current !== "") {
+          return;
+        }
 
-          // Unpack incoming results from all supported schemas (tier_validations, iterations[0].results, or results)
-          const incomingResults =
-            valData.tier_validations ||
-            valData.iterations?.[0]?.results ||
-            valData.results ||
-            {};
+        const currentRep = useAppStore.getState().validationReport;
+        const mergedResults = { ...(currentRep?.iterations?.[0]?.results || {}) };
 
-          if (incomingResults && typeof incomingResults === "object") {
-            Object.entries(incomingResults).forEach(([tKey, tData]: [string, any]) => {
-              if (!tData || typeof tData !== "object") return;
-              const scoreNum = Number(tData.score || tData.final_score || valData.final_scores?.[tKey] || 86);
+        // Unpack incoming results from all supported schemas (tier_validations, iterations[0].results, or results)
+        const incomingResults =
+          valData.tier_validations ||
+          valData.iterations?.[0]?.results ||
+          valData.results ||
+          {};
+
+        if (incomingResults && typeof incomingResults === "object") {
+          Object.entries(incomingResults).forEach(([tKey, tData]: [string, any]) => {
+            if (!tData || typeof tData !== "object") return;
+            const scoreNum = Number(tData.score || tData.final_score || valData.final_scores?.[tKey] || 86);
+            mergedResults[tKey] = {
+              artifact: tKey,
+              score: scoreNum,
+              c_score: tData.c_score ?? 95,
+              r_score: tData.r_score ?? scoreNum,
+              w_score: tData.w_score ?? 84,
+              penalty_d: tData.penalty_d ?? 0,
+              verdict: tData.verdict || "ACCEPTED",
+              dimensions: (tData.dimensions && tData.dimensions.length > 0) ? tData.dimensions : [
+                { id: "modularity", label: "Modularity & Boundaries", score: 4.5, weight: 0.25, missing: [], rationale: "Strong bounded contexts" },
+                { id: "scalability", label: "Elastic Scalability", score: 4.4, weight: 0.25, missing: [], rationale: "Horizontal scale confirmed" },
+                { id: "resilience", label: "Fault Isolation", score: 4.3, weight: 0.25, missing: [], rationale: "Fault domains isolated" },
+                { id: "security", label: "Security & Zero-Trust", score: 4.5, weight: 0.25, missing: [], rationale: "Strict mTLS and edge policies" },
+              ],
+              findings: tData.findings || [],
+              best_dimension: tData.best_dimension || "modularity",
+              weakest_dimension: tData.weakest_dimension || "resilience",
+              reviewer_status: tData.reviewer_status || "ok",
+              real_world: tData.real_world || null,
+            };
+          });
+        }
+
+        // Ensure any tier with a recorded final_score is represented in the artifact list
+        if (valData.final_scores && typeof valData.final_scores === "object") {
+          const allTiers = ["hld", "backend", "frontend", "database", "security", "cloud"];
+          allTiers.forEach((tKey) => {
+            const scoreVal = valData.final_scores[tKey];
+            if (typeof scoreVal === "number" && !mergedResults[tKey]) {
               mergedResults[tKey] = {
                 artifact: tKey,
-                score: scoreNum,
-                c_score: tData.c_score ?? 95,
-                r_score: tData.r_score ?? scoreNum,
-                w_score: tData.w_score ?? 84,
-                penalty_d: tData.penalty_d ?? 0,
-                verdict: tData.verdict || "ACCEPTED",
-                dimensions: (tData.dimensions && tData.dimensions.length > 0) ? tData.dimensions : [
+                score: Math.round(scoreVal),
+                c_score: 95,
+                r_score: Math.round(scoreVal),
+                w_score: 84,
+                penalty_d: 0,
+                verdict: "ACCEPTED",
+                dimensions: [
                   { id: "modularity", label: "Modularity & Boundaries", score: 4.5, weight: 0.25, missing: [], rationale: "Strong bounded contexts" },
                   { id: "scalability", label: "Elastic Scalability", score: 4.4, weight: 0.25, missing: [], rationale: "Horizontal scale confirmed" },
                   { id: "resilience", label: "Fault Isolation", score: 4.3, weight: 0.25, missing: [], rationale: "Fault domains isolated" },
                   { id: "security", label: "Security & Zero-Trust", score: 4.5, weight: 0.25, missing: [], rationale: "Strict mTLS and edge policies" },
                 ],
-                findings: tData.findings || [],
-                best_dimension: tData.best_dimension || "modularity",
-                weakest_dimension: tData.weakest_dimension || "resilience",
-                reviewer_status: tData.reviewer_status || "ok",
-                real_world: tData.real_world || null,
+                findings: [],
+                best_dimension: "modularity",
+                weakest_dimension: "resilience",
+                reviewer_status: "ok",
+                real_world: null,
               };
-            });
-          }
+            }
+          });
+        }
 
-          // Ensure any tier with a recorded final_score is represented in the artifact list
-          if (valData.final_scores && typeof valData.final_scores === "object") {
-            const allTiers = ["hld", "backend", "frontend", "database", "security", "cloud"];
-            allTiers.forEach((tKey) => {
-              const scoreVal = valData.final_scores[tKey];
-              if (typeof scoreVal === "number" && !mergedResults[tKey]) {
-                mergedResults[tKey] = {
-                  artifact: tKey,
-                  score: Math.round(scoreVal),
-                  c_score: 95,
-                  r_score: Math.round(scoreVal),
-                  w_score: 84,
-                  penalty_d: 0,
-                  verdict: "ACCEPTED",
-                  dimensions: [
-                    { id: "modularity", label: "Modularity & Boundaries", score: 4.5, weight: 0.25, missing: [], rationale: "Strong bounded contexts" },
-                    { id: "scalability", label: "Elastic Scalability", score: 4.4, weight: 0.25, missing: [], rationale: "Horizontal scale confirmed" },
-                    { id: "resilience", label: "Fault Isolation", score: 4.3, weight: 0.25, missing: [], rationale: "Fault domains isolated" },
-                    { id: "security", label: "Security & Zero-Trust", score: 4.5, weight: 0.25, missing: [], rationale: "Strict mTLS and edge policies" },
-                  ],
-                  findings: [],
-                  best_dimension: "modularity",
-                  weakest_dimension: "resilience",
-                  reviewer_status: "ok",
-                  real_world: null,
-                };
-              }
-            });
-          }
-
-          const overallScore = valData.final_scores?.overall ?? valData.score ?? 86.0;
-          const mergedReport: Report = {
-            generation_id: generationId,
-            created_at: new Date().toISOString(),
-            overall_c: valData.final_scores?.c ?? 95,
-            overall_r: valData.final_scores?.r ?? overallScore,
-            overall_w: valData.final_scores?.w ?? 84,
-            overall_d: valData.final_scores?.d ?? 0,
-            final_status: "ACCEPTED",
-            final_scores: {
-              overall: overallScore,
-              c: valData.final_scores?.c ?? 95,
-              r: valData.final_scores?.r ?? overallScore,
-              w: valData.final_scores?.w ?? 84,
-              d: valData.final_scores?.d ?? 0,
-              ...(valData.final_scores || {}),
+        const overallScore = valData.final_scores?.overall ?? valData.score ?? 86.0;
+        const mergedReport: Report = {
+          generation_id: generationId,
+          created_at: new Date().toISOString(),
+          overall_c: valData.final_scores?.c ?? 95,
+          overall_r: valData.final_scores?.r ?? overallScore,
+          overall_w: valData.final_scores?.w ?? 84,
+          overall_d: valData.final_scores?.d ?? 0,
+          final_status: "ACCEPTED",
+          final_scores: {
+            overall: overallScore,
+            c: valData.final_scores?.c ?? 95,
+            r: valData.final_scores?.r ?? overallScore,
+            w: valData.final_scores?.w ?? 84,
+            d: valData.final_scores?.d ?? 0,
+            ...(valData.final_scores || {}),
+          },
+          iterations: [
+            {
+              n: 1, started_at: new Date().toISOString(),
+              results: mergedResults,
+              corrections: [],
             },
-            iterations: [
-              {
-                n: 1, started_at: new Date().toISOString(),
-                results: mergedResults,
-                corrections: [],
-              },
-            ],
-            references_used: [],
-            reviewer_mode: "live",
-            model_used: "nvidia/nemotron-3.5-lightning:free",
-            config_snapshot: {},
-          };
-          setValidationReport(mergedReport);
+          ],
+          references_used: [],
+          reviewer_mode: "live",
+          model_used: "nvidia/nemotron-3.5-lightning:free",
+          config_snapshot: {},
+        };
+
+        lastReportSigRef.current = sig;
+        setValidationReport(mergedReport);
+
+        // If validation is complete or all 6 artifacts scored, stop polling
+        const isFinished =
+          valData.is_fully_validated ||
+          valData.status === "completed" ||
+          valData.status === "finished" ||
+          (valData.final_scores?.overall && Object.keys(mergedResults).length >= 6);
+
+        if (isFinished && interval) {
+          clearInterval(interval);
+          interval = null;
         }
       } catch {
         // Background polling silent catch
@@ -583,10 +605,10 @@ export default function ValidationReportView() {
     };
 
     fetchLiveValidation();
-    const interval = setInterval(fetchLiveValidation, 2500);
+    interval = setInterval(fetchLiveValidation, 3500);
     return () => {
       isMounted = false;
-      clearInterval(interval);
+      if (interval) clearInterval(interval);
     };
   }, [generationId, setValidationReport]);
 

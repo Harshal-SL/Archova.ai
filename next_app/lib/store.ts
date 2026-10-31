@@ -2042,12 +2042,18 @@ export const useAppStore = create<AppState>((set, get) => ({
   setDebugConsoleOpen: (open) => set({ debugConsoleOpen: open }),
   addLogEntry: (entry) => {
     set((s) => {
-      const exists = s.logs.some(
+      // Check last 25 logs for quick duplicate avoidance without O(N) scan
+      const recentLogs = s.logs.length > 25 ? s.logs.slice(-25) : s.logs;
+      const exists = recentLogs.some(
         (l) => l.timestamp === entry.timestamp && l.message === entry.message
       );
       if (exists) return s;
 
-      const newLogs = [...s.logs, entry];
+      // Bound logs buffer to 400 entries to prevent memory leaks and DOM lag
+      const MAX_LOGS = 400;
+      const newLogs = s.logs.length >= MAX_LOGS
+        ? [...s.logs.slice(s.logs.length - MAX_LOGS + 1), entry]
+        : [...s.logs, entry];
 
       const newProcess =
         entry.process || entry.stage

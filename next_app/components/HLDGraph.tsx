@@ -262,17 +262,24 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
     [setSelectedNode, handleJumpToLld]
   );
 
-  // Hover highlighting for interactive connection tracking
+  // Hover highlighting for interactive connection tracking with debounce to prevent frame drops
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const onNodeMouseEnter: NodeMouseHandler = useCallback((_event, node) => {
     if (node.type !== "layerGroup") {
-      setHoveredNodeId(node.id);
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = setTimeout(() => {
+        setHoveredNodeId(node.id);
+      }, 35);
     }
   }, []);
 
   const onNodeMouseLeave: NodeMouseHandler = useCallback(() => {
-    setHoveredNodeId(null);
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredNodeId(null);
+    }, 35);
   }, []);
 
   // Compute connected nodes & edges during hover
@@ -516,7 +523,7 @@ export default function HLDGraph({ onSelectLld }: HLDGraphProps = {}) {
           fitViewOptions={{ padding: 0.15 }}
           minZoom={0.2}
           maxZoom={2.5}
-          onlyRenderVisibleElements={true}
+          onlyRenderVisibleElements={false}
           elevateNodesOnSelect={false}
           snapToGrid={false}
           panOnDrag={true}

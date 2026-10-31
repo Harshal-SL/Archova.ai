@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Code2,
@@ -98,15 +98,24 @@ export default function ArsrsEditor({
   const [newActor, setNewActor] = useState("");
   const [copied, setCopied] = useState(false);
 
-  // Sync to doc whenever initialData changes externally
+  // Track previous initialData to avoid redundant or cascading re-renders
+  const lastSyncedInitialRef = useRef<string>(JSON.stringify(initialData));
+
+  // Sync to doc whenever initialData changes externally (e.g. loaded from another session)
   useEffect(() => {
-    try {
-      const cloned = JSON.parse(JSON.stringify(initialData));
-      setDoc(cloned);
-      setJsonString(JSON.stringify(cloned, null, 2));
-      setJsonError(null);
-    } catch {
-      // ignore
+    const stringified = JSON.stringify(initialData);
+    if (stringified !== lastSyncedInitialRef.current) {
+      lastSyncedInitialRef.current = stringified;
+      queueMicrotask(() => {
+        try {
+          const cloned = JSON.parse(stringified);
+          setDoc(cloned);
+          setJsonString(JSON.stringify(cloned, null, 2));
+          setJsonError(null);
+        } catch {
+          // ignore
+        }
+      });
     }
   }, [initialData]);
 
