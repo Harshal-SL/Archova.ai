@@ -248,69 +248,118 @@ export default function InterviewPopup({ onHldReady }: InterviewPopupProps) {
       // Start live swarm telemetry polling
       useAppStore.getState().startAgentTelemetryPolling(generationId);
 
-      // 1. Initial AI generation (synthesizes ARSRS and HLD)
-      const response = await aiEngineApi.generateArchitecture(generationId);
-      const parsedHld = response.hld ? parseHldToReactFlow(response.hld as Record<string, unknown>) : { nodes: [], edges: [] };
-      const initialNodes = parsedHld.nodes;
-      const initialEdges = parsedHld.edges;
+      let hldLoaded = false;
+      const applyHldData = (hldObj: Record<string, unknown>, arsrsObj?: Record<string, unknown>, validationObj?: Record<string, unknown>) => {
+        if (hldLoaded) return;
+        hldLoaded = true;
 
-      // ── Populate HLD and ARSRS in the store state ──
-      const sid = useAppStore.getState().activeSessionId;
-      useAppStore.setState({
-        arsrsData: response.arsrs || finalArsrs,
-        hldData: response.hld || null,
-        hldNodes: initialNodes as any,
-        hldEdges: initialEdges as any,
-        generationStatus: "HLD_READY",
-        activePipelineStep: 3,
-        ...(response.validation
-          ? {
-              validationData: response.validation as any,
-              validationReport: response.validation as any,
-              validationStatus: (response.validation as any)?.final_status || "ACCEPTED",
+        const parsedHld = hldObj ? parseHldToReactFlow(hldObj) : { nodes: [], edges: [] };
+        const initialNodes = parsedHld.nodes;
+        const initialEdges = parsedHld.edges;
+        const sid = useAppStore.getState().activeSessionId;
+
+        // 1. Immediately update store state with HLD & ARSRS
+        useAppStore.setState({
+          arsrsData: arsrsObj || finalArsrs,
+          hldData: hldObj,
+          hldNodes: initialNodes as any,
+          hldEdges: initialEdges as any,
+          generationStatus: "HLD_READY",
+          activePipelineStep: 3,
+          ...(validationObj
+            ? {
+                validationData: validationObj as any,
+                validationReport: validationObj as any,
+                validationStatus: (validationObj as any)?.final_status || "ACCEPTED",
+              }
+            : {}),
+        });
+
+        // 2. Immediately dismiss the fullscreen synthesizing loader & transition to HLD workspace
+        setGeneratingArch(false);
+        useAppStore.setState({
+          activeView: "hld",
+          hldWorkspaceTab: "hld",
+        });
+
+        if (onHldReady) {
+          onHldReady();
+        }
+
+        addLogEntry({
+          timestamp: new Date().toTimeString().split(" ")[0],
+          stage: "HLD",
+          message: "✓ High-Level Design (HLD) ready! Displaying diagram. Synthesizing 5 LLD specifications in parallel...",
+          level: "INFO",
+        });
+
+        // 3. In background: non-blocking persistence to Supabase
+        useAppStore.getState().saveCurrentArchitecture(sid || undefined, true).catch((saveErr) => {
+          console.warn("[Archova] Initial HLD saveCurrentArchitecture warning:", saveErr);
+        });
+
+        if (sid) {
+          useAppStore.getState().addMessage(sid, {
+            id: generateMsgId(),
+            role: "ai",
+            content: "✅ High-Level Design (HLD) architecture synthesized successfully! The interactive topology diagram is displayed. Synthesizing low-level designs (LLDs) and validation in parallel...",
+            json_response: {
+              hld: hldObj,
+              arsrs: arsrsObj || finalArsrs,
+            },
+          }).catch(() => {});
+        }
+
+        // 4. In background: poll LLDs and automated validation
+        useAppStore.getState().pollBackgroundLldsAndValidate(generationId).catch((bgErr) => {
+          console.warn("[Archova] Parallel LLD background polling warning:", bgErr);
+        });
+      };
+
+      // Watcher: Poll status concurrently so if backend finishes HLD early or generate request times out, we catch it instantly!
+      let watcherActive = true;
+      const pollWatcher = async () => {
+        let ticks = 0;
+        while (watcherActive && !hldLoaded && ticks < 90) {
+          await new Promise((r) => setTimeout(r, 2000));
+          if (!watcherActive || hldLoaded) break;
+          ticks++;
+          try {
+            const stat = await aiEngineApi.getStatus(generationId);
+            if (stat.status === "HLD_READY" || stat.status === "COMPLETED") {
+              const pkg = await aiEngineApi.getPackage(generationId).catch(() => null);
+              if (pkg && pkg.hld && Object.keys(pkg.hld).length > 0) {
+                applyHldData(pkg.hld, pkg.arsrs, pkg.validation);
+                break;
+              }
             }
-          : {}),
-      });
+          } catch {
+            // Ignore polling errors while generation is active
+          }
+        }
+      };
+      pollWatcher();
 
-      // ── Immediately persist the synthesized HLD architecture to Supabase BEFORE unmounting view ──
-      await useAppStore.getState().saveCurrentArchitecture(sid || undefined, true).catch((saveErr) => {
-        console.warn("[Archova] Initial HLD saveCurrentArchitecture warning:", saveErr);
-      });
-
-      // Add completion message with json_response fallback into the chat session
-      if (sid) {
-        await useAppStore.getState().addMessage(sid, {
-          id: generateMsgId(),
-          role: "ai",
-          content: "✅ High-Level Design (HLD) architecture synthesized successfully! The interactive topology diagram is displayed. Synthesizing low-level designs (LLDs) and validation in parallel...",
-          json_response: {
-            hld: response.hld,
-            arsrs: response.arsrs || finalArsrs,
-          },
-        }).catch(() => {});
-      }
-
-      addLogEntry({
-        timestamp: new Date().toTimeString().split(" ")[0],
-        stage: "HLD",
-        message: "✓ High-Level Design (HLD) ready! Displaying diagram. Synthesizing 5 LLD specifications in parallel...",
-        level: "INFO",
-      });
-
-      // ── In parallel: Background LLD generation and automated validation ──
-      useAppStore.getState().pollBackgroundLldsAndValidate(generationId).catch((bgErr) => {
-        console.warn("[Archova] Parallel LLD background polling warning:", bgErr);
-      });
-
-      // Clear the fullscreen synthesizing loader immediately and transition to HLD workspace
-      setGeneratingArch(false);
-      useAppStore.setState({
-        activeView: "hld",
-        hldWorkspaceTab: "hld",
-      });
-
-      if (onHldReady) {
-        onHldReady();
+      // 1. Primary AI generation call (synthesizes ARSRS and HLD)
+      try {
+        const response = await aiEngineApi.generateArchitecture(generationId);
+        watcherActive = false;
+        if (response && response.hld) {
+          applyHldData(response.hld, response.arsrs, response.validation);
+        }
+      } catch (genErr) {
+        console.warn("[Archova] generateArchitecture HTTP notice, attempting package recovery:", genErr);
+        // If HTTP request dropped/timed out, try recovering directly from backend package
+        try {
+          const pkg = await aiEngineApi.getPackage(generationId);
+          if (pkg && pkg.hld && Object.keys(pkg.hld).length > 0) {
+            applyHldData(pkg.hld, pkg.arsrs, pkg.validation);
+            return;
+          }
+        } catch {
+          // If recovery also fails, let outer catch handle it
+        }
+        throw genErr;
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to generate architecture.";

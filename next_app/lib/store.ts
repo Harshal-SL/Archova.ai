@@ -754,6 +754,27 @@ export const useAppStore = create<AppState>((set, get) => ({
         const stat = await aiEngineApi.getStatus(generationId);
         const lldStatusMap = (stat.llds || {}) as Record<LldType, LldStatusType>;
 
+        // If HLD is ready in backend but not yet loaded into store, recover and display it immediately!
+        if (!get().hldData && (stat.status === "HLD_READY" || stat.status === "COMPLETED")) {
+          try {
+            const hldPkg = await aiEngineApi.getPackage(generationId);
+            if (hldPkg && hldPkg.hld && Object.keys(hldPkg.hld).length > 0) {
+              const parsed = parseHldToReactFlow(hldPkg.hld);
+              set({
+                hldData: hldPkg.hld,
+                arsrsData: hldPkg.arsrs || get().arsrsData,
+                hldNodes: parsed.nodes as any,
+                hldEdges: parsed.edges as any,
+                generationStatus: stat.status,
+                activePipelineStep: 3,
+                ...(get().activeView === "chat" ? { activeView: "hld", hldWorkspaceTab: "hld" } : {}),
+              });
+            }
+          } catch {
+            // Non-blocking package peek
+          }
+        }
+
         // Whenever validation report is available (HLD initial or final 6-tier), immediately update store
         const statVal = stat.validation as any;
         const currentValReport = get().validationReport;
@@ -832,16 +853,36 @@ export const useAppStore = create<AppState>((set, get) => ({
         if (retry < 4) await new Promise((r) => setTimeout(r, 1200));
       }
 
-      if (pkg && pkg.llds) {
+      if (pkg) {
         const finalValReport = pkg.validation || get().validationReport;
+        const currentHld = get().hldData;
+        let recoveredHldUpdate: Record<string, any> = {};
+
+        if (!currentHld && pkg.hld && Object.keys(pkg.hld).length > 0) {
+          const parsed = parseHldToReactFlow(pkg.hld);
+          recoveredHldUpdate = {
+            hldData: pkg.hld,
+            arsrsData: pkg.arsrs || get().arsrsData,
+            hldNodes: parsed.nodes as any,
+            hldEdges: parsed.edges as any,
+            activeView: get().activeView === "chat" ? "hld" : get().activeView,
+            hldWorkspaceTab: "hld",
+          };
+        }
+
         set((s) => ({
-          lldData: {
-            backend: pkg.llds.backend?.data || pkg.llds.backend || s.lldData.backend,
-            frontend: pkg.llds.frontend?.data || pkg.llds.frontend || s.lldData.frontend,
-            database: pkg.llds.database?.data || pkg.llds.database || s.lldData.database,
-            security: pkg.llds.security?.data || pkg.llds.security || s.lldData.security,
-            cloud: pkg.llds.cloud?.data || pkg.llds.cloud || s.lldData.cloud,
-          },
+          ...recoveredHldUpdate,
+          ...(pkg.llds
+            ? {
+                lldData: {
+                  backend: pkg.llds.backend?.data || pkg.llds.backend || s.lldData.backend,
+                  frontend: pkg.llds.frontend?.data || pkg.llds.frontend || s.lldData.frontend,
+                  database: pkg.llds.database?.data || pkg.llds.database || s.lldData.database,
+                  security: pkg.llds.security?.data || pkg.llds.security || s.lldData.security,
+                  cloud: pkg.llds.cloud?.data || pkg.llds.cloud || s.lldData.cloud,
+                },
+              }
+            : {}),
           generationStatus: "COMPLETED",
           ...(finalValReport
             ? {
@@ -2503,6 +2544,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   saveCurrentArchitecture: async (targetSessionId?: string, forceNewVersion: boolean = false) => {
     const activeSid = targetSessionId || get().activeSessionId;
+    if (!activeSid || !isUUID(activeSid)) {
+      console.warn("[Archova] saveCurrentArchitecture skipped: invalid or missing sessionId", { activeSid });
+      return;
+    }
+
     let currentUser = get().user;
     if (!currentUser) {
       try {
@@ -2514,11 +2560,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       } catch {
         // Continue
       }
-    }
-
-    if (!activeSid || !currentUser || !isUUID(activeSid)) {
-      console.warn("[Archova] saveCurrentArchitecture skipped: missing session or user", { activeSid, hasUser: !!currentUser });
-      return;
     }
 
     const hld = get().hldData;
@@ -2564,19 +2605,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       },
     };
 
-    try {
+    const saveOperation = async () => {
       // 0. Ensure parent chat_sessions row exists for foreign consistency
       const { data: sessionRow } = await supabase
         .from("chat_sessions")
-        .select("id")
+        .select("id, user_id")
         .eq("id", activeSid)
         .maybeSingle();
+
+      const effectiveUserId = currentUser?.id || sessionRow?.user_id || "00000000-0000-0000-0000-000000000000";
 
       if (!sessionRow) {
         await supabase.from("chat_sessions").insert([
           {
             id: activeSid,
-            user_id: currentUser.id,
+            user_id: effectiveUserId,
             title: userPrompt.slice(0, 42) || "New Architecture",
             updated_at: new Date().toISOString(),
           },
@@ -2634,7 +2677,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         const { error: insertErr } = await supabase.from("architecture_designs").insert([
           {
             session_id: activeSid,
-            user_id: currentUser.id,
+            user_id: currentUser?.id || sessionRow?.user_id || null,
             prompt: userPrompt,
             design_json: fullPackage,
             version: parseInt(nextVerTag.replace("v", "").split(".")[0], 10) || 1,
@@ -2665,6 +2708,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       }));
 
       await get().fetchVersionsForSession(activeSid);
+    };
+
+    try {
+      // Guard with an 8-second timeout so remote persistence never hangs UI
+      await Promise.race([
+        saveOperation(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Supabase save timeout (8s)")), 8000)),
+      ]);
     } catch (err) {
       console.warn("Could not save architecture design to Supabase:", err);
     }
