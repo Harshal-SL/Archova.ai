@@ -38,7 +38,17 @@ class ValidatorConfig(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:3001",
+        "*",
     ]
+
+    @property
+    def cors_origins(self) -> List[str]:
+        raw = os.getenv("CORS_ORIGINS") or os.getenv("ALLOWED_ORIGINS")
+        if raw:
+            if raw == "*":
+                return ["*"]
+            return [x.strip() for x in raw.split(",") if x.strip()]
+        return self.ALLOWED_ORIGINS or ["*"]
 
     # External AI Engine
     AI_ENGINE_URL: str = "http://localhost:8000"

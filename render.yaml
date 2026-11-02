@@ -37,8 +37,8 @@ services:
   - type: web
     name: archova-validator-engine
     runtime: python
-    buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r Validator_Engine/requirements.txt
-    startCommand: uvicorn Validator_Engine.api:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r Validator_Engine_v2/requirements.txt
+    startCommand: uvicorn Validator_Engine_v2.main:app --host 0.0.0.0 --port $PORT
     plan: free
     healthCheckPath: /health
     envVars:
@@ -50,13 +50,9 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: "*"
-      - key: DISABLE_LOCAL_EMBEDDINGS
-        value: "true"
-      - key: RAG_PRELOAD
-        value: "false"
-      - key: QDRANT_URL
-        sync: false
-      - key: QDRANT_API_KEY
-        sync: false
       - key: REDIS_URL
         sync: false
+      - key: AI_ENGINE_URL
+        sync: false
+      - key: VALIDATOR_MODEL
+        value: "nvidia/nemotron-3.5-lightning:free"
