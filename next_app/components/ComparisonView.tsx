@@ -74,70 +74,70 @@ export default function ComparisonView() {
     system_name: promptText.split(".")[0].slice(0, 36) || "Enterprise Platform",
     timestamp: new Date().toISOString(),
     archova_verdict: "APPROVED",
-    archova_score: 84,
-    models_evaluated: 2,
+    archova_score: 90,
+    models_evaluated: 3,
     quality_gates: [
       {
         gate_name: "Structural Topology Gate",
         archova: true,
-        models: { "OpenAI GPT-4o": true, "Anthropic Claude 3.5 Sonnet": true },
+        models: { "ChatGPT / GPT-4o": true, "Google Gemini 2.0 Flash": true, "Nvidia Nemotron 3.5": true },
       },
       {
         gate_name: "Requirement Traceability Gate",
         archova: true,
-        models: { "OpenAI GPT-4o": true, "Anthropic Claude 3.5 Sonnet": true },
+        models: { "ChatGPT / GPT-4o": true, "Google Gemini 2.0 Flash": true, "Nvidia Nemotron 3.5": false },
       },
       {
         gate_name: "Cross-Artifact Alignment Gate",
         archova: true,
-        models: { "OpenAI GPT-4o": false, "Anthropic Claude 3.5 Sonnet": false },
+        models: { "ChatGPT / GPT-4o": false, "Google Gemini 2.0 Flash": false, "Nvidia Nemotron 3.5": false },
       },
       {
         gate_name: "NFR & Scalability Feasibility Gate",
         archova: true,
-        models: { "OpenAI GPT-4o": false, "Anthropic Claude 3.5 Sonnet": false },
+        models: { "ChatGPT / GPT-4o": false, "Google Gemini 2.0 Flash": false, "Nvidia Nemotron 3.5": false },
       },
       {
         gate_name: "Red-Team Security Resilience Gate",
         archova: true,
-        models: { "OpenAI GPT-4o": false, "Anthropic Claude 3.5 Sonnet": false },
+        models: { "ChatGPT / GPT-4o": false, "Google Gemini 2.0 Flash": false, "Nvidia Nemotron 3.5": false },
       },
     ],
     metrics_matrix: [
       {
         metric_name: "Overall Composite Score",
-        archova_score: 84.0,
-        model_scores: { "OpenAI GPT-4o": 74.0, "Anthropic Claude 3.5 Sonnet": 78.0 },
+        archova_score: 90.0,
+        model_scores: { "ChatGPT / GPT-4o": 76.0, "Google Gemini 2.0 Flash": 72.0, "Nvidia Nemotron 3.5": 66.0 },
       },
       {
         metric_name: "Structural Completeness",
-        archova_score: 85.0,
-        model_scores: { "OpenAI GPT-4o": 88.0, "Anthropic Claude 3.5 Sonnet": 89.0 },
+        archova_score: 91.0,
+        model_scores: { "ChatGPT / GPT-4o": 80.0, "Google Gemini 2.0 Flash": 76.0, "Nvidia Nemotron 3.5": 72.0 },
       },
       {
         metric_name: "Cross-Artifact Coherence",
-        archova_score: 84.0,
-        model_scores: { "OpenAI GPT-4o": 62.0, "Anthropic Claude 3.5 Sonnet": 65.0 },
+        archova_score: 89.0,
+        model_scores: { "ChatGPT / GPT-4o": 75.0, "Google Gemini 2.0 Flash": 71.0, "Nvidia Nemotron 3.5": 66.0 },
       },
       {
         metric_name: "Requirement Alignment",
-        archova_score: 85.0,
-        model_scores: { "OpenAI GPT-4o": 74.0, "Anthropic Claude 3.5 Sonnet": 77.0 },
+        archova_score: 92.0,
+        model_scores: { "ChatGPT / GPT-4o": 76.0, "Google Gemini 2.0 Flash": 75.0, "Nvidia Nemotron 3.5": 61.0 },
       },
       {
         metric_name: "Production Readiness",
-        archova_score: 82.0,
-        model_scores: { "OpenAI GPT-4o": 60.0, "Anthropic Claude 3.5 Sonnet": 64.0 },
+        archova_score: 90.0,
+        model_scores: { "ChatGPT / GPT-4o": 71.0, "Google Gemini 2.0 Flash": 68.0, "Nvidia Nemotron 3.5": 60.0 },
       },
       {
         metric_name: "NFR & Scalability Feasibility",
-        archova_score: 83.0,
-        model_scores: { "OpenAI GPT-4o": 58.0, "Anthropic Claude 3.5 Sonnet": 61.0 },
+        archova_score: 88.0,
+        model_scores: { "ChatGPT / GPT-4o": 70.0, "Google Gemini 2.0 Flash": 78.0, "Nvidia Nemotron 3.5": 73.0 },
       },
       {
         metric_name: "Red-Team & Security Audit",
-        archova_score: 84.0,
-        model_scores: { "OpenAI GPT-4o": 55.0, "Anthropic Claude 3.5 Sonnet": 58.0 },
+        archova_score: 93.0,
+        model_scores: { "ChatGPT / GPT-4o": 71.0, "Google Gemini 2.0 Flash": 68.0, "Nvidia Nemotron 3.5": 60.0 },
       },
     ],
     component_counts: {
@@ -312,7 +312,7 @@ export default function ComparisonView() {
 
                 <div className="my-5 flex items-baseline gap-2">
                   <span className="text-4xl font-extrabold text-[#005dff]">
-                    {effectiveComparison.archova_score ? `${Math.round(effectiveComparison.archova_score)}%` : "84%"}
+                    {effectiveComparison.archova_score ? `${Math.round(effectiveComparison.archova_score)}%` : "90%"}
                   </span>
                   <span className="text-xs font-semibold text-neutral-500">
                     Composite Score

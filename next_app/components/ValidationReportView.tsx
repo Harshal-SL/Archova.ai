@@ -28,6 +28,8 @@ import {
   HelpCircle,
   Globe,
   Terminal,
+  Zap,
+  Package,
 } from "lucide-react";
 import { useAppStore } from "@/lib/store";
 import CorrectionPlanSection from "@/components/CorrectionPlanSection";
@@ -376,87 +378,87 @@ export default function ValidationReportView() {
       label: "Archova AI Engine",
       value: "archova",
       description: "Autonomous Multi-Agent Architecture",
-      icon: "âœ¨",
+      icon: <Sparkles className="h-3.5 w-3.5 text-blue-500" />,
     },
     {
       id: "model-gemini",
       label: "Google Gemini 2.0 Flash",
       value: "model-gemini",
       description: "Direct 1-shot baseline model",
-      icon: "ðŸ’Ž",
+      icon: <Zap className="h-3.5 w-3.5 text-amber-500" />,
     },
     {
       id: "model-chatgpt",
-      label: "ChatGPT / GPT-OSS 120B",
+      label: "ChatGPT / GPT-4o",
       value: "model-chatgpt",
       description: "Direct 1-shot baseline model",
-      icon: "âš¡",
+      icon: <Cpu className="h-3.5 w-3.5 text-emerald-500" />,
     },
     {
       id: "model-nvidia",
       label: "Nvidia Nemotron 3.5",
       value: "model-nvidia",
       description: "Direct 1-shot baseline model",
-      icon: "ðŸŸ¢",
+      icon: <Server className="h-3.5 w-3.5 text-purple-500" />,
     },
   ], []);
 
-  const scopeSelectData: TSelectData[] = useMemo(() => [
+    const scopeSelectData: TSelectData[] = useMemo(() => [
     {
       id: "all",
       label: "All Architecture Tiers",
       value: "all",
       description: "Complete 6-tier composite audit",
-      icon: "ðŸŒ",
+      icon: <Globe className="h-3.5 w-3.5 text-blue-500" />,
     },
     {
       id: "hld",
       label: "High-Level Design (HLD)",
       value: "hld",
       description: "Topology & service boundaries",
-      icon: "ðŸ“",
+      icon: <Layers className="h-3.5 w-3.5 text-indigo-500" />,
     },
     {
       id: "llds_all",
       label: "All Low-Level Designs (LLDs)",
       value: "llds_all",
       description: "All 5 sub-tier specifications",
-      icon: "ðŸ“¦",
+      icon: <Package className="h-3.5 w-3.5 text-cyan-500" />,
     },
     {
       id: "backend",
       label: "Backend Service LLD",
       value: "backend",
       description: "FastAPI endpoints & schemas",
-      icon: "âš™ï¸",
+      icon: <Server className="h-3.5 w-3.5 text-emerald-500" />,
     },
     {
       id: "database",
       label: "Database & Persistence LLD",
       value: "database",
       description: "Postgres schema & indexes",
-      icon: "ðŸ—„ï¸",
+      icon: <Database className="h-3.5 w-3.5 text-amber-500" />,
     },
     {
       id: "frontend",
       label: "Frontend Architecture LLD",
       value: "frontend",
       description: "Next.js UI & client state",
-      icon: "ðŸ’»",
+      icon: <Layout className="h-3.5 w-3.5 text-violet-500" />,
     },
     {
       id: "security",
       label: "Zero-Trust Security LLD",
       value: "security",
       description: "Auth & perimeter controls",
-      icon: "ðŸ›¡ï¸",
+      icon: <Lock className="h-3.5 w-3.5 text-rose-500" />,
     },
     {
       id: "cloud",
       label: "Cloud Infrastructure LLD",
       value: "cloud",
       description: "Compute, VPC & Docker/TF",
-      icon: "â˜ï¸",
+      icon: <Cloud className="h-3.5 w-3.5 text-sky-500" />,
     },
   ], []);
 
@@ -745,7 +747,7 @@ export default function ValidationReportView() {
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto p-4 sm:p-6 space-y-6">
-      {/* â”€â”€ 2 DROPDOWNS: 1. SELECT MODEL, 2. ARCHITECTURE SCOPE (HLD / LLD) â”€â”€ */}
+      {/* ── 2 DROPDOWNS: 1. SELECT MODEL, 2. ARCHITECTURE SCOPE (HLD / LLD) ── */}
       <div className="relative z-40 flex flex-col xl:flex-row xl:items-center justify-between gap-4 rounded-2xl border border-blue-500/25 bg-gradient-to-r from-blue-500/[0.05] via-transparent to-cyan-500/[0.04] p-4 backdrop-blur-xl dark:border-[#262626] dark:bg-[#0D0D0F]/90 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 shrink-0">
@@ -816,16 +818,16 @@ export default function ValidationReportView() {
         </div>
       </div>
 
-      {/* â”€â”€ HEADER â”€â”€ */}
+      {/* ── HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-blue-500/25 bg-gradient-to-r from-blue-600/[0.08] via-cyan-500/[0.05] to-transparent p-5 backdrop-blur-xl dark:border-blue-500/20 dark:bg-gradient-to-r dark:from-blue-950/40 dark:via-[#0D0D0F] dark:to-[#0D0D0F] shadow-md">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
             <h2 className="text-xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
               Validation Audit Report
             </h2>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
               <ShieldCheck className="h-3.5 w-3.5" />
-              Model Score: {effectiveScore}%
+              Status: {report.final_status || "VERIFIED"}
             </span>
             <span className="rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 px-2.5 py-0.5 text-xs font-mono text-neutral-600 dark:text-neutral-400">
               Round {report.iterations.length}
@@ -852,7 +854,7 @@ export default function ValidationReportView() {
         </button>
       </div>
 
-      {/* â”€â”€ CLEAN VERIFICATION SCORECARD: MODEL SCORE & BASIC SCORES (C, R, W, D) â”€â”€ */}
+      {/* ── CLEAN VERIFICATION SCORECARD: MODEL SCORE & BASIC SCORES (C, R, W, D) ── */}
       <div className="rounded-2xl border border-neutral-200/80 bg-white/70 p-5 backdrop-blur-xl dark:border-[#262626] dark:bg-[#0D0D0F]/90 shadow-md space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -866,7 +868,7 @@ export default function ValidationReportView() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
           {/* C Score: Structure & Rules */}
           <div className="rounded-xl border border-cyan-500/25 bg-cyan-500/[0.04] p-3.5 dark:border-cyan-500/20 dark:bg-cyan-950/20 text-center shadow-xs">
             <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 block mb-1">
@@ -914,23 +916,10 @@ export default function ValidationReportView() {
             <span className="text-[10px] text-neutral-400 block mt-0.5">Defect Deductions</span>
           </div>
 
-          {/* Model Score (S) */}
-          <div className="rounded-xl border border-blue-500/40 bg-gradient-to-br from-blue-500/15 via-cyan-500/10 to-transparent p-3.5 dark:border-blue-500/40 dark:bg-gradient-to-br dark:from-blue-950/30 dark:via-cyan-950/20 dark:to-transparent text-center col-span-2 sm:col-span-1 shadow-[0_0_20px_rgba(0,93,255,0.15)]">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 block mb-1">
-              {selectedTierScope === "all" ? "Model Score (S)" : `${selectedTierScope.toUpperCase()} Score`}
-            </span>
-            <span className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
-              {effectiveScore}
-              <span className="text-xs text-neutral-400 font-normal">/100</span>
-            </span>
-            <span className="text-[10px] font-medium text-neutral-500 dark:text-neutral-400 block mt-0.5">
-              Verified Score
-            </span>
           </div>
-        </div>
       </div>
 
-      {/* â”€â”€ ARTIFACT BLUEPRINT CARDS (HLD + 5 LLDs) â”€â”€ */}
+      {/* ── ARTIFACT BLUEPRINT CARDS (HLD + 5 LLDs) ── */}
       <div>
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
@@ -981,7 +970,7 @@ export default function ValidationReportView() {
         </div>
       </div>
 
-      {/* â”€â”€ SECONDARY COLLAPSIBLE: REAL-WORLD REFERENCE SYSTEMS CORPUS â”€â”€ */}
+      {/* ── SECONDARY COLLAPSIBLE: REAL-WORLD REFERENCE SYSTEMS CORPUS ── */}
       {report.references_used && report.references_used.length > 0 && (
         <div className="rounded-2xl border border-neutral-200/80 bg-white/70 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-900/60 shadow-xs">
           <button
@@ -1043,12 +1032,12 @@ export default function ValidationReportView() {
         </div>
       )}
 
-      {/* â”€â”€ ARCHITECTURE CORRECTION PLAN (IF ACTIVE) â”€â”€ */}
+      {/* ── ARCHITECTURE CORRECTION PLAN (IF ACTIVE) ── */}
       {effectiveCorrectionPlan && effectiveCorrectionPlan.total_findings > 0 && (
         <CorrectionPlanSection plan={effectiveCorrectionPlan} />
       )}
 
-      {/* â”€â”€ CORRECTIONS TIMELINE â”€â”€ */}
+      {/* ── CORRECTIONS TIMELINE ── */}
       {allCorrections.length > 0 && (
         <div className="rounded-2xl border border-neutral-200/80 bg-white/70 p-5 backdrop-blur-md dark:border-neutral-800/80 dark:bg-neutral-900/60 shadow-xs">
           <div className="mb-4 flex items-center justify-between">
@@ -1081,7 +1070,7 @@ export default function ValidationReportView() {
 
                   <div className="flex items-center gap-1.5 text-xs font-mono">
                     <span className="text-neutral-500">{correction.score_before}</span>
-                    <span className="text-neutral-400">â†’</span>
+                    <span className="text-neutral-400">→</span>
                     <span className="font-bold text-emerald-500">{correction.score_after}</span>
                     <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
                       (+{correction.score_after - correction.score_before})
@@ -1101,7 +1090,7 @@ export default function ValidationReportView() {
   );
 }
 
-// â”€â”€ CLEAN SUBCOMPONENT: ARTIFACT BLUEPRINT CARD â”€â”€
+// ── CLEAN SUBCOMPONENT: ARTIFACT BLUEPRINT CARD ──
 
 function ArtifactCard({
   artifactKey,
@@ -1157,28 +1146,26 @@ function ArtifactCard({
               </span>
               {history.length > 1 && (
                 <span className="text-[11px] font-mono text-neutral-400">
-                  ({history.join(" â†’ ")})
+                  ({history.join(" → ")})
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Score pill */}
+        {/* Quality Gate Status */}
         <div className="flex flex-col items-end">
           <span
             className={clsx(
-              "text-xl font-black font-mono tracking-tight",
-              safeScore >= 80
-                ? "text-emerald-600 dark:text-emerald-400"
-                : safeScore >= 60
-                ? "text-amber-500"
-                : "text-rose-500"
+              "text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border",
+              (result?.verdict || "ACCEPTED") === "ACCEPTED"
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
             )}
           >
-            {safeScore}
-            <span className="text-xs text-neutral-400 font-normal">/100</span>
+            {result?.verdict || "VERIFIED"}
           </span>
+          <span className="text-[10px] text-neutral-400 mt-0.5">Gate Passed</span>
         </div>
       </div>
 

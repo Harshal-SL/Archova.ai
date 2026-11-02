@@ -76,14 +76,20 @@ export async function downloadReactFlowCanvas(
         backgroundColor: bg,
         width,
         height,
+        canvasWidth: width * 3,
+        canvasHeight: height * 3,
         style: {
           width: `${width}px`,
           height: `${height}px`,
           transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
+          textRendering: "geometricPrecision",
         },
         filter,
-        pixelRatio: 2, // 2x Retina resolution for ultra-sharp diagrams
-        quality: options.quality ?? 0.95,
+        pixelRatio: 3, // 3x Ultra-HD 300 DPI resolution for crystal clear diagrams
+        quality: options.quality ?? 1.0,
+        cacheBust: true,
       };
 
       if (format === "jpeg") {
@@ -92,12 +98,18 @@ export async function downloadReactFlowCanvas(
         dataUrl = await toPng(viewportEl, captureOptions);
       }
     } else {
-      // Fallback: capture entire container directly
+      // Fallback: capture entire container directly with 3x clarity
       const captureOptions = {
         backgroundColor: bg,
         filter,
-        pixelRatio: 2,
-        quality: options.quality ?? 0.95,
+        pixelRatio: 3,
+        quality: options.quality ?? 1.0,
+        cacheBust: true,
+        style: {
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
+          textRendering: "geometricPrecision",
+        },
       };
 
       if (format === "jpeg") {
